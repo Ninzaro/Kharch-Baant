@@ -109,46 +109,7 @@ export default defineConfig(({ mode }) => {
         chunkSizeWarningLimit: 600, // Increase slightly from default 500kb
         rollupOptions: {
           output: {
-            manualChunks: (id) => {
-              // Split vendor libraries
-              if (id.includes('node_modules')) {
-                if (id.includes('react') || id.includes('react-dom')) {
-                  return 'react-vendor';
-                }
-                if (id.includes('@supabase/supabase-js')) {
-                  return 'supabase';
-                }
-                if (id.includes('@google/genai')) {
-                  return 'genai';
-                }
-                if (id.includes('mailersend')) {
-                  return 'mailersend';
-                }
-                if (id.includes('@testing-library') || id.includes('vitest')) {
-                  return 'test-utils';
-                }
-                // Group other vendor libraries
-                return 'vendor';
-              }
-              
-              // Split components by feature
-              if (id.includes('/components/')) {
-                if (id.includes('Modal')) {
-                  return 'modals';
-                }
-                if (id.includes('Transaction') || id.includes('Payment')) {
-                  return 'transaction-components';
-                }
-                if (id.includes('Group')) {
-                  return 'group-components';
-                }
-              }
-              
-              // Split services
-              if (id.includes('/services/')) {
-                return 'services';
-              }
-            }
+            // Native chunking preferred to prevent bundle undefined errors
           }
         }
       },
