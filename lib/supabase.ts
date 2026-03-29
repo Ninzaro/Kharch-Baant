@@ -9,7 +9,40 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Supabase credentials are missing. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (or their REACT_APP_ equivalents).')
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
+// Intercept requests to inject the Clerk JWT
+const customFetch = async (url: RequestInfo | URL, options?: RequestInit) => {
+    const headers = new Headers(options?.headers);
+    const clerk = (window as any).Clerk;
+    if (clerk && clerk.session) {
+        try {
+            const token = await clerk.session.getToken({ template: 'supabase' });
+            if (token) {
+                headers.set('Authorization', `Bearer ${token}`);
+            }
+        } catch (e) {
+            console.error('Failed to get Clerk Supabase token', e);
+        }
+    }
+    return fetch(url, { ...options, headers });
+};
+
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    global: {
+        fetch: customFetch
+    },
+    accessToken: async () => {
+        const clerk = (window as any).Clerk;
+        if (clerk && clerk.session) {
+            try {
+                const token = await clerk.session.getToken({ template: 'supabase' });
+                return token || '';
+            } catch (e) {
+                console.error('Failed to get Clerk Supabase token for realtime', e);
+            }
+        }
+        return '';
+    }
+})
 
 // Types for our database
 export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']

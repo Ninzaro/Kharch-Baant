@@ -12,7 +12,8 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { App as CapacitorApp } from '@capacitor/app';
 
-// Initialize Capacitor plugins
+import { ClerkProvider } from '@clerk/clerk-react';
+
 const initCapacitor = async () => {
   if (Capacitor.isNativePlatform()) {
     try {
@@ -50,15 +51,22 @@ if (!rootElement) {
   throw new Error("Could not find root element to mount to");
 }
 
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+if (!PUBLISHABLE_KEY) {
+  throw new Error("Missing Publishable Key");
+}
+
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <SupabaseAuthProvider>
-        <ToastProvider>
-          <AppWithAuth />
-        </ToastProvider>
-      </SupabaseAuthProvider>
-    </QueryClientProvider>
+    <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
+      <QueryClientProvider client={queryClient}>
+        <SupabaseAuthProvider>
+          <ToastProvider>
+            <AppWithAuth />
+          </ToastProvider>
+        </SupabaseAuthProvider>
+      </QueryClientProvider>
+    </ClerkProvider>
   </React.StrictMode>
 );

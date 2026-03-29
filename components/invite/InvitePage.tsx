@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../contexts/SupabaseAuthContext';
-import { SignInForm } from '../auth/SignInForm';
-import { SignUpForm } from '../auth/SignupForm';
+import { SignIn } from '@clerk/clerk-react';
 import { validateInvite, acceptInvite } from '../../services/supabaseApiService';
 import { supabase } from '../../lib/supabase';
 import type { Group, Person } from '../../types';
@@ -233,34 +232,8 @@ const InvitePage: React.FC = () => {
             <div>
               {!user ? (
                 <div>
-                  <div className="flex gap-2 mb-4">
-                    <button
-                      onClick={() => setAuthMode('signin')}
-                      className={`px-3 py-1 rounded ${authMode === 'signin' ? 'bg-white/20 text-white' : 'bg-white/10 text-slate-300'}`}
-                    >Sign In</button>
-                    <button
-                      onClick={() => setAuthMode('signup')}
-                      className={`px-3 py-1 rounded ${authMode === 'signup' ? 'bg-white/20 text-white' : 'bg-white/10 text-slate-300'}`}
-                    >Sign Up</button>
-                  </div>
-                  <div className="bg-black/20 border border-white/10 rounded-xl p-4">
-                    {authMode === 'signin' ? (
-                      <SignInForm
-                        onSwitchToSignUp={() => setAuthMode('signup')}
-                        onSuccess={() => {
-                          // Persist token so post-auth flow can accept if needed
-                          if (token) localStorage.setItem('pendingInviteToken', token);
-                        }}
-                      />
-                    ) : (
-                      <SignUpForm
-                        onSwitchToSignIn={() => setAuthMode('signin')}
-                        onSuccess={() => {
-                          if (token) localStorage.setItem('pendingInviteToken', token);
-                          setAuthMode('signin');
-                        }}
-                      />
-                    )}
+                  <div className="bg-black/20 border border-white/10 rounded-xl p-4 flex justify-center">
+                    <SignIn forceRedirectUrl={window.location.href} signUpForceRedirectUrl={window.location.href} />
                   </div>
                 </div>
               ) : (
