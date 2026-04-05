@@ -2,6 +2,7 @@ import React from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import * as api from './apiService'
 import type { Group, Transaction, PaymentSource, Person } from '../types'
+import { supabase, getClerkSupabaseToken } from '../lib/supabase'
 
 // Query Keys
 export const qk = {
@@ -10,6 +11,33 @@ export const qk = {
   paymentSources: (personId?: string) => ['paymentSources', personId] as const,
   people: (personId?: string) => ['people', personId] as const,
 }
+
+// Hook to prime the Realtime connection with the Clerk JWT before any bridges subscribe.
+// Supabase Realtime authenticates at WS connect time, so we must set the token first.
+export const useRealtimeConnection = (personId?: string) => {
+  React.useEffect(() => {
+    if (!personId) return;
+
+    let cancelled = false;
+
+    const connectWithToken = async () => {
+      const token = await getClerkSupabaseToken();
+      if (cancelled) return;
+
+      // Set the access token on the realtime client so WS upgrade carries it
+      if (token) {
+        (supabase.realtime as any).setAuth(token);
+        console.log('🔑 Realtime auth token set');
+      }
+    };
+
+    connectWithToken();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [personId]);
+};
 
 // Groups
 export const useGroupsQuery = (personId?: string) =>

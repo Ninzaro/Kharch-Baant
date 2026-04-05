@@ -26,7 +26,7 @@ import { UserMenu } from './components/auth/UserMenu';
 import * as emailService from './services/emailService';
 import InvitePage from './components/invite/InvitePage';
 import { RealtimeStatus } from './components/RealtimeStatus';
-import { useGroupsQuery, useTransactionsQuery, usePaymentSourcesQuery, usePeopleQuery, useRealtimeGroupsBridge, useRealtimeTransactionsBridge, useRealtimePaymentSourcesBridge, useRealtimePeopleBridge, qk } from './services/queries';
+import { useGroupsQuery, useTransactionsQuery, usePaymentSourcesQuery, usePeopleQuery, useRealtimeGroupsBridge, useRealtimeTransactionsBridge, useRealtimePaymentSourcesBridge, useRealtimePeopleBridge, useRealtimeConnection, qk } from './services/queries';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from './store/appStore';
 import { useBackButton } from './hooks/useBackButton';
@@ -44,6 +44,9 @@ const App: React.FC = () => {
     const { data: transactions = [], isLoading: txLoading } = useTransactionsQuery(person?.id);
     const { data: paymentSources = [], isLoading: psLoading } = usePaymentSourcesQuery(person?.id);
     const { data: people = [], isLoading: peopleLoading } = usePeopleQuery(person?.id);
+
+    // Prime the Realtime WebSocket connection with the Clerk JWT FIRST
+    useRealtimeConnection(person?.id);
 
     // Realtime bridges
     useRealtimeGroupsBridge(person?.id);

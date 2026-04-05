@@ -9,19 +9,47 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Supabase credentials are missing. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (or their REACT_APP_ equivalents).')
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-    accessToken: async () => {
-        const clerk = (window as any).Clerk;
-        if (clerk && clerk.session) {
-            try {
-                const token = await clerk.session.getToken({ template: 'supabase' });
-                return token || '';
-            } catch (e) {
-                console.error('Failed to get Clerk Supabase token for realtime', e);
-            }
-        }
-        return '';
+// Helper to get the Clerk JWT for Supabase (used by both HTTP and Realtime)
+export const getClerkSupabaseToken = async (): Promise<string> => {
+  const clerk = (window as any).Clerk;
+  if (clerk?.session) {
+    try {
+      const token = await clerk.session.getToken({ template: 'supabase' });
+      return token || '';
+    } catch (e) {
+      console.warn('Failed to get Clerk Supabase token:', e);
     }
+  }
+  return '';
+};
+
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    // We manage auth via Clerk, not Supabase Auth
+    persistSession: false,
+    autoRefreshToken: false,
+    detectSessionInUrl: false,
+  },
+  global: {
+    // Intercept every fetch (including realtime WebSocket upgrade headers)
+    // to inject the Clerk JWT as Authorization header
+    fetch: async (url, options = {}) => {
+      const token = await getClerkSupabaseToken();
+      const headers = new Headers((options as RequestInit).headers);
+      if (token) {
+        headers.set('Authorization', `Bearer ${token}`);
+      }
+      // Always send the anon key as apikey header
+      headers.set('apikey', supabaseAnonKey!);
+      return fetch(url, { ...(options as RequestInit), headers });
+    },
+  },
+  realtime: {
+    params: {
+      // Pass token as a realtime connection param so WS auth works
+      apikey: supabaseAnonKey!,
+    },
+  },
 })
 
 // Types for our database
