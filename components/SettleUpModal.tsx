@@ -41,60 +41,43 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
   const [note, setNote] = useState(initialTransaction?.comment || '');
   const [date, setDate] = useState<string>(initialTransaction?.date || (() => new Date().toISOString().split('T')[0]));
   const [paymentSourceId, setPaymentSourceId] = useState<string | undefined>(initialTransaction?.paymentSourceId);
-
-  // Update state if props change (re-opening modal)
-  useEffect(() => {
-    if (open) {
-      if (initialTransaction) {
-        setPayerId(initialTransaction.paidById);
-        const p = initialTransaction.split.participants.find(p => p.personId !== initialTransaction.paidById);
-        setReceiverId(p?.personId || '');
-        setAmount(String(initialTransaction.amount));
-        setNote(initialTransaction.comment || '');
-        setDate(initialTransaction.date);
-        setPaymentSourceId(initialTransaction.paymentSourceId);
-      } else {
-        setPayerId(defaultPayerId || '');
-        setReceiverId(defaultReceiverId || '');
-        setAmount(defaultAmount ? String(defaultAmount) : '');
-        setNote('');
-        setDate(new Date().toISOString().split('T')[0]);
-        setPaymentSourceId(undefined);
-      }
-    }
-  }, [open, initialTransaction, defaultPayerId, defaultReceiverId, defaultAmount]);
-
   const [submitting, setSubmitting] = useState(false);
-
-  // Advanced Section Toggle
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
-
-  // Refs for auto-focus
   const amountInputRef = useRef<HTMLInputElement>(null);
 
-  // --- INITIALIZATION ---
+  // Seed state when modal opens: use initialTransaction for edit mode, or defaults for new settlement
   useEffect(() => {
-    if (open) {
+    if (!open) return;
+
+    if (initialTransaction) {
+      // EDIT MODE: populate from existing transaction
+      setPayerId(initialTransaction.paidById);
+      const p = initialTransaction.split.participants.find(p => p.personId !== initialTransaction.paidById);
+      setReceiverId(p?.personId || '');
+      setAmount(String(initialTransaction.amount));
+      setNote(initialTransaction.comment || '');
+      setDate(initialTransaction.date);
+      setPaymentSourceId(initialTransaction.paymentSourceId);
+      setIsAdvancedOpen(false);
+    } else {
+      // NEW SETTLEMENT MODE: populate from defaults
       setPayerId(defaultPayerId || '');
       setReceiverId(defaultReceiverId || '');
       setAmount(defaultAmount && defaultAmount > 0 ? String(defaultAmount.toFixed(2)) : '');
       setNote('');
-      setIsAdvancedOpen(false);
       setDate(new Date().toISOString().split('T')[0]);
+      setIsAdvancedOpen(false);
 
-      // Auto-focus amount
-      setTimeout(() => {
-        amountInputRef.current?.focus();
-      }, 100);
-
-      // Smart Defaults: Last used payment source for this user if available? 
-      // Simplified: Just pick Cash or first or last used generally.
-      // Ideally we'd look up last used by payerId, but we'll stick to simple "Last used generally" or nothing for now.
-      // Keeping existing logic: default to 'Cash' if exists
+      // Default to Cash payment source for new settlements
       const cash = paymentSources.find(p => p.type === 'Cash' && p.isActive !== false);
       setPaymentSourceId(cash?.id);
     }
-  }, [open, defaultPayerId, defaultReceiverId, defaultAmount, paymentSources]);
+
+    // Auto-focus the amount input
+    setTimeout(() => {
+      amountInputRef.current?.focus();
+    }, 100);
+  }, [open, initialTransaction, defaultPayerId, defaultReceiverId, defaultAmount, paymentSources]);
 
   const amountNumber = parseFloat(amount) || 0;
   const isSelfSelect = payerId && receiverId && payerId === receiverId;
