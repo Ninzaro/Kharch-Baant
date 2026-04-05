@@ -43,3 +43,13 @@ android/.idea/
 *.aab
 *.keystore
 !debug.keystore
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+
+# Git worktrees
+.worktrees/
