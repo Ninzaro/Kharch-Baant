@@ -29,6 +29,7 @@ import { RealtimeStatus } from './components/RealtimeStatus';
 import { useGroupsQuery, useTransactionsQuery, usePaymentSourcesQuery, usePeopleQuery, useRealtimeGroupsBridge, useRealtimeTransactionsBridge, useRealtimePaymentSourcesBridge, useRealtimePeopleBridge, qk } from './services/queries';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from './store/appStore';
+import { useBackButton } from './hooks/useBackButton';
 
 const App: React.FC = () => {
     if (import.meta.env.DEV) {
@@ -117,6 +118,27 @@ const App: React.FC = () => {
         return last;
     }, [transactions]);
 
+    useBackButton(() => {
+        if (isTransactionDetailOpen) { setIsTransactionDetailOpen(false); return true; }
+        if (isTransactionModalOpen) { setIsTransactionModalOpen(false); return true; }
+        if (isGroupModalOpen) { setIsGroupModalOpen(false); return true; }
+        if (isAddActionModalOpen) { setIsAddActionModalOpen(false); return true; }
+        if (isPaymentSourceModalOpen) { setIsPaymentSourceModalOpen(false); return true; }
+        if (isPaymentSourceManageOpen) { setIsPaymentSourceManageOpen(false); return true; }
+        if (isSettleUpOpen) { setIsSettleUpOpen(false); return true; }
+        if (isSettingsModalOpen) { setIsSettingsModalOpen(false); return true; }
+        if (pendingDeleteTransaction) { setPendingDeleteTransaction(null); return true; }
+        if (pendingDeletePaymentSource) { setPendingDeletePaymentSource(null); return true; }
+        
+        // If no modal but a group is selected, go back to home screen
+        if (selectedGroupId) {
+            setSelectedGroupId(null);
+            return true;
+        }
+        
+        return false;
+    });
+
     // Ensure selected group remains valid across reloads/user switches
     useEffect(() => {
         // If user logs out, clear selection
@@ -181,7 +203,10 @@ const App: React.FC = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            if (!person) return;
+            if (!person) {
+                setIsLoading(false);
+                return;
+            }
             setIsLoading(true);
             try {
                 // Data now fetched via TanStack Query hooks. Only handle invite acceptance here.
