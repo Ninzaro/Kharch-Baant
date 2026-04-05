@@ -31,6 +31,7 @@ export const archivePaymentSource = async (paymentSourceId: string): Promise<{ s
 // PEOPLE
 export const getPeople = async (personId?: string): Promise<Person[]> => supabaseApi.getPeople(personId);
 export const addPerson = async (personData: Omit<Person, 'id'>): Promise<Person> => supabaseApi.addPerson(personData);
+export { findPersonByEmail } from './supabaseApiService';
 
 // USER MANAGEMENT
 export const ensureUserExists = async (userId: string, userName: string, userEmail: string): Promise<Person> => supabaseApi.ensureUserExists(userId, userName, userEmail);

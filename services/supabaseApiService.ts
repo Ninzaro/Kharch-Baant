@@ -819,66 +819,89 @@ export const addPerson = async (personData: Omit<Person, 'id'>): Promise<Person>
   return transformDbPersonToAppPerson(data);
 };
 
-// USER MANAGEMENT
-export const ensureUserExists = async (authUserId: string, userName: string, userEmail: string): Promise<Person> => {
-  console.log('🔍 ensureUserExists called with:', { authUserId, userName, userEmail });
-
-  // Check if user already exists by Supabase auth user ID
-  const { data: existingUsers, error: fetchError } = await supabase
+export const findPersonByEmail = async (email: string): Promise<Person | null> => {
+  const { data, error } = await supabase
     .from('people')
     .select('*')
-    .eq('clerk_user_id', authUserId);
+    .eq('email', email)
+    .maybeSingle();
 
-  console.log('🔍 Query result:', { existingUsers, fetchError });
+  if (error) throw error;
+  if (!data) return null;
+  return transformDbPersonToAppPerson(data);
+};
 
-  // If there was an error fetching, log it but continue
-  if (fetchError) {
-    console.warn('⚠️ Error fetching existing user:', fetchError);
+// USER MANAGEMENT
+export const ensureUserExists = async (authUserId: string, userName: string, userEmail: string): Promise<Person> => {
+  // Fast path: user already claimed their record
+  const { data: byAuthId, error: authIdError } = await supabase
+    .from('people')
+    .select('*')
+    .eq('clerk_user_id', authUserId)
+    .maybeSingle();
+
+  if (authIdError) console.warn('⚠️ Error checking clerk_user_id:', authIdError);
+  if (byAuthId) return transformDbPersonToAppPerson(byAuthId);
+
+  // Claim path: unclaimed dummy with matching email
+  if (userEmail) {
+    const { data: dummy, error: emailError } = await supabase
+      .from('people')
+      .select('*')
+      .eq('email', userEmail)
+      .eq('is_claimed', false)
+      .maybeSingle();
+
+    if (emailError) console.warn('⚠️ Error checking email claim:', emailError);
+
+    if (dummy) {
+      const { data: claimed, error: claimError } = await supabase
+        .from('people')
+        .update({
+          clerk_user_id: authUserId,
+          auth_user_id: authUserId,
+          name: userName || userEmail.split('@')[0],
+          is_claimed: true,
+          source: 'self',
+        })
+        .eq('id', dummy.id)
+        .select()
+        .single();
+
+      if (claimError) throw claimError;
+      return transformDbPersonToAppPerson(claimed);
+    }
   }
 
-  // If user exists, return it
-  if (existingUsers && existingUsers.length > 0) {
-    const person = transformDbPersonToAppPerson(existingUsers[0]);
-    console.log('✅ Found existing user:', person);
-    return person;
-  }
-
-  console.log('👤 Creating new user in people table for auth user:', authUserId);
-
-  // Create new user with clerk_user_id
+  // New user: create fresh record
   const { data, error } = await supabase
     .from('people')
     .insert({
       name: userName || userEmail.split('@')[0],
       clerk_user_id: authUserId,
-      avatar_url: `https://i.pravatar.cc/150?u=${authUserId}`
+      auth_user_id: authUserId,
+      avatar_url: `https://i.pravatar.cc/150?u=${authUserId}`,
+      email: userEmail || null,
+      is_claimed: true,
+      source: 'self',
     })
     .select()
     .single();
 
   if (error) {
-    console.error('❌ Failed to create user:', error);
-
-    // If it's a duplicate key error, try to fetch the existing user again
-    if (error.code === '23505' || error.message.includes('duplicate key')) {
-      console.log('🔄 Duplicate key error, trying to fetch existing user again...');
-      const { data: retryUsers, error: retryError } = await supabase
+    // Race condition: another request created the row between our check and insert
+    if (error.code === '23505') {
+      const { data: retry } = await supabase
         .from('people')
         .select('*')
-        .eq('clerk_user_id', authUserId);
-
-      if (!retryError && retryUsers && retryUsers.length > 0) {
-        console.log('✅ Found existing user on retry:', retryUsers[0]);
-        return transformDbPersonToAppPerson(retryUsers[0]);
-      }
+        .eq('clerk_user_id', authUserId)
+        .maybeSingle();
+      if (retry) return transformDbPersonToAppPerson(retry);
     }
-
     throw error;
   }
 
-  const created = transformDbPersonToAppPerson(data);
-  console.log('✅ Created new user:', created);
-  return created;
+  return transformDbPersonToAppPerson(data);
 };
 
 // ============================================================================
