@@ -810,12 +810,14 @@ export const addPerson = async (personData: Omit<Person, 'id'>): Promise<Person>
     .insert({
       name: personData.name,
       avatar_url: personData.avatarUrl,
+      email: personData.email ?? null,
+      is_claimed: false,
+      source: personData.source ?? 'manual',
     })
     .select()
     .single();
 
   if (error) throw error;
-
   return transformDbPersonToAppPerson(data);
 };
 
