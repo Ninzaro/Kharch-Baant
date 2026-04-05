@@ -1,9 +1,13 @@
+export type PersonSource = 'manual' | 'phonebook' | 'email_invite' | 'self';
+
 export type Person = {
     id: string;
     name: string;
     avatarUrl: string;
     email?: string;
-    authUserId?: string; // Supabase auth user ID
+    authUserId?: string;
+    isClaimed?: boolean;
+    source?: PersonSource;
 };
 
 export type Currency = string;
