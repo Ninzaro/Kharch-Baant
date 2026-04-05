@@ -119,14 +119,15 @@ const transformDbPaymentSourceToAppPaymentSource = (dbPaymentSource: DbPaymentSo
 
 // Helper function to transform database person to app person
 const transformDbPersonToAppPerson = (dbPerson: DbPerson): Person => {
-  // Prefer auth_user_id if present (post-migration), else fall back to clerk_user_id
   const authUserId = (dbPerson as any)?.auth_user_id ?? (dbPerson as any)?.clerk_user_id ?? null;
   return {
     id: dbPerson.id,
     name: (dbPerson as any).name,
     avatarUrl: (dbPerson as any).avatar_url,
-    email: (dbPerson as any).email,
+    email: (dbPerson as any).email ?? undefined,
     authUserId: authUserId || undefined,
+    isClaimed: (dbPerson as any).is_claimed ?? false,
+    source: (dbPerson as any).source ?? 'manual',
   };
 };
 
