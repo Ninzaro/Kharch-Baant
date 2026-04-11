@@ -3,9 +3,10 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import HomeScreen from '../../../components/HomeScreen'
 import { Group, Transaction, Person } from '../../../types'
 
-// Mock the calculateShares function
+// Mock the calculations module
 vi.mock('../../../utils/calculations', () => ({
-  calculateShares: vi.fn(() => new Map())
+  calculateShares: vi.fn(() => new Map()),
+  calculateGroupBalances: vi.fn(() => new Map()),
 }))
 
 // Mock the icons

@@ -1,6 +1,6 @@
 import { Transaction, SplitMode, SplitParticipant } from '../types';
 
-// Net balance: positive = is owed money, negative = owes money.
+// Net balance per person across all transactions. Positive = is owed money, negative = owes money.
 export function calculateGroupBalances(transactions: Transaction[]): Map<string, number> {
     const balances = new Map<string, number>();
 

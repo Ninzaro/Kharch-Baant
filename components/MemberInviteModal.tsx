@@ -1,57 +1,86 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import BaseModal from './BaseModal';
 import { Person } from '../types';
-import { addPersonToGroup, addPerson } from '../services/apiService';
+import { addPersonToGroup, addPerson, findPersonByEmail } from '../services/apiService';
 
 export interface MemberInviteModalProps {
   open: boolean;
-  groupId?: string; // optional: if absent we are in group creation mode; person will be created but not yet linked
-  existingPeople: Person[]; // global people list (for simple de-dupe by name)
+  groupId?: string;
+  existingPeople: Person[];
   onClose(): void;
-  onAdded(person: Person): void; // bubble newly added person so parent can refresh group members list or staged creation
+  onAdded(person: Person): void;
 }
 
-/**
- * MemberInviteModal
- * Lightweight modal to add a new member (Person + group_members link) into a group.
- * Currently supports name (required) & optional email placeholder (not persisted yet; future invites feature).
- * Role always defaults to 'member' (no column in schema yet).
- */
 const MemberInviteModal: React.FC<MemberInviteModalProps> = ({ open, groupId, existingPeople, onClose, onAdded }) => {
   const [name, setName] = useState('');
-  const [email, setEmail] = useState(''); // not yet stored; placeholder for future invite flow
+  const [email, setEmail] = useState('');
+  const [matchedPerson, setMatchedPerson] = useState<Person | null>(null);
+  const [lookingUp, setLookingUp] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const lookupTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Reset when opening
   useEffect(() => {
     if (open) {
       setName('');
       setEmail('');
+      setMatchedPerson(null);
       setError(null);
     }
   }, [open]);
 
+  const handleEmailChange = useCallback((value: string) => {
+    setEmail(value);
+    setMatchedPerson(null);
+    if (lookupTimer.current) clearTimeout(lookupTimer.current);
+    if (!value || !value.includes('@')) return;
+
+    lookupTimer.current = setTimeout(async () => {
+      setLookingUp(true);
+      try {
+        const found = await findPersonByEmail(value.trim().toLowerCase());
+        setMatchedPerson(found);
+      } catch {
+        // Lookup failure is non-critical; continue as new person
+      } finally {
+        setLookingUp(false);
+      }
+    }, 300);
+  }, []);
+
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!name.trim()) {
+
+    if (!matchedPerson && !name.trim()) {
       setError('Name is required');
       return;
     }
-    // Very light duplicate guard (case-insensitive by name)
-    const dup = existingPeople.some(p => p.name.toLowerCase() === name.trim().toLowerCase());
-    if (dup) {
-      if (!confirm('A person with this name already exists. Add anyway?')) return;
+
+    const alreadyInGroup = matchedPerson && existingPeople.some(p => p.id === matchedPerson.id);
+    if (alreadyInGroup) {
+      setError('This person is already in the group.');
+      return;
     }
+
     setSubmitting(true);
     setError(null);
+
     try {
-      console.log('🔍 MemberInviteModal - submitting to group:', groupId, 'name:', name);
-      const person = groupId
-        ? await addPersonToGroup(groupId, { name: name.trim() })
-        : await addPerson({ name: name.trim(), avatarUrl: `https://i.pravatar.cc/150?u=${encodeURIComponent(name.trim())}` });
-      console.log('✅ MemberInviteModal - added person:', person);
+      let person: Person;
+      if (groupId) {
+        person = await addPersonToGroup(groupId, {
+          name: matchedPerson ? matchedPerson.name : name.trim(),
+          email: email.trim().toLowerCase() || undefined,
+        });
+      } else {
+        person = matchedPerson ?? await addPerson({
+          name: name.trim(),
+          email: email.trim().toLowerCase() || undefined,
+          avatarUrl: `https://i.pravatar.cc/150?u=${encodeURIComponent(name.trim())}`,
+          source: 'manual',
+        });
+      }
       onAdded(person);
       onClose();
     } catch (err: any) {
@@ -75,7 +104,7 @@ const MemberInviteModal: React.FC<MemberInviteModalProps> = ({ open, groupId, ex
         type="submit"
         form="member-invite-form"
         className="px-4 py-2 rounded-md bg-gradient-to-br from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 disabled:opacity-50 flex items-center gap-2"
-        disabled={submitting || !name.trim()}
+        disabled={submitting || (!matchedPerson && !name.trim())}
       >
         {submitting && <span className="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full" />}
         Add Member
@@ -90,38 +119,61 @@ const MemberInviteModal: React.FC<MemberInviteModalProps> = ({ open, groupId, ex
       title="Add Member"
       size="sm"
       initialFocusRef={inputRef}
-      description={<span className="text-sm text-slate-300">Create a new person and add them to this group.</span>}
+      description={<span className="text-sm text-slate-300">Add a person to this group.</span>}
       footer={footer}
     >
       <form id="member-invite-form" onSubmit={handleSubmit} className="space-y-5" autoComplete="off">
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-1">Name</label>
-          <input
-            ref={inputRef}
-            type="text"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            placeholder="e.g. Priya"
-            className="w-full bg-black/30 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-500 focus:ring-indigo-500 focus:border-indigo-500"
-            data-autofocus
-            required
-          />
-        </div>
+        {/* Email first — drives the lookup */}
         <div>
           <label className="block text-sm font-medium text-slate-300 mb-1">Email (optional)</label>
           <input
             type="email"
             value={email}
-            onChange={e => setEmail(e.target.value)}
-            placeholder="future@optional.invite"
+            onChange={e => handleEmailChange(e.target.value)}
+            placeholder="rahul@example.com"
             className="w-full bg-black/30 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-500 focus:ring-indigo-500 focus:border-indigo-500"
           />
-          <p className="mt-1 text-xs text-slate-500">Email is not stored yet; reserved for future invitation workflow.</p>
+          {lookingUp && (
+            <p className="mt-1 text-xs text-slate-400">Checking...</p>
+          )}
+          {matchedPerson?.isClaimed && (
+            <div className="mt-2 flex items-center gap-2 bg-emerald-900/30 border border-emerald-700/40 rounded-md px-3 py-2">
+              <span className="text-emerald-400 text-xs font-medium">✓ Already on Kharch Baant</span>
+              <span className="text-slate-300 text-xs">{matchedPerson.name} will be added directly.</span>
+            </div>
+          )}
+          {matchedPerson && !matchedPerson.isClaimed && (
+            <div className="mt-2 flex items-center gap-2 bg-amber-900/30 border border-amber-700/40 rounded-md px-3 py-2">
+              <span className="text-amber-400 text-xs font-medium">Already a contact</span>
+              <span className="text-slate-300 text-xs">{matchedPerson.name} — they'll be invited to this group.</span>
+            </div>
+          )}
+          {!matchedPerson && email && !lookingUp && email.includes('@') && (
+            <p className="mt-1 text-xs text-slate-500">Not found — a new contact will be created.</p>
+          )}
         </div>
-        {error && <div className="text-sm text-rose-400 bg-rose-900/30 border border-rose-700/40 rounded-md px-3 py-2">{error}</div>}
-        <div className="text-xs text-slate-500 leading-relaxed">
-          A Person record is created first, then linked to this group. Roles will arrive later; everyone is a basic member for now.
-        </div>
+
+        {/* Name field: hidden when a matched person exists */}
+        {!matchedPerson && (
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-1">Name</label>
+            <input
+              ref={inputRef}
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="e.g. Priya"
+              className="w-full bg-black/30 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-500 focus:ring-indigo-500 focus:border-indigo-500"
+              required={!matchedPerson}
+            />
+          </div>
+        )}
+
+        {error && (
+          <div className="text-sm text-rose-400 bg-rose-900/30 border border-rose-700/40 rounded-md px-3 py-2">
+            {error}
+          </div>
+        )}
       </form>
     </BaseModal>
   );

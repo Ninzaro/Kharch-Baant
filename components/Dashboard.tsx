@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Transaction, Person, Currency } from '../types';
-import { calculateShares } from '../utils/calculations';
+import { calculateGroupBalances } from '../utils/calculations';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface DashboardProps {
@@ -14,37 +14,12 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, currentUserId, peop
     const [isBreakdownOpen, setIsBreakdownOpen] = useState(false);
 
     const { totalOwedToUser, totalUserOwes, netBalance } = useMemo(() => {
-        let owedToUser = 0;
-        let userOwes = 0;
-
-        if (!currentUserId) {
-            console.warn('Dashboard: No current user ID provided');
-            return {
-                totalOwedToUser: 0,
-                totalUserOwes: 0,
-                netBalance: 0,
-            };
-        }
-
-        transactions.forEach(t => {
-            const shares = calculateShares(t);
-            const userShare = shares.get(currentUserId) || 0;
-
-            if (t.paidById === currentUserId) {
-                // User paid, so they are owed what others were supposed to pay
-                owedToUser += (t.amount - userShare);
-            } else {
-                // Someone else paid, and the user has a share
-                userOwes += userShare;
-            }
-        });
-
-        const net = owedToUser - userOwes;
-
-
+        if (!currentUserId) return { totalOwedToUser: 0, totalUserOwes: 0, netBalance: 0 };
+        const balances = calculateGroupBalances(transactions);
+        const net = balances.get(currentUserId) ?? 0;
         return {
-            totalOwedToUser: owedToUser,
-            totalUserOwes: userOwes,
+            totalOwedToUser: net > 0 ? net : 0,
+            totalUserOwes: net < 0 ? Math.abs(net) : 0,
             netBalance: net,
         };
     }, [transactions, currentUserId]);

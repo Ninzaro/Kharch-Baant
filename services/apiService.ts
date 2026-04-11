@@ -31,14 +31,37 @@ export const archivePaymentSource = async (paymentSourceId: string): Promise<{ s
 // PEOPLE
 export const getPeople = async (personId?: string): Promise<Person[]> => supabaseApi.getPeople(personId);
 export const addPerson = async (personData: Omit<Person, 'id'>): Promise<Person> => supabaseApi.addPerson(personData);
+export { findPersonByEmail, updatePerson, mergePersonByEmail } from './supabaseApiService';
 
 // USER MANAGEMENT
 export const ensureUserExists = async (userId: string, userName: string, userEmail: string): Promise<Person> => supabaseApi.ensureUserExists(userId, userName, userEmail);
 
 // MEMBERSHIP HELPERS
-// Create a person and link them to a group (group_members). Avatar uses deterministic placeholder.
-export const addPersonToGroup = async (groupId: string, data: { name: string; avatarUrl?: string }): Promise<Person> => {
-  const person = await addPerson({ name: data.name, avatarUrl: data.avatarUrl || `https://i.pravatar.cc/150?u=${encodeURIComponent(data.name)}` });
+export const addPersonToGroup = async (
+  groupId: string,
+  data: { name: string; email?: string; avatarUrl?: string }
+): Promise<Person> => {
+  // If email provided, check for existing person to avoid duplicates
+  if (data.email) {
+    const existing = await supabaseApi.findPersonByEmail(data.email);
+    if (existing) {
+      // Reuse existing person — just link to group (ignore if already a member)
+      const { error } = await supabase
+        .from('group_members')
+        .insert({ group_id: groupId, person_id: existing.id });
+      if (error && error.code !== '23505') throw error;
+      return existing;
+    }
+  }
+
+  // Create new person then link
+  const person = await supabaseApi.addPerson({
+    name: data.name,
+    email: data.email,
+    avatarUrl: data.avatarUrl || `https://i.pravatar.cc/150?u=${encodeURIComponent(data.name)}`,
+    source: 'manual',
+  });
+
   const { error } = await supabase
     .from('group_members')
     .insert({ group_id: groupId, person_id: person.id });

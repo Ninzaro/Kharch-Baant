@@ -119,14 +119,15 @@ const transformDbPaymentSourceToAppPaymentSource = (dbPaymentSource: DbPaymentSo
 
 // Helper function to transform database person to app person
 const transformDbPersonToAppPerson = (dbPerson: DbPerson): Person => {
-  // Prefer auth_user_id if present (post-migration), else fall back to clerk_user_id
   const authUserId = (dbPerson as any)?.auth_user_id ?? (dbPerson as any)?.clerk_user_id ?? null;
   return {
     id: dbPerson.id,
     name: (dbPerson as any).name,
     avatarUrl: (dbPerson as any).avatar_url,
-    email: (dbPerson as any).email,
+    email: (dbPerson as any).email ?? undefined,
     authUserId: authUserId || undefined,
+    isClaimed: (dbPerson as any).is_claimed ?? false,
+    source: (dbPerson as any).source ?? 'manual',
   };
 };
 
@@ -809,75 +810,100 @@ export const addPerson = async (personData: Omit<Person, 'id'>): Promise<Person>
     .insert({
       name: personData.name,
       avatar_url: personData.avatarUrl,
+      email: personData.email ?? null,
+      is_claimed: false,
+      source: personData.source ?? 'manual',
     })
     .select()
     .single();
 
   if (error) throw error;
+  return transformDbPersonToAppPerson(data);
+};
 
+export const findPersonByEmail = async (email: string): Promise<Person | null> => {
+  const { data, error } = await supabase
+    .from('people')
+    .select('*')
+    .eq('email', email)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return null;
   return transformDbPersonToAppPerson(data);
 };
 
 // USER MANAGEMENT
 export const ensureUserExists = async (authUserId: string, userName: string, userEmail: string): Promise<Person> => {
-  console.log('🔍 ensureUserExists called with:', { authUserId, userName, userEmail });
-
-  // Check if user already exists by Supabase auth user ID
-  const { data: existingUsers, error: fetchError } = await supabase
+  // Fast path: user already claimed their record
+  const { data: byAuthId, error: authIdError } = await supabase
     .from('people')
     .select('*')
-    .eq('clerk_user_id', authUserId);
+    .eq('clerk_user_id', authUserId)
+    .maybeSingle();
 
-  console.log('🔍 Query result:', { existingUsers, fetchError });
+  if (authIdError) console.warn('⚠️ Error checking clerk_user_id:', authIdError);
+  if (byAuthId) return transformDbPersonToAppPerson(byAuthId);
 
-  // If there was an error fetching, log it but continue
-  if (fetchError) {
-    console.warn('⚠️ Error fetching existing user:', fetchError);
+  // Claim path: unclaimed dummy with matching email
+  if (userEmail) {
+    const { data: dummy, error: emailError } = await supabase
+      .from('people')
+      .select('*')
+      .eq('email', userEmail)
+      .eq('is_claimed', false)
+      .maybeSingle();
+
+    if (emailError) console.warn('⚠️ Error checking email claim:', emailError);
+
+    if (dummy) {
+      const { data: claimed, error: claimError } = await supabase
+        .from('people')
+        .update({
+          clerk_user_id: authUserId,
+          auth_user_id: authUserId,
+          name: userName || userEmail.split('@')[0],
+          is_claimed: true,
+          source: 'self',
+        })
+        .eq('id', dummy.id)
+        .select()
+        .single();
+
+      if (claimError) throw claimError;
+      return transformDbPersonToAppPerson(claimed);
+    }
   }
 
-  // If user exists, return it
-  if (existingUsers && existingUsers.length > 0) {
-    const person = transformDbPersonToAppPerson(existingUsers[0]);
-    console.log('✅ Found existing user:', person);
-    return person;
-  }
-
-  console.log('👤 Creating new user in people table for auth user:', authUserId);
-
-  // Create new user with clerk_user_id
+  // New user: create fresh record
   const { data, error } = await supabase
     .from('people')
     .insert({
       name: userName || userEmail.split('@')[0],
       clerk_user_id: authUserId,
-      avatar_url: `https://i.pravatar.cc/150?u=${authUserId}`
+      auth_user_id: authUserId,
+      avatar_url: `https://i.pravatar.cc/150?u=${authUserId}`,
+      email: userEmail || null,
+      is_claimed: true,
+      source: 'self',
     })
     .select()
     .single();
 
   if (error) {
-    console.error('❌ Failed to create user:', error);
-
-    // If it's a duplicate key error, try to fetch the existing user again
-    if (error.code === '23505' || error.message.includes('duplicate key')) {
-      console.log('🔄 Duplicate key error, trying to fetch existing user again...');
-      const { data: retryUsers, error: retryError } = await supabase
+    // Race condition: another request created the row between our check and insert
+    if (error.code === '23505') {
+      const { data: retry } = await supabase
         .from('people')
         .select('*')
-        .eq('clerk_user_id', authUserId);
-
-      if (!retryError && retryUsers && retryUsers.length > 0) {
-        console.log('✅ Found existing user on retry:', retryUsers[0]);
-        return transformDbPersonToAppPerson(retryUsers[0]);
-      }
+        .eq('clerk_user_id', authUserId)
+        .maybeSingle();
+      if (retry) return transformDbPersonToAppPerson(retry);
     }
-
     throw error;
   }
 
-  const created = transformDbPersonToAppPerson(data);
-  console.log('✅ Created new user:', created);
-  return created;
+  return transformDbPersonToAppPerson(data);
 };
 
 // ============================================================================
@@ -1281,19 +1307,51 @@ export const updateUserAvatar = async (personId: string, avatarUrl: string | nul
   return { success: true };
 };
 
-// Update person details (name)
-export const updatePerson = async (personId: string, updates: Partial<Person>): Promise<{ success: boolean }> => {
-  // Basic mapping for now
-  const dbUpdates: any = {};
-  if (updates.name) dbUpdates.name = updates.name;
-  // avatar_url handled by separate function usually, but could be here too
+// Update person details (name, email)
+export const updatePerson = async (personId: string, updates: Partial<Person>): Promise<Person> => {
+  const dbUpdates: Record<string, unknown> = {};
+  if (updates.name !== undefined) dbUpdates.name = updates.name;
+  if (updates.email !== undefined) dbUpdates.email = updates.email || null;
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('people')
     .update(dbUpdates)
-    .eq('id', personId);
+    .eq('id', personId)
+    .select()
+    .single();
 
   if (error) throw error;
-  return { success: true };
+  return transformDbPersonToAppPerson(data);
+};
+
+/**
+ * Merge an unclaimed dummy person (found by email) into the current authenticated user.
+ * Called during the claim flow after sign-up when a dummy with the same email exists.
+ * The dummy's UUID is preserved — all existing transactions and group memberships remain intact.
+ */
+export const mergePersonByEmail = async (email: string, clerkUserId: string): Promise<Person | null> => {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  // Find an unclaimed dummy with this email
+  const { data: existing, error: findError } = await supabase
+    .from('people')
+    .select('*')
+    .eq('email', normalizedEmail)
+    .eq('is_claimed', false)
+    .maybeSingle();
+
+  if (findError) throw findError;
+  if (!existing) return null;
+
+  // Claim it — set clerk_user_id and mark as claimed
+  const { data, error: updateError } = await supabase
+    .from('people')
+    .update({ clerk_user_id: clerkUserId, is_claimed: true })
+    .eq('id', existing.id)
+    .select()
+    .single();
+
+  if (updateError) throw updateError;
+  return transformDbPersonToAppPerson(data);
 };
 

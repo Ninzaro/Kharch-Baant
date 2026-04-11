@@ -10,6 +10,7 @@ interface AuthContextType {
   loading: boolean;
   isSyncing: boolean;
   signOut: () => Promise<void>;
+  updateLocalPerson: (updated: Person) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -63,6 +64,10 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   };
 
+  const updateLocalPerson = (updated: Person) => {
+    setPerson(updated);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -72,6 +77,7 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
         loading,
         isSyncing,
         signOut,
+        updateLocalPerson,
       }}
     >
       {children}
