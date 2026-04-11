@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useUser, useClerk, useSession } from '@clerk/clerk-react';
 import { ensureUserExists } from '../services/supabaseApiService';
+import { supabase, getClerkSupabaseToken } from '../lib/supabase';
 import { Person } from '../types';
 
 interface AuthContextType {
@@ -40,6 +41,13 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
           );
           setPerson(userProfile);
           console.log('✅ User profile synced:', userProfile);
+
+          // Authenticate the Supabase Realtime WebSocket with the Clerk JWT.
+          // global.fetch only covers HTTP — WebSocket connections need setAuth().
+          const token = await getClerkSupabaseToken();
+          if (token) {
+            supabase.realtime.setAuth(token);
+          }
         } catch (error) {
           console.error('Error syncing user profile:', error);
           setPerson(null);
@@ -48,6 +56,8 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
         }
       } else if (isUserLoaded) {
         setPerson(null);
+        // Clear Realtime auth on sign-out so the next user starts clean
+        supabase.realtime.setAuth(null);
         setIsSyncing(false);
       }
     };
