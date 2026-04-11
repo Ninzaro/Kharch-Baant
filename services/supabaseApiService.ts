@@ -1307,19 +1307,51 @@ export const updateUserAvatar = async (personId: string, avatarUrl: string | nul
   return { success: true };
 };
 
-// Update person details (name)
-export const updatePerson = async (personId: string, updates: Partial<Person>): Promise<{ success: boolean }> => {
-    // Basic mapping for now
-    const dbUpdates: any = {};
-    if (updates.name) dbUpdates.name = updates.name;
-    // avatar_url handled by separate function usually, but could be here too
+// Update person details (name, email)
+export const updatePerson = async (personId: string, updates: Partial<Person>): Promise<Person> => {
+  const dbUpdates: Record<string, unknown> = {};
+  if (updates.name !== undefined) dbUpdates.name = updates.name;
+  if (updates.email !== undefined) dbUpdates.email = updates.email || null;
 
-    const { error } = await supabase
-      .from('people')
-      .update(dbUpdates)
-      .eq('id', personId);
+  const { data, error } = await supabase
+    .from('people')
+    .update(dbUpdates)
+    .eq('id', personId)
+    .select()
+    .single();
 
-    if (error) throw error;
-    return { success: true };
+  if (error) throw error;
+  return transformDbPersonToAppPerson(data);
+};
+
+/**
+ * Merge an unclaimed dummy person (found by email) into the current authenticated user.
+ * Called during the claim flow after sign-up when a dummy with the same email exists.
+ * The dummy's UUID is preserved — all existing transactions and group memberships remain intact.
+ */
+export const mergePersonByEmail = async (email: string, clerkUserId: string): Promise<Person | null> => {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  // Find an unclaimed dummy with this email
+  const { data: existing, error: findError } = await supabase
+    .from('people')
+    .select('*')
+    .eq('email', normalizedEmail)
+    .eq('is_claimed', false)
+    .maybeSingle();
+
+  if (findError) throw findError;
+  if (!existing) return null;
+
+  // Claim it — set clerk_user_id and mark as claimed
+  const { data, error: updateError } = await supabase
+    .from('people')
+    .update({ clerk_user_id: clerkUserId, is_claimed: true })
+    .eq('id', existing.id)
+    .select()
+    .single();
+
+  if (updateError) throw updateError;
+  return transformDbPersonToAppPerson(data);
 };
 

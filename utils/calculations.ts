@@ -1,5 +1,27 @@
 import { Transaction, SplitMode, SplitParticipant } from '../types';
 
+// Net balance per person across all transactions. Positive = is owed money, negative = owes money.
+export function calculateGroupBalances(transactions: Transaction[]): Map<string, number> {
+    const balances = new Map<string, number>();
+
+    for (const t of transactions) {
+        if (t.payers && t.payers.length > 0) {
+            for (const payer of t.payers) {
+                balances.set(payer.personId, (balances.get(payer.personId) ?? 0) + payer.amount);
+            }
+        } else {
+            balances.set(t.paidById, (balances.get(t.paidById) ?? 0) + t.amount);
+        }
+
+        const shares = calculateShares(t);
+        shares.forEach((shareAmount, personId) => {
+            balances.set(personId, (balances.get(personId) ?? 0) - shareAmount);
+        });
+    }
+
+    return balances;
+}
+
 /**
  * Calculates the amount each person owes for a given transaction based on its split mode.
  * @param transaction The transaction object.

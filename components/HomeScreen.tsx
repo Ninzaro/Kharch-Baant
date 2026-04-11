@@ -2,8 +2,7 @@ import React, { useMemo } from 'react';
 import { Group, Transaction, Person } from '../types';
 import GroupSummaryCard from './GroupSummaryCard';
 import { PlusIcon } from './icons/Icons';
-// Fix: Import calculateShares utility to correctly calculate transaction splits.
-import { calculateShares } from '../utils/calculations';
+import { calculateGroupBalances } from '../utils/calculations';
 
 interface HomeScreenProps {
     groups: Group[];
@@ -17,31 +16,11 @@ interface HomeScreenProps {
 const HomeScreen: React.FC<HomeScreenProps> = ({ groups, transactions, people, currentUserId, onSelectGroup, onAddGroup }) => {
     
     const { totalOwedToUser, totalUserOwes, netBalance } = useMemo(() => {
-        let owedToUser = 0;
-        let userOwes = 0;
-
-        // Note: This is a simplified calculation that doesn't account for different currencies.
-        // In a real app, you would convert all amounts to a base currency.
-        // Fix: Replaced incorrect logic using 'splitWith' with the correct 'calculateShares' utility.
-        transactions.forEach(t => {
-            if (!t.split) return;
-            const shares = calculateShares(t);
-            const userShare = shares.get(currentUserId) || 0;
-
-            if (t.paidById === currentUserId) {
-                // User paid, so they are owed what others were supposed to pay
-                owedToUser += (t.amount - userShare);
-            } else {
-                // Someone else paid, and the user has a share
-                userOwes += userShare;
-            }
-        });
-        
-        const net = owedToUser - userOwes;
-
+        const balances = calculateGroupBalances(transactions);
+        const net = balances.get(currentUserId) ?? 0;
         return {
-            totalOwedToUser: owedToUser,
-            totalUserOwes: userOwes,
+            totalOwedToUser: net > 0 ? net : 0,
+            totalUserOwes: net < 0 ? Math.abs(net) : 0,
             netBalance: net,
         };
     }, [transactions, currentUserId]);
