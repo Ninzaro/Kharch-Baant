@@ -845,33 +845,20 @@ export const ensureUserExists = async (authUserId: string, userName: string, use
   if (authIdError) console.warn('⚠️ Error checking clerk_user_id:', authIdError);
   if (byAuthId) return transformDbPersonToAppPerson(byAuthId);
 
-  // Claim path: unclaimed dummy with matching email
+  // Claim path: unclaimed dummy with matching email.
+  // Uses a SECURITY DEFINER function to bypass RLS — dummies have user_id = NULL
+  // so a direct UPDATE would be silently blocked by the "user_id = requesting_user_id()" policy.
   if (userEmail) {
-    const { data: dummy, error: emailError } = await supabase
-      .from('people')
-      .select('*')
-      .eq('email', userEmail)
-      .eq('is_claimed', false)
-      .maybeSingle();
+    const { data: claimedRows, error: claimError } = await supabase
+      .rpc('claim_person_by_email', {
+        p_email:    userEmail.trim().toLowerCase(),
+        p_clerk_id: authUserId,
+        p_name:     userName || userEmail.split('@')[0],
+      });
 
-    if (emailError) console.warn('⚠️ Error checking email claim:', emailError);
-
-    if (dummy) {
-      const { data: claimed, error: claimError } = await supabase
-        .from('people')
-        .update({
-          clerk_user_id: authUserId,
-          auth_user_id: authUserId,
-          name: userName || userEmail.split('@')[0],
-          is_claimed: true,
-          source: 'self',
-        })
-        .eq('id', dummy.id)
-        .select()
-        .single();
-
-      if (claimError) throw claimError;
-      return transformDbPersonToAppPerson(claimed);
+    if (claimError) console.warn('⚠️ Error in claim_person_by_email:', claimError);
+    else if (claimedRows && claimedRows.length > 0) {
+      return transformDbPersonToAppPerson(claimedRows[0]);
     }
   }
 
@@ -882,6 +869,7 @@ export const ensureUserExists = async (authUserId: string, userName: string, use
       name: userName || userEmail.split('@')[0],
       clerk_user_id: authUserId,
       auth_user_id: authUserId,
+      user_id: authUserId,
       avatar_url: `https://i.pravatar.cc/150?u=${authUserId}`,
       email: userEmail || null,
       is_claimed: true,
