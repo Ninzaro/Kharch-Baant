@@ -1,5 +1,27 @@
 import { Transaction, SplitMode, SplitParticipant } from '../types';
 
+// Net balance: positive = is owed money, negative = owes money.
+export function calculateGroupBalances(transactions: Transaction[]): Map<string, number> {
+    const balances = new Map<string, number>();
+
+    for (const t of transactions) {
+        if (t.payers && t.payers.length > 0) {
+            for (const payer of t.payers) {
+                balances.set(payer.personId, (balances.get(payer.personId) ?? 0) + payer.amount);
+            }
+        } else {
+            balances.set(t.paidById, (balances.get(t.paidById) ?? 0) + t.amount);
+        }
+
+        const shares = calculateShares(t);
+        shares.forEach((shareAmount, personId) => {
+            balances.set(personId, (balances.get(personId) ?? 0) - shareAmount);
+        });
+    }
+
+    return balances;
+}
+
 /**
  * Calculates the amount each person owes for a given transaction based on its split mode.
  * @param transaction The transaction object.
@@ -89,7 +111,6 @@ export function validateSplit(mode: SplitMode, amount: number, participants: Spl
             return { valid: true };
         }
     }
-    return { valid: false, reason: 'Unknown split mode' };
 }
 
 /** Normalize equal/shares splits to concrete monetary amounts (rounded) */
@@ -120,7 +141,6 @@ export function materializeSplit(mode: SplitMode, amount: number, participants: 
     if (mode === 'unequal') {
         const sum = participants.reduce((s,p)=> s + p.value, 0);
         const adjust = amount - sum;
-        let idx = 0;
         participants.forEach(p => map.set(p.personId, p.value));
         if (Math.abs(adjust) >= 0.01) {
             // Shift adjustment to first participant

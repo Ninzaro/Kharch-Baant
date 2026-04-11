@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import BaseModal from './BaseModal';
 import { Person, Transaction, PaymentSource } from '../types';
 import { addTransaction } from '../services/apiService';
-import { calculateShares } from '../utils/calculations';
+import { calculateGroupBalances } from '../utils/calculations';
 import { ArrowRightIcon, ChevronDownIcon, CalendarIcon } from './icons/Icons';
 import toast from 'react-hot-toast';
 
@@ -84,33 +84,11 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
   const isValid = payerId && receiverId && !isSelfSelect && amountNumber > 0 && !submitting;
 
   // --- CALCULATIONS (Live Preview) ---
-  const { currentPayerBalance, currentReceiverBalance } = useMemo(() => {
-    if (!payerId || !receiverId) return { currentPayerBalance: 0, currentReceiverBalance: 0 };
-
-    // Calculate balances ONLY for these two to show "Their Balance" in context of the group?
-    // Actually, user wants "Payer balance: +X -> +Y". This implies GLOBAL group balance for that person.
-    // So we need their total group balance.
-
-    const balances = new Map<string, number>();
-    transactions.forEach(t => {
-      // Add paid amount
-      balances.set(t.paidById, (balances.get(t.paidById) || 0) + t.amount);
-      // Subtract shared amount
-      t.split.participants.forEach(p => {
-        balances.set(p.personId, (balances.get(p.personId) || 0) - (t.amount / (t.type === 'settlement' ? 1 : t.split.participants.length) * (t.type === 'settlement' ? 1 : 1)));
-        // Note: Logic above is a bit custom/fragile. Let's use standard share calc.
-        const shares = calculateShares(t);
-        shares.forEach((amt, pid) => {
-          balances.set(pid, (balances.get(pid) || 0) - amt);
-        });
-      });
-    });
-
-    return {
-      currentPayerBalance: balances.get(payerId) || 0,
-      currentReceiverBalance: balances.get(receiverId) || 0
-    };
-  }, [transactions, payerId, receiverId]);
+  const groupBalances = useMemo(() => calculateGroupBalances(transactions), [transactions]);
+  const { currentPayerBalance, currentReceiverBalance } = useMemo(() => ({
+    currentPayerBalance: groupBalances.get(payerId) ?? 0,
+    currentReceiverBalance: groupBalances.get(receiverId) ?? 0,
+  }), [groupBalances, payerId, receiverId]);
 
   const projected = useMemo(() => {
     return {

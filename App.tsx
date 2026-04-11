@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Group, Transaction, Person, PaymentSource } from './types';
 import * as api from './services/apiService';
+import { calculateGroupBalances } from './utils/calculations';
 import GroupList from './components/GroupList';
 import GroupView from './components/GroupView';
 import TransactionFormModal from './components/TransactionFormModal';
@@ -75,19 +76,10 @@ const App: React.FC = () => {
     const [defaultSettleAmount, setDefaultSettleAmount] = useState<number | undefined>(undefined);
 
 
-    // Calculate balances for selected group (simple sum for demo; replace with real logic)
     const groupBalances = React.useMemo(() => {
         if (!selectedGroupId) return {};
         const groupTxs = transactions.filter(t => t.groupId === selectedGroupId);
-        // TODO: Replace with real balance calculation
-        const balances: Record<string, number> = {};
-        groupTxs.forEach(t => {
-            balances[t.paidById] = (balances[t.paidById] || 0) + t.amount;
-            t.split.participants.forEach(p => {
-                balances[p.personId] = (balances[p.personId] || 0) - (t.amount / t.split.participants.length);
-            });
-        });
-        return balances;
+        return Object.fromEntries(calculateGroupBalances(groupTxs));
     }, [transactions, selectedGroupId]);
 
     // All settled if all balances are zero (within epsilon)

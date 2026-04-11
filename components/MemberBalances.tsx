@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Transaction, Person, Currency } from '../types';
 import Avatar from './Avatar';
-import { calculateShares } from '../utils/calculations';
+import { calculateGroupBalances } from '../utils/calculations';
 
 interface MemberBalancesProps {
     transactions: Transaction[];
@@ -12,24 +12,13 @@ interface MemberBalancesProps {
 }
 
 const MemberBalances: React.FC<MemberBalancesProps> = ({ transactions, people, currency, currentUserId, currentUserPerson }) => {
-    const balances = new Map<string, number>();
-    
-    // Use all people (current user is already included in people array)
-    people.forEach(p => balances.set(p.id, 0));
+    const balances = useMemo(() => {
+        const b = calculateGroupBalances(transactions);
+        people.forEach(p => b.set(p.id, b.get(p.id) ?? 0));
+        return b;
+    }, [transactions, people]);
 
-    transactions.forEach(t => {
-        // Add the full amount to the payer's balance
-        balances.set(t.paidById, (balances.get(t.paidById) || 0) + t.amount);
-
-        // Subtract each person's share from their balance
-        const shares = calculateShares(t);
-        shares.forEach((shareAmount, personId) => {
-            balances.set(personId, (balances.get(personId) || 0) - shareAmount);
-        });
-    });
-
-    // Create people map for lookups
-    const peopleMap = new Map<string, Person>(people.map(p => [p.id, p]));
+    const peopleMap = useMemo(() => new Map<string, Person>(people.map(p => [p.id, p])), [people]);
     
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency }).format(amount);
