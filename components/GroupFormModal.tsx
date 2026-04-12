@@ -82,7 +82,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
             setTripEndDate('');
             setEnableCuteIcons(true);
         }
-    }, [group, currentUserId, isOpen, allPeople.length, localPeople.length]);
+    }, [group, currentUserId, isOpen]);
 
     // Keep local people in sync when upstream changes (except when we already added new ones locally)
     useEffect(() => {
