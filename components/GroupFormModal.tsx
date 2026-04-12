@@ -13,6 +13,7 @@ interface GroupFormModalProps {
     group: Group | null;
     allPeople: Person[];
     currentUserId: string;
+    currentUserName?: string;
     groupBalances?: Record<string, number>;
     allSettled?: boolean;
     userSettled?: boolean;
@@ -29,6 +30,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
     group,
     allPeople,
     currentUserId,
+    currentUserName,
     groupBalances,
     allSettled,
     userSettled,
@@ -244,12 +246,11 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
     const currentMembers = members.map(id => {
         const person = peopleMap.get(id);
         if (!person && id === currentUserId) {
-            // Fallback: Create a temporary person object for current user if missing
-            console.warn('⚠️ Current user not in peopleMap, creating fallback');
+            const fallbackName = currentUserName || 'Me';
             return {
                 id: currentUserId,
-                name: 'You', // Fallback name
-                avatarUrl: `https://ui-avatars.com/api/?name=You&background=6366f1&color=ffffff`
+                name: fallbackName,
+                avatarUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(fallbackName)}&background=6366f1&color=ffffff`
             };
         }
         return person;
@@ -332,7 +333,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
                             id="group-name"
                             value={name}
                             onChange={e => setName(e.target.value)}
-                            className="w-full bg-black/30 text-white rounded-md p-2 border-slate-600 focus:ring-indigo-500 focus:border-indigo-500"
+                            className="w-full bg-slate-800 border border-slate-600 text-white rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
                             required
                         />
                     </div>
@@ -342,7 +343,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
                             id="currency"
                             value={currency}
                             onChange={e => setCurrency(e.target.value as Currency)}
-                            className="w-full bg-black/30 text-white rounded-md p-2 border-slate-600 focus:ring-indigo-500 focus:border-indigo-500"
+                            className="w-full bg-slate-800 border border-slate-600 text-white rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
                         >
                             {CURRENCIES.map(c => <option key={c.code} value={c.code}>{c.name} ({c.symbol})</option>)}
                         </select>
@@ -353,7 +354,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
                             id="group-type"
                             value={groupType}
                             onChange={e => handleGroupTypeChange(e.target.value as GroupType)}
-                            className="w-full bg-black/30 text-white rounded-md p-2 border-slate-600 focus:ring-indigo-500 focus:border-indigo-500"
+                            className="w-full bg-slate-800 border border-slate-600 text-white rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
                         >
                             {GROUP_TYPES.map(option => (
                                 <option key={option.value} value={option.value}>{option.label}</option>
@@ -371,11 +372,11 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
                                         type="date"
                                         value={tripStartDate}
                                         onChange={e => setTripStartDate(e.target.value)}
-                                        className="w-full bg-black/30 text-white rounded-md p-2 pr-10 border-slate-600 focus:ring-indigo-500 focus:border-indigo-500"
+                                        className="w-full bg-slate-800 border border-slate-600 text-white rounded-md p-2 pr-10 focus:ring-indigo-500 focus:border-indigo-500 [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute"
                                     />
-                                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <button type="button" className="absolute inset-y-0 right-0 flex items-center pr-3" onClick={() => (document.getElementById('trip-start') as HTMLInputElement)?.showPicker?.()}>
                                         <CalendarIcon className="h-5 w-5 text-slate-400" />
-                                    </div>
+                                    </button>
                                 </div>
                             </div>
                             <div>
@@ -386,12 +387,12 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
                                         type="date"
                                         value={tripEndDate}
                                         onChange={e => setTripEndDate(e.target.value)}
-                                        className="w-full bg-black/30 text-white rounded-md p-2 pr-10 border-slate-600 focus:ring-indigo-500 focus:border-indigo-500"
+                                        className="w-full bg-slate-800 border border-slate-600 text-white rounded-md p-2 pr-10 focus:ring-indigo-500 focus:border-indigo-500 [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute"
                                         min={tripStartDate || undefined}
                                     />
-                                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <button type="button" className="absolute inset-y-0 right-0 flex items-center pr-3" onClick={() => (document.getElementById('trip-end') as HTMLInputElement)?.showPicker?.()}>
                                         <CalendarIcon className="h-5 w-5 text-slate-400" />
-                                    </div>
+                                    </button>
                                 </div>
                             </div>
                         </div>

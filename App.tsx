@@ -394,6 +394,18 @@ const App: React.FC = () => {
                 await api.updateGroup(editingGroup.id, groupData);
                 console.log('Group updated successfully');
 
+                // If cute icons was just turned ON, apply emojis to all existing transactions
+                const wasEnabled = editingGroup.enableCuteIcons ?? true;
+                const nowEnabled = groupData.enableCuteIcons ?? true;
+                if (nowEnabled && !wasEnabled) {
+                    try {
+                        await api.batchApplyEmojisToGroupTransactions(editingGroup.id);
+                        await qc.invalidateQueries({ queryKey: qk.transactions(currentUserId) });
+                    } catch (err) {
+                        console.warn('Failed to batch apply emojis to existing transactions:', err);
+                    }
+                }
+
                 // Refresh groups with proper filtering to ensure accurate state
                 await qc.invalidateQueries({ queryKey: qk.groups(currentUserId) });
                 console.log('Groups refreshed after update');
@@ -628,6 +640,7 @@ const App: React.FC = () => {
                     group={editingGroup}
                     allPeople={people}
                     currentUserId={currentUserId}
+                    currentUserName={person?.name || user?.fullName || ''}
                     groupBalances={groupBalances}
                     allSettled={allSettled}
                     userSettled={userSettled}

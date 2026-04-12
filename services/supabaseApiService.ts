@@ -70,6 +70,7 @@ const transformDbGroupToAppGroup = async (dbGroup: DbGroup): Promise<Group> => {
     tripEndDate: dbGroup.trip_end_date || undefined,
     isArchived: dbGroup.is_archived || false,
     createdBy: dbGroup.created_by || undefined,
+    enableCuteIcons: (dbGroup as any).enable_cute_icons ?? true,
   };
 };
 
@@ -175,6 +176,7 @@ export const addGroup = async (groupData: Omit<Group, 'id'>, personId?: string):
     group_type: groupData.groupType,
     trip_start_date: groupData.tripStartDate || null,
     trip_end_date: groupData.tripEndDate || null,
+    enable_cute_icons: groupData.enableCuteIcons ?? true,
   };
   if (personId) insertPayload.created_by = personId;
 
@@ -353,6 +355,7 @@ export const updateGroup = async (groupId: string, groupData: Omit<Group, 'id'>)
     group_type: groupData.groupType,
     trip_start_date: groupData.tripStartDate || null,
     trip_end_date: groupData.tripEndDate || null,
+    enable_cute_icons: groupData.enableCuteIcons ?? true,
   };
 
   console.log('Attempting to update with data:', updateData);
@@ -413,6 +416,7 @@ const mapDbGroupRowBasic = (dbGroup: any) => ({
   tripEndDate: dbGroup.trip_end_date || undefined,
   isArchived: dbGroup.is_archived || false,
   createdBy: dbGroup.created_by || undefined,
+  enableCuteIcons: dbGroup.enable_cute_icons ?? true,
   members: [], // Default empty array - will be populated by full query or transformDbGroupToAppGroup
 });
 
@@ -671,6 +675,30 @@ export const updateTransaction = async (
   if (error) throw error;
 
   return transformDbTransactionToAppTransaction(data);
+};
+
+const TAG_EMOJIS: Record<string, string> = {
+  Food: '🍔', Groceries: '🛒', Transport: '🚕', Travel: '✈️',
+  Housing: '🏠', Utilities: '💡', Entertainment: '🎬',
+  Shopping: '🛍️', Health: '💊', Other: '📝',
+};
+
+export const batchApplyEmojisToGroupTransactions = async (groupId: string): Promise<void> => {
+  const { data, error } = await supabase
+    .from('transactions')
+    .select('id, description, tag')
+    .eq('group_id', groupId);
+  if (error) throw error;
+
+  const toUpdate = (data || []).filter(t => !/\p{Emoji}/u.test(t.description ?? ''));
+
+  for (const t of toUpdate) {
+    const icon = TAG_EMOJIS[t.tag] ?? '📝';
+    await supabase
+      .from('transactions')
+      .update({ description: `${t.description} ${icon}` })
+      .eq('id', t.id);
+  }
 };
 
 export const deleteTransaction = async (transactionId: string): Promise<{ success: boolean }> => {
