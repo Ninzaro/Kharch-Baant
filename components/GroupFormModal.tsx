@@ -5,6 +5,7 @@ import { CloseIcon, PlusIcon, ShareIcon, CalendarIcon } from './icons/Icons';
 import MemberInviteModal from './MemberInviteModal';
 import BaseModal from './BaseModal';
 import { createGroupInvite } from '../services/supabaseApiService';
+import toast from 'react-hot-toast';
 
 interface GroupFormModalProps {
     isOpen: boolean;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as Sentry from '@sentry/react';
-import toast from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import { Group, Transaction, Person, PaymentSource } from './types';
 import * as api from './services/apiService';
 import { calculateGroupBalances } from './utils/calculations';
