@@ -27,7 +27,7 @@ const splitModes: { id: SplitMode, label: string }[] = [
     { id: 'shares', label: 'By Shares' },
 ];
 
-type StepId = 'amount' | 'description' | 'split' | 'paidBy' | 'category' | 'date' | 'advanced';
+type StepId = 'amount' | 'description' | 'paidBy' | 'split' | 'category' | 'date' | 'advanced';
 
 // --- Helper Components ---
 
@@ -390,12 +390,79 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                         </div>
                     </div>
 
-                    {/* STEP 3: SPLIT */}
+                    {/* STEP 3: PAID BY */}
+                    <div className="flex group mb-2" onClick={() => handleStepFocus('paidBy')}>
+                        <TimelineNode state={getStepState('paidBy')} />
+                        <div className="flex-1 pb-8">
+                            <div className="flex justify-between items-center mb-2">
+                                <label className={`block text-xs font-bold uppercase tracking-wider transition-colors ${activeStep === 'paidBy' ? 'text-indigo-400' : 'text-slate-500'}`}>Who Paid?</label>
+                                <button
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); setPayerMode(m => m === 'single' ? 'multiple' : 'single'); handleStepFocus('paidBy'); }}
+                                    className="text-[10px] px-2 py-0.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full hover:bg-indigo-500/20 transition-colors"
+                                >
+                                    {payerMode === 'single' ? 'Multiple Payers?' : 'Single Payer'}
+                                </button>
+                            </div>
+
+                            <div className={`bg-black/20 rounded-xl p-3 border transition-all ${activeStep === 'paidBy' ? 'border-indigo-500/50' : 'border-slate-800'}`}>
+                                {payerMode === 'single' ? (
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {people.map(p => {
+                                            const isSelected = paidById === p.id;
+                                            return (
+                                                <button
+                                                    key={p.id}
+                                                    type="button"
+                                                    onClick={() => { setPaidById(p.id); handleStepFocus('split'); }}
+                                                    className={`flex items-center gap-2 p-2 rounded-lg border transition-all ${isSelected ? 'bg-indigo-600/20 border-indigo-500 ring-1 ring-indigo-500/50' : 'bg-slate-800/50 border-transparent hover:bg-white/5 text-slate-400'}`}
+                                                >
+                                                    <Avatar person={p} size="xs" />
+                                                    <span className={`text-xs font-medium truncate ${isSelected ? 'text-white' : ''}`}>{p.name}</span>
+                                                    {isSelected && <CheckIcon className="w-3 h-3 ml-auto text-indigo-400" />}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        <div className={`text-[10px] font-bold uppercase tracking-tight mb-2 ${isPayerValid ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                            {isPayerValid ? `Total: ₹${payersTotal.toFixed(2)}` : payerValidationReason || 'Total must match amount'}
+                                        </div>
+                                        {people.map(p => {
+                                            const val = customPayerValues.get(p.id) || 0;
+                                            return (
+                                                <div key={p.id} className="flex items-center gap-3 p-2 rounded-lg bg-white/5 border border-transparent">
+                                                    <Avatar person={p} size="xs" />
+                                                    <span className="flex-1 text-xs text-slate-300 truncate">{p.name}</span>
+                                                    <div className="relative w-24">
+                                                        <span className="absolute left-1 top-1/2 -translate-y-1/2 text-[10px] text-slate-500">₹</span>
+                                                        <input
+                                                            type="number"
+                                                            value={val || ''}
+                                                            placeholder="0"
+                                                            onChange={e => {
+                                                                const v = parseFloat(e.target.value) || 0;
+                                                                setCustomPayerValues(prev => new Map(prev).set(p.id, v));
+                                                            }}
+                                                            className="w-full bg-black/40 text-right text-xs text-white rounded p-1 pl-4 border border-slate-700 focus:border-indigo-500 outline-none"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* STEP 4: SPLIT */}
                     <div className="flex group mb-2" onClick={() => handleStepFocus('split')}>
                         <TimelineNode state={getStepState('split')} />
                         <div className="flex-1 pb-8">
                             <div className="flex justify-between items-center mb-2">
-                                <label className={`block text-xs font-bold uppercase tracking-wider transition-colors ${activeStep === 'split' ? 'text-indigo-400' : 'text-slate-500'}`}>Split</label>
+                                <label className={`block text-xs font-bold uppercase tracking-wider transition-colors ${activeStep === 'split' ? 'text-indigo-400' : 'text-slate-500'}`}>Split With</label>
                                 {!isSplitValid && amount && touchedSteps.has('split') && (
                                     <span className="text-xs font-bold text-rose-500 animate-pulse">{validationReason}</span>
                                 )}
@@ -412,7 +479,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                             key={mode.id}
                                             onClick={(e) => { e.stopPropagation(); setSplitMode(mode.id); handleStepFocus('split'); }}
                                             type="button"
-                                            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${splitMode === mode.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
+                                            className={`px-3 py-1.5 text-[10px] uppercase font-bold tracking-wider rounded-lg transition-all ${splitMode === mode.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
                                         >
                                             {mode.label}
                                         </button>
@@ -420,7 +487,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                 </div>
 
                                 {/* Participants & Inputs */}
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     {people.map(p => {
                                         const isSelected = splitParticipants.includes(p.id);
                                         const inputType = splitMode === 'unequal' ? 'number' : 'text';
@@ -433,12 +500,12 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                                 onClick={() => handleParticipantToggle(p.id)}
                                             >
                                                 {/* Checkbox (Visual) */}
-                                                <div className={`w-5 h-5 rounded flex items-center justify-center border transition-colors ${isSelected ? 'bg-indigo-500 border-indigo-500' : 'border-slate-600'}`}>
-                                                    {isSelected && <CheckIcon className="w-3.5 h-3.5 text-white" />}
+                                                <div className={`w-4 h-4 rounded flex items-center justify-center border transition-colors ${isSelected ? 'bg-indigo-500 border-indigo-500' : 'border-slate-600'}`}>
+                                                    {isSelected && <CheckIcon className="w-2.5 h-2.5 text-white" />}
                                                 </div>
 
-                                                <Avatar person={p} size="sm" />
-                                                <span className={`flex-1 text-sm font-medium ${isSelected ? 'text-white' : 'text-slate-500'}`}>{p.name}</span>
+                                                <Avatar person={p} size="xs" />
+                                                <span className={`flex-1 text-xs font-medium ${isSelected ? 'text-white' : 'text-slate-500'}`}>{p.name}</span>
 
                                                 {/* Inline Input for Advanced Splits */}
                                                 {showInput && isSelected && (
@@ -448,10 +515,10 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                                             value={customSplitValues.get(p.id) || ''}
                                                             onChange={e => handleCustomSplitChange(p.id, e.target.value)}
                                                             onClick={e => e.stopPropagation()}
-                                                            className="w-full bg-black/40 text-right text-sm text-white rounded p-1 border border-slate-700 focus:border-indigo-500 outline-none"
+                                                            className="w-full bg-black/40 text-right text-xs text-white rounded p-1 border border-slate-700 focus:border-indigo-500 outline-none"
                                                             placeholder={splitMode === 'shares' ? "1" : "0"}
                                                         />
-                                                        {splitMode === 'percentage' && <span className="absolute right-7 top-1/2 -translate-y-1/2 text-xs text-slate-500">%</span>}
+                                                        {splitMode === 'percentage' && <span className="absolute right-7 top-1/2 -translate-y-1/2 text-[10px] text-slate-500">%</span>}
                                                     </div>
                                                 )}
                                             </div>
@@ -462,99 +529,42 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                         </div>
                     </div>
 
-                    {/* STEP 4: DETAILS CLUSTER (Paid By + Category) */}
+                    {/* STEP 5: DETAILS (Category + Date) */}
                     <div className="flex group mb-2">
                         {/* Shared Node based on composite state */}
                         <TimelineNode state={
-                            (activeStep === 'paidBy' || activeStep === 'category') ? 'active' :
-                                (paidById && tag) ? 'completed' : 'idle'
+                            (activeStep === 'category' || activeStep === 'date') ? 'active' :
+                                (tag && date) ? 'completed' : 'idle'
                         } />
 
-                        <div className="flex-1 pb-8 grid grid-cols-2 gap-6">
-
-                            {/* Paid By - Visually Downgraded */}
-                            {/* Paid By - Single/Multiple Toggle */}
-                            <div className="flex flex-col justify-start">
-                                <div className="flex justify-between items-center mb-1">
-                                    <label onClick={() => handleStepFocus('paidBy')} className={`block text-[10px] font-bold uppercase tracking-wider ${activeStep === 'paidBy' ? 'text-indigo-400' : 'text-slate-500'}`}>Paid By</label>
-                                    <button
-                                        type="button"
-                                        onClick={() => setPayerMode(m => m === 'single' ? 'multiple' : 'single')}
-                                        className="text-[10px] text-indigo-400 hover:text-indigo-300 underline decoration-dotted"
-                                    >
-                                        {payerMode === 'single' ? 'Split?' : 'Single'}
-                                    </button>
-                                </div>
-
-                                {payerMode === 'single' ? (
-                                    <select
-                                        value={paidById}
-                                        onChange={e => { setPaidById(e.target.value); handleStepFocus('paidBy'); }}
-                                        className={`w-full bg-transparent text-sm font-medium text-slate-200 border-b transition-all appearance-none focus:outline-none py-1.5 px-0 ${activeStep === 'paidBy' ? 'border-indigo-500' : 'border-slate-700 hover:border-slate-600'}`}
-                                        onClick={() => handleStepFocus('paidBy')}
-                                    >
-                                        {people.map(p => <option key={p.id} value={p.id} className="bg-slate-900 text-white">{p.name}</option>)}
-                                    </select>
-                                ) : (
-                                    /* Multiple Payers Editor */
-                                    <div className="space-y-2 mt-1">
-                                        <div className={`text-xs ${isPayerValid ? 'text-green-400' : 'text-red-400'}`}>
-                                            {isPayerValid ? `Total: ${payersTotal}` : payerValidationReason}
-                                        </div>
-                                        <div className="max-h-32 overflow-y-auto pr-1 space-y-1 custom-scrollbar">
-                                            {people.map(p => {
-                                                const val = customPayerValues.get(p.id) || 0;
-                                                return (
-                                                    <div key={p.id} className="flex items-center justify-between text-xs">
-                                                        <span className="text-slate-400 truncate max-w-[80px]">{p.name}</span>
-                                                        <input
-                                                            type="number"
-                                                            value={val || ''}
-                                                            placeholder="0"
-                                                            onChange={e => {
-                                                                const v = parseFloat(e.target.value) || 0;
-                                                                setCustomPayerValues(prev => new Map(prev).set(p.id, v));
-                                                            }}
-                                                            className={`w-16 bg-black/20 border-b text-right focus:outline-none ${val > 0 ? 'text-indigo-300 border-indigo-500' : 'text-slate-600 border-slate-800'}`}
-                                                        />
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Category - Standard Rail Node Style */}
+                        <div className="flex-1 pb-8 grid grid-cols-2 gap-4">
+                            {/* Category */}
                             <div onClick={() => handleStepFocus('category')}>
                                 <div className="flex justify-between mb-1">
-                                    <label className={`block text-xs font-bold uppercase tracking-wider ${activeStep === 'category' ? 'text-indigo-400' : 'text-slate-500'}`}>Category</label>
-                                    {isSuggestingTag && <span className="text-[10px] text-indigo-400 animate-pulse">✨ AI suggestion...</span>}
+                                    <label className={`block text-[10px] font-bold uppercase tracking-wider ${activeStep === 'category' ? 'text-indigo-400' : 'text-slate-500'}`}>Category</label>
+                                    {isSuggestingTag && <span className="text-[10px] text-indigo-400 animate-pulse">AI suggestion...</span>}
                                 </div>
                                 <select
                                     value={tag}
                                     onChange={e => { setTag(e.target.value as Tag); handleStepFocus('category'); }}
-                                    className={`w-full bg-black/20 text-sm rounded-xl p-3 border transition-all appearance-none ${activeStep === 'category' ? 'border-indigo-500' : 'border-slate-800'}`}
+                                    className={`w-full bg-black/20 text-xs rounded-xl p-2.5 border transition-all appearance-none ${activeStep === 'category' ? 'border-indigo-500' : 'border-slate-800'}`}
                                 >
                                     {TAGS.map(t => <option key={t} value={t} className="bg-slate-900 text-white">{t}</option>)}
                                 </select>
                             </div>
-                        </div>
-                    </div>
 
-                    {/* STEP 5: DATE */}
-                    <div className="flex group mb-2" onClick={() => handleStepFocus('date')}>
-                        <TimelineNode state={getStepState('date')} />
-                        <div className="flex-1 pb-8">
-                            <label className={`block text-xs font-bold uppercase tracking-wider mb-1 ${activeStep === 'date' ? 'text-indigo-400' : 'text-slate-500'}`}>Date</label>
-                            <button
-                                type="button"
-                                onClick={() => { setIsCalendarOpen(true); handleStepFocus('date'); }}
-                                className={`w-full text-left bg-black/20 text-sm rounded-xl p-3 border transition-all flex justify-between items-center ${activeStep === 'date' ? 'border-indigo-500' : 'border-slate-800 text-slate-300'}`}
-                            >
-                                <span>{new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' })}</span>
-                                <CalendarIcon className="w-4 h-4 text-slate-500" />
-                            </button>
+                            {/* Date */}
+                            <div onClick={() => handleStepFocus('date')}>
+                                <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${activeStep === 'date' ? 'text-indigo-400' : 'text-slate-500'}`}>Date</label>
+                                <button
+                                    type="button"
+                                    onClick={() => { setIsCalendarOpen(true); handleStepFocus('date'); }}
+                                    className={`w-full text-left bg-black/20 text-xs rounded-xl p-2.5 border transition-all flex justify-between items-center ${activeStep === 'date' ? 'border-indigo-500' : 'border-slate-800 text-slate-300'}`}
+                                >
+                                    <span className="truncate">{new Date(date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                                    <CalendarIcon className="w-3.5 h-3.5 text-slate-500 shrink-0 ml-1" />
+                                </button>
+                            </div>
                         </div>
                     </div>
 

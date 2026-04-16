@@ -30,6 +30,8 @@ import InvitePage from './components/invite/InvitePage';
 import { RealtimeStatus } from './components/RealtimeStatus';
 import { useGroupsQuery, useTransactionsQuery, usePaymentSourcesQuery, usePeopleQuery, useRealtimeGroupsBridge, useRealtimeTransactionsBridge, useRealtimePaymentSourcesBridge, useRealtimePeopleBridge, useRealtimeGroupMembersBridge, useRealtimeConnection, qk } from './services/queries';
 import { useQueryClient } from '@tanstack/react-query';
+import ConfirmDeleteModal from './components/ConfirmDeleteModal';
+import ArchivePromptModal from './components/ArchivePromptModal';
 import { useAppStore } from './store/appStore';
 import { useBackButton } from './hooks/useBackButton';
 
@@ -70,8 +72,28 @@ const App: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const selectedGroupId = useAppStore(s => s.selectedGroupId);
     const setSelectedGroupId = useAppStore(s => s.setSelectedGroupId);
+    const theme = useAppStore(s => s.theme);
+    const setTheme = useAppStore(s => s.setTheme);
+
+    // Apply theme to document
+    useEffect(() => {
+        const root = window.document.documentElement;
+        const isDark = 
+            theme === 'dark' || 
+            (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        
+        if (isDark) {
+            root.classList.add('dark');
+        } else {
+            root.classList.remove('dark');
+        }
+    }, [theme]);
     const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
     const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
+    const [isConfirmDeleteModalOpen, setIsConfirmDeleteModalOpen] = useState(false);
+    const [isConfirmArchiveModalOpen, setIsConfirmArchiveModalOpen] = useState(false);
+    const [isConfirmLeaveModalOpen, setIsConfirmLeaveModalOpen] = useState(false);
+    const [pendingGroupSaveData, setPendingGroupSaveData] = useState<Omit<Group, 'id'> | null>(null);
     const [isAddActionModalOpen, setIsAddActionModalOpen] = useState(false);
     const [isPaymentSourceModalOpen, setIsPaymentSourceModalOpen] = useState(false);
     const [isPaymentSourceManageOpen, setIsPaymentSourceManageOpen] = useState(false);
@@ -333,6 +355,43 @@ const App: React.FC = () => {
         }
     };
 
+    const executeGroupSave = async (groupData: Omit<Group, 'id'>, removingSelf: boolean) => {
+        if (!editingGroup) return;
+        try {
+            await api.updateGroup(editingGroup.id, groupData);
+
+            // If cute icons was just turned ON, apply emojis to all existing transactions
+            const wasEnabled = editingGroup.enableCuteIcons ?? true;
+            const nowEnabled = groupData.enableCuteIcons ?? true;
+            if (nowEnabled && !wasEnabled) {
+                try {
+                    await api.batchApplyEmojisToGroupTransactions(editingGroup.id);
+                    await qc.invalidateQueries({ queryKey: qk.transactions(currentUserId) });
+                } catch (err) {
+                    console.warn('Failed to batch apply emojis to existing transactions:', err);
+                }
+            }
+
+            // Refresh groups with proper filtering to ensure accurate state
+            await qc.invalidateQueries({ queryKey: qk.groups(currentUserId) });
+
+            if (removingSelf) {
+                setSelectedGroupId(null);
+                setIsGroupModalOpen(false);
+                setEditingGroup(null);
+                setIsConfirmLeaveModalOpen(false);
+                setPendingGroupSaveData(null);
+                toast.success(`You have left the group "${editingGroup.name}".`);
+            } else {
+                setIsGroupModalOpen(false);
+                setEditingGroup(null);
+            }
+        } catch (error) {
+            console.error('Failed to save group', error);
+            toast.error('Failed to save group updates.');
+        }
+    };
+
     const handleSaveGroup = async (groupData: Omit<Group, 'id'>) => {
         try {
             // Validate currentUserId before proceeding
@@ -342,48 +401,18 @@ const App: React.FC = () => {
             }
 
             if (editingGroup) {
-
                 // Check if user is removing themselves from the group
                 const wasUserMember = editingGroup.members.includes(currentUserId);
                 const isUserStillMember = groupData.members.includes(currentUserId);
                 const removingSelf = wasUserMember && !isUserStillMember;
 
                 if (removingSelf) {
-                    // Confirm self-removal
-                    const confirmed = window.confirm(
-                        'You are removing yourself from this group. You will no longer have access to it. Are you sure?'
-                    );
-                    if (!confirmed) {
-                        return; // Cancel the operation
-                    }
+                    setPendingGroupSaveData(groupData);
+                    setIsConfirmLeaveModalOpen(true);
+                    return;
                 }
 
-                await api.updateGroup(editingGroup.id, groupData);
-
-                // If cute icons was just turned ON, apply emojis to all existing transactions
-                const wasEnabled = editingGroup.enableCuteIcons ?? true;
-                const nowEnabled = groupData.enableCuteIcons ?? true;
-                if (nowEnabled && !wasEnabled) {
-                    try {
-                        await api.batchApplyEmojisToGroupTransactions(editingGroup.id);
-                        await qc.invalidateQueries({ queryKey: qk.transactions(currentUserId) });
-                    } catch (err) {
-                        console.warn('Failed to batch apply emojis to existing transactions:', err);
-                    }
-                }
-
-                // Refresh groups with proper filtering to ensure accurate state
-                await qc.invalidateQueries({ queryKey: qk.groups(currentUserId) });
-
-                if (removingSelf) {
-                    setSelectedGroupId(null);
-                    setIsGroupModalOpen(false);
-                    setEditingGroup(null);
-                    toast.success(`You have left the group "${editingGroup.name}".`);
-                } else {
-                    setIsGroupModalOpen(false);
-                    setEditingGroup(null);
-                }
+                await executeGroupSave(groupData, false);
             } else {
                 if (!currentUserId) {
                     toast.error('User data not loaded properly. Please refresh the page and try again.');
@@ -564,7 +593,10 @@ const App: React.FC = () => {
                     onManagePaymentSources={() => setIsPaymentSourceManageOpen(true)}
                     currentUserId={currentUserId}
                     currentUserPerson={person}
+                    theme={theme}
+                    onThemeChange={setTheme}
                 />
+
             )}
 
             {isTransactionModalOpen && selectedGroup && (
@@ -594,40 +626,13 @@ const App: React.FC = () => {
                     allSettled={allSettled}
                     userSettled={userSettled}
                     isProcessingGroupAction={isProcessingGroupAction}
-                    onDeleteGroup={async () => {
+                    onDeleteGroup={() => {
                         if (!editingGroup) return;
-                        if (!window.confirm('Are you sure you want to delete this group? This cannot be undone.')) return;
-                        setIsProcessingGroupAction(true);
-                        try {
-                            const isAdmin = editingGroup.createdBy === currentUserId;
-                            if (isAdmin) {
-                                await deleteGroup(editingGroup.id, currentUserId, true, allSettled);
-                                qc.setQueryData<Group[]>(qk.groups(currentUserId), (prev = []) => prev.filter(g => g.id !== editingGroup.id));
-                                setIsGroupModalOpen(false);
-                                setSelectedGroupId(null);
-                            } else {
-                                const res = await requestGroupDeletion(editingGroup.id, currentUserId);
-                                toast.success(res.message || 'Deletion request sent to the group admin.');
-                            }
-                        } catch (e) {
-                            toast.error(e.message || 'Failed to delete group.');
-                        } finally {
-                            setIsProcessingGroupAction(false);
-                        }
+                        setIsConfirmDeleteModalOpen(true);
                     }}
-                    onArchiveGroup={async () => {
+                    onArchiveGroup={() => {
                         if (!editingGroup) return;
-                        if (!window.confirm('Archive this group? You can find archived groups in App Settings.')) return;
-                        setIsProcessingGroupAction(true);
-                        try {
-                            await archiveGroup(editingGroup.id, currentUserId, editingGroup.createdBy === currentUserId, userSettled, allSettled);
-                            qc.setQueryData<Group[]>(qk.groups(currentUserId), (prev = []) => prev.map(g => g.id === editingGroup.id ? { ...g, isArchived: true } : g));
-                            setIsGroupModalOpen(false);
-                        } catch (e) {
-                            toast.error(e.message || 'Failed to archive group.');
-                        } finally {
-                            setIsProcessingGroupAction(false);
-                        }
+                        setIsConfirmArchiveModalOpen(true);
                     }}
                     onOpenPaymentSources={() => {
                         setIsGroupModalOpen(false);
@@ -763,6 +768,62 @@ const App: React.FC = () => {
             {/* <ApiStatusIndicator /> removed per user request */}
             {/* <DebugPanel groups={groups} transactions={transactions} /> removed per user request */}
             <RealtimeStatus />
+
+            <Toaster position="top-center" reverseOrder={false} />
+
+            {/* Global destructive action confirmations */}
+            {isConfirmDeleteModalOpen && editingGroup && (
+                <ConfirmDeleteModal
+                    open={isConfirmDeleteModalOpen}
+                    entityType="group"
+                    entityName={editingGroup.name}
+                    loading={isProcessingGroupAction}
+                    onConfirm={handleConfirmDeleteGroup}
+                    onCancel={() => setIsConfirmDeleteModalOpen(false)}
+                />
+            )}
+
+            {isConfirmArchiveModalOpen && editingGroup && (
+                <ArchivePromptModal
+                    isOpen={isConfirmArchiveModalOpen}
+                    onClose={() => setIsConfirmArchiveModalOpen(false)}
+                    onArchive={handleConfirmArchiveGroup}
+                />
+            )}
+
+            {isConfirmLeaveModalOpen && pendingGroupSaveData && editingGroup && (
+                <BaseModal
+                    open={isConfirmLeaveModalOpen}
+                    onClose={() => {
+                        setIsConfirmLeaveModalOpen(false);
+                        setPendingGroupSaveData(null);
+                    }}
+                    title="Leave Group?"
+                    size="sm"
+                    description={<span className="text-slate-300 text-sm">You are removing yourself from this group.</span>}
+                    footer={
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => {
+                                    setIsConfirmLeaveModalOpen(false);
+                                    setPendingGroupSaveData(null);
+                                }}
+                                className="px-4 py-2 bg-white/10 text-white rounded-md hover:bg-white/20"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => executeGroupSave(pendingGroupSaveData, true)}
+                                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-md"
+                            >
+                                Leave Group
+                            </button>
+                        </div>
+                    }
+                >
+                    <p className="text-sm text-slate-300">You will no longer have access to "{editingGroup.name}" or its transactions. This action cannot be undone unless someone invites you back.</p>
+                </BaseModal>
+            )}
         </div>
     );
 }
@@ -802,6 +863,44 @@ const AppWithAuth: React.FC = () => {
     if (!user && inviteInfo?.token) {
         return <InvitePage />;
     }
+
+    const handleConfirmDeleteGroup = async () => {
+        if (!editingGroup) return;
+        setIsProcessingGroupAction(true);
+        try {
+            const isAdmin = editingGroup.createdBy === currentUserId;
+            if (isAdmin) {
+                await deleteGroup(editingGroup.id, currentUserId, true, allSettled);
+                qc.setQueryData<Group[]>(qk.groups(currentUserId), (prev = []) => prev.filter(g => g.id !== editingGroup.id));
+                setIsConfirmDeleteModalOpen(false);
+                setIsGroupModalOpen(false);
+                setSelectedGroupId(null);
+            } else {
+                const res = await requestGroupDeletion(editingGroup.id, currentUserId);
+                toast.success(res.message || 'Deletion request sent to the group admin.');
+                setIsConfirmDeleteModalOpen(false);
+            }
+        } catch (e) {
+            toast.error(e.message || 'Failed to delete group.');
+        } finally {
+            setIsProcessingGroupAction(false);
+        }
+    };
+
+    const handleConfirmArchiveGroup = async () => {
+        if (!editingGroup) return;
+        setIsProcessingGroupAction(true);
+        try {
+            await archiveGroup(editingGroup.id, currentUserId, editingGroup.createdBy === currentUserId, userSettled, allSettled);
+            qc.setQueryData<Group[]>(qk.groups(currentUserId), (prev = []) => prev.map(g => g.id === editingGroup.id ? { ...g, isArchived: true } : g));
+            setIsConfirmArchiveModalOpen(false);
+            setIsGroupModalOpen(false);
+        } catch (e) {
+            toast.error(e.message || 'Failed to archive group.');
+        } finally {
+            setIsProcessingGroupAction(false);
+        }
+    };
 
     if (!user) {
         return (

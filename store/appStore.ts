@@ -18,9 +18,14 @@ export type ModalName =
   | 'addAction'
   | 'settings'
 
+export type Theme = 'light' | 'dark' | 'system'
+
 interface UIState {
   selectedGroupId: string | null
   setSelectedGroupId: (id: string | null) => void
+
+  theme: Theme
+  setTheme: (theme: Theme) => void
 
   openModals: Partial<Record<ModalName, boolean>>
   openModal: (name: ModalName) => void
@@ -34,6 +39,9 @@ export const useAppStore = create<UIState>()(
         selectedGroupId: null,
         setSelectedGroupId: (id) => set({ selectedGroupId: id }),
 
+        theme: 'system',
+        setTheme: (theme) => set({ theme }),
+
         openModals: {},
         openModal: (name) => set((s) => ({ openModals: { ...s.openModals, [name]: true } })),
         closeModal: (name) => set((s) => ({ openModals: { ...s.openModals, [name]: false } })),
@@ -41,7 +49,11 @@ export const useAppStore = create<UIState>()(
       {
         name: 'app-ui',
         // Persist only lightweight, safe UI state
-        partialize: (s) => ({ selectedGroupId: s.selectedGroupId, openModals: s.openModals }),
+        partialize: (s) => ({ 
+          selectedGroupId: s.selectedGroupId, 
+          openModals: s.openModals,
+          theme: s.theme 
+        }),
         version: 1,
       }
     ),

@@ -3,6 +3,8 @@ import { getPendingDeletionRequests, approveGroupDeletion, rejectGroupDeletion }
 import type { Group, Person } from '../types';
 import Avatar from './Avatar';
 import toast from 'react-hot-toast';
+import ConfirmDeleteModal from './ConfirmDeleteModal';
+import BaseModal from './BaseModal';
 
 interface DeletionRequest {
   id: string;
@@ -26,6 +28,8 @@ const AdminDeletionRequestsPanel: React.FC<AdminDeletionRequestsPanelProps> = ({
   const [requests, setRequests] = useState<DeletionRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
+  const [confirmApprove, setConfirmApprove] = useState<{ id: string; name: string } | null>(null);
+  const [confirmReject, setConfirmReject] = useState<{ id: string; name: string } | null>(null);
 
   const loadRequests = async () => {
     try {
@@ -45,37 +49,41 @@ const AdminDeletionRequestsPanel: React.FC<AdminDeletionRequestsPanelProps> = ({
   }, [currentUserId]);
 
   const handleApprove = async (requestId: string, groupName: string, allSettled: boolean) => {
-    if (!window.confirm(`Approve deletion of "${groupName}"? This will permanently delete the group.`)) {
-      return;
-    }
+    setConfirmApprove({ id: requestId, name: groupName });
+  };
 
+  const handleReject = async (requestId: string, groupName: string) => {
+    setConfirmReject({ id: requestId, name: groupName });
+  };
+
+  const executeApprove = async () => {
+    if (!confirmApprove) return;
     try {
-      setProcessing(requestId);
-      await approveGroupDeletion(requestId, currentUserId, allSettled);
-      toast.success(`Group "${groupName}" deleted successfully`);
+      setProcessing(confirmApprove.id);
+      await approveGroupDeletion(confirmApprove.id, currentUserId, true);
+      toast.success(`Group "${confirmApprove.name}" deleted successfully`);
       await loadRequests();
       onRequestProcessed?.();
     } catch (error: any) {
       toast.error(error?.message || 'Failed to approve deletion');
     } finally {
       setProcessing(null);
+      setConfirmApprove(null);
     }
   };
 
-  const handleReject = async (requestId: string, groupName: string) => {
-    if (!window.confirm(`Reject deletion request for "${groupName}"?`)) {
-      return;
-    }
-
+  const executeReject = async () => {
+    if (!confirmReject) return;
     try {
-      setProcessing(requestId);
-      await rejectGroupDeletion(requestId);
+      setProcessing(confirmReject.id);
+      await rejectGroupDeletion(confirmReject.id);
       toast.success('Deletion request rejected');
       await loadRequests();
     } catch (error: any) {
       toast.error(error?.message || 'Failed to reject request');
     } finally {
       setProcessing(null);
+      setConfirmReject(null);
     }
   };
 
@@ -151,6 +159,43 @@ const AdminDeletionRequestsPanel: React.FC<AdminDeletionRequestsPanelProps> = ({
           </div>
         ))}
       </div>
+
+      {/* Confirmation Modals */}
+      {confirmApprove && (
+        <ConfirmDeleteModal
+          open={!!confirmApprove}
+          entityType="group"
+          entityName={confirmApprove.name}
+          loading={processing === confirmApprove.id}
+          onConfirm={executeApprove}
+          onCancel={() => setConfirmApprove(null)}
+          impactDescription="Approving this request will permanently delete all data associated with this group for ALL members."
+        />
+      )}
+
+      {confirmReject && (
+        <BaseModal
+          open={!!confirmReject}
+          onClose={() => setConfirmReject(null)}
+          title="Reject Deletion Request"
+          size="sm"
+          description={<span className="text-slate-300 text-sm">Are you sure you want to reject the deletion request for "{confirmReject.name}"?</span>}
+          footer={
+            <div className="flex gap-2">
+              <button onClick={() => setConfirmReject(null)} className="px-4 py-2 bg-white/10 text-white rounded-md hover:bg-white/20">Cancel</button>
+              <button
+                onClick={executeReject}
+                disabled={processing === confirmReject.id}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-md disabled:opacity-50"
+              >
+                {processing === confirmReject.id ? 'Rejecting...' : 'Reject Request'}
+              </button>
+            </div>
+          }
+        >
+          <p className="text-sm text-slate-300">The group will remain active and the requester will be notified that the deletion was not approved.</p>
+        </BaseModal>
+      )}
     </div>
   );
 };

@@ -125,14 +125,14 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
         if (requiresTripDates(groupType)) {
             if (!tripStartDate || !tripEndDate) {
                 const today = new Date().toISOString().split('T')[0];
-                if (!tripStartDate) setTripStartDate(today);
-                if (!tripEndDate) setTripEndDate(today);
-                alert('Trip dates were auto-set to today. Please adjust them as needed and save again.');
+                setTripStartDate(today);
+                setTripEndDate(today);
+                toast.success('Trip dates were auto-set to today. Please adjust them as needed and save again.');
                 return;
             }
 
             if (new Date(tripStartDate) > new Date(tripEndDate)) {
-                alert('Trip start date cannot be after the end date.');
+                toast.error('Trip start date cannot be after the end date.');
                 return;
             }
         }
@@ -153,7 +153,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
 
     const handleInvite = async () => {
         if (!group?.id) {
-            alert('Please save the group first before creating an invite link.');
+            toast.error('Please save the group first before creating an invite link.');
             return;
         }
 
@@ -174,7 +174,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
             setIsShareModalOpen(true);
         } catch (error) {
             console.error('Failed to create invite link:', error);
-            alert('Failed to create invite link. Please try again.');
+            toast.error('Failed to create invite link. Please try again.');
         }
     };
 
@@ -194,7 +194,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
     const handleCopyLink = () => {
         if (!shareData) return;
         navigator.clipboard.writeText(shareData.message);
-        alert('Invite message copied to clipboard!');
+        toast.success('Invite message copied to clipboard!');
     };
 
     const handleNativeShare = async () => {
