@@ -74,16 +74,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onManage
 
   const handleRemovePhoto = async () => {
     if (!currentUserId) return;
-    if (!window.confirm('Remove profile picture?')) return;
 
     setIsUploading(true);
-    setAvatarUrl(null); // Optimistic
+    setAvatarUrl(null); // Optimistic — Avatar component shows CSS initials for null/empty
     try {
-      await updateUserAvatar(currentUserId, null);
-      toast.success('Profile picture removed.');
+      await updateUserAvatar(currentUserId, null); // Service stores '' to satisfy NOT NULL
+      toast.success('Now showing initials.');
     } catch (error) {
       console.error('Failed to remove avatar', error);
-      toast.error('Failed to remove profile picture.');
+      toast.error('Failed to update profile picture.');
       setAvatarUrl(currentUserPerson?.avatarUrl || null); // Revert
     } finally {
       setIsUploading(false);
@@ -146,13 +145,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onManage
                   >
                     {isUploading ? 'Uploading...' : 'Upload Photo'}
                   </button>
-                  {avatarUrl && (
+                  {avatarUrl && avatarUrl.trim() !== '' && (
                     <button
                       onClick={handleRemovePhoto}
                       disabled={isUploading}
                       className="px-3 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs rounded-md transition-colors border border-rose-500/30"
                     >
-                      Remove
+                      Use Initials
                     </button>
                   )}
                 </div>

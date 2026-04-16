@@ -1,7 +1,7 @@
-
 import React from 'react';
 import './index.css';
 import ReactDOM from 'react-dom/client';
+import * as Sentry from '@sentry/react';
 import AppWithAuth from './App';
 import { SupabaseAuthProvider } from './contexts/SupabaseAuthContext';
 import ToastProvider from './components/ToastProvider';
@@ -13,6 +13,20 @@ import { SplashScreen } from '@capacitor/splash-screen';
 import { App as CapacitorApp } from '@capacitor/app';
 
 import { ClerkProvider } from '@clerk/clerk-react';
+
+Sentry.init({
+  dsn: 'https://241dafbc0787e2e71906ec5aaff9a3f9@o4511203625795584.ingest.us.sentry.io/4511203644342272',
+  integrations: [
+    Sentry.browserTracingIntegration(),
+    Sentry.replayIntegration(),
+  ],
+  tracesSampleRate: 0.2,       // 20% of transactions for performance monitoring
+  replaysSessionSampleRate: 0.1, // 10% of sessions
+  replaysOnErrorSampleRate: 1.0, // 100% of sessions with errors
+  sendDefaultPii: true,
+  environment: import.meta.env.MODE,
+  enabled: import.meta.env.PROD, // only send events in production builds
+});
 
 const initCapacitor = async () => {
   if (Capacitor.isNativePlatform()) {
@@ -59,14 +73,16 @@ if (!PUBLISHABLE_KEY) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
-      <QueryClientProvider client={queryClient}>
-        <SupabaseAuthProvider>
-          <ToastProvider>
-            <AppWithAuth />
-          </ToastProvider>
-        </SupabaseAuthProvider>
-      </QueryClientProvider>
-    </ClerkProvider>
+    <Sentry.ErrorBoundary fallback={<p>Something went wrong.</p>}>
+      <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
+        <QueryClientProvider client={queryClient}>
+          <SupabaseAuthProvider>
+            <ToastProvider>
+              <AppWithAuth />
+            </ToastProvider>
+          </SupabaseAuthProvider>
+        </QueryClientProvider>
+      </ClerkProvider>
+    </Sentry.ErrorBoundary>
   </React.StrictMode>
 );

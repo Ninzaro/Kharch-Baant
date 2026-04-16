@@ -5,7 +5,7 @@ echo "=================================="
 echo ""
 
 # Check if .env.local exists
-if [ ! -f ".env.local" ]; then
+if [[ ! -f ".env.local" ]]; then
     echo "📝 Creating .env.local file..."
     cat > .env.local << 'EOF'
 # Supabase Configuration

@@ -33,17 +33,11 @@ const BalanceBreakdownModal: React.FC<BalanceBreakdownModalProps> = ({
   currentUserId,
   onSelectGroup
 }) => {
-  console.log('BalanceBreakdownModal render:', { isOpen, type });
   const balanceData = useMemo(() => {
-    console.log('BalanceBreakdownModal: Calculating balances', { type, groups: groups.length, transactions: transactions.length });
-    
     const personBalances: PersonBalance[] = [];
-    
+
     try {
-      // Calculate balances for each group using the same logic as HomeScreen
-      // Only include active (non-archived) groups
       const activeGroups = groups.filter(g => !g.isArchived);
-      console.log('Active groups:', activeGroups.length, 'Total groups:', groups.length);
       
       transactions.forEach(transaction => {
         const shares = calculateShares(transaction);
@@ -87,8 +81,6 @@ const BalanceBreakdownModal: React.FC<BalanceBreakdownModalProps> = ({
         }
       });
       
-      console.log('BalanceBreakdownModal: Found balances', personBalances.length);
-      
       // Sort by amount descending
       return personBalances.sort((a, b) => b.amount - a.amount);
     } catch (error) {
@@ -111,12 +103,7 @@ const BalanceBreakdownModal: React.FC<BalanceBreakdownModalProps> = ({
     onSelectGroup(groupId);
   };
 
-  if (!isOpen) {
-    console.log('BalanceBreakdownModal: Not open, returning null');
-    return null;
-  }
-
-  console.log('BalanceBreakdownModal: Rendering modal with', balanceData.length, 'items');
+  if (!isOpen) return null;
 
   return (
     <BaseModal

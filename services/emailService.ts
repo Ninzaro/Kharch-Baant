@@ -112,18 +112,9 @@ const sendEmail = async (params: EmailParams): Promise<EmailResult> => {
 
   // For now, we'll simulate email sending due to CORS restrictions
   // In production, this should call a server-side API endpoint
-  console.log('📧 EMAIL SIMULATION (CORS Issue - Use Server-side for Production)');
-  console.log('📧 To:', params.to?.map(r => r.email).join(', '));
-  console.log('📧 Subject:', params.subject);
-  console.log('📧 From:', params.from?.email);
-  console.log('📧 HTML Content Length:', params.html?.length || 0, 'characters');
-  console.log('📧 Text Content Length:', params.text?.length || 0, 'characters');
   
   // Simulate successful sending
   const messageId = `sim_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  
-  console.log('✅ Email simulation completed (Message ID:', messageId, ')');
-  console.log('💡 To enable real email sending, implement server-side API or Supabase Edge Function');
   
   return {
     success: true,
@@ -139,7 +130,6 @@ const sendEmail = async (params: EmailParams): Promise<EmailResult> => {
  * Send welcome email when user signs up or logs in for the first time
  */
 export const sendWelcomeEmail = async (data: WelcomeEmailData): Promise<EmailResult> => {
-  console.log('📧 Sending welcome email to:', data.userEmail);
 
   const sentFrom = new Sender(DEFAULT_SENDER.email, DEFAULT_SENDER.name);
   const recipients = [new Recipient(data.userEmail, data.userName)];
@@ -215,7 +205,6 @@ export const sendWelcomeEmail = async (data: WelcomeEmailData): Promise<EmailRes
  * Send group invite email
  */
 export const sendGroupInviteEmail = async (data: GroupInviteEmailData): Promise<EmailResult> => {
-  console.log('📧 Sending group invite email to:', data.inviteeEmail);
 
   const sentFrom = new Sender(DEFAULT_SENDER.email, DEFAULT_SENDER.name);
   const recipients = [new Recipient(data.inviteeEmail)];
@@ -290,7 +279,6 @@ export const sendGroupInviteEmail = async (data: GroupInviteEmailData): Promise<
  * Send notification when a member is added to a group
  */
 export const sendMemberAddedEmail = async (data: MemberAddedEmailData): Promise<EmailResult> => {
-  console.log('📧 Sending member added notification to:', data.memberEmail);
 
   const sentFrom = new Sender(DEFAULT_SENDER.email, DEFAULT_SENDER.name);
   const recipients = [new Recipient(data.memberEmail, data.memberName)];
@@ -355,7 +343,6 @@ export const sendMemberAddedEmail = async (data: MemberAddedEmailData): Promise<
  * Send notification when a settle up is completed
  */
 export const sendSettleUpEmail = async (data: SettleUpEmailData): Promise<EmailResult> => {
-  console.log('📧 Sending settle up notification');
 
   const sentFrom = new Sender(DEFAULT_SENDER.email, DEFAULT_SENDER.name);
   
@@ -490,7 +477,6 @@ export const sendSettleUpEmail = async (data: SettleUpEmailData): Promise<EmailR
  * Send notification when a new expense is added
  */
 export const sendNewExpenseEmail = async (data: NewExpenseEmailData): Promise<EmailResult> => {
-  console.log('📧 Sending new expense notification to', data.memberEmails.length, 'members');
 
   const sentFrom = new Sender(DEFAULT_SENDER.email, DEFAULT_SENDER.name);
   const recipients = data.memberEmails.map(email => new Recipient(email));

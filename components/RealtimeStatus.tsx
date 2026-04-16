@@ -9,7 +9,6 @@ export const RealtimeStatus: React.FC = () => {
     // Monitor connection status
     const channel = supabase.channel('heartbeat')
       .subscribe((status) => {
-        console.log('Realtime connection status:', status);
         if (status === 'SUBSCRIBED') {
           setStatus('connected');
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {

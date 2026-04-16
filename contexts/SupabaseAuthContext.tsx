@@ -33,14 +33,12 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
         try {
           const primaryEmail = user.primaryEmailAddress?.emailAddress || '';
           const fullName = user.fullName || primaryEmail.split('@')[0];
-          console.log('Syncing user profile for:', primaryEmail);
           const userProfile = await ensureUserExists(
             user.id,
             fullName,
             primaryEmail
           );
           setPerson(userProfile);
-          console.log('✅ User profile synced:', userProfile);
 
           // Authenticate the Supabase Realtime WebSocket with the Clerk JWT.
           // global.fetch only covers HTTP — WebSocket connections need setAuth().

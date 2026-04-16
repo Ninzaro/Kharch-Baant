@@ -57,16 +57,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
     const requiresTripDates = (type: GroupType) => type === 'trip' || type === 'family_trip';
 
     useEffect(() => {
-        console.log('GroupFormModal useEffect triggered with:', {
-            group,
-            isOpen,
-            currentUserId,
-            allPeopleCount: allPeople.length,
-            localPeopleCount: localPeople.length
-        });
         if (group) {
-            console.log('Loading existing group data:', group);
-            console.log('🔍 GroupFormModal - Received group update. Members:', group.members);
             setName(group.name);
             setMembers(group.members);
             setCurrency(group.currency);
@@ -75,7 +66,6 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
             setTripEndDate(group.tripEndDate || '');
             setEnableCuteIcons(group.enableCuteIcons !== false); // Default to true if undefined
         } else {
-            console.log('Resetting form for new group, currentUserId:', currentUserId);
             setName('');
             setMembers([currentUserId]);
             setCurrency('INR');
@@ -96,16 +86,10 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
             // CRITICAL FIX: Ensure current user is always in localPeople
             // This fixes the issue where creator doesn't appear in members list
             const currentUserInMap = map.has(currentUserId);
-            console.log('🔍 Current user in people map:', currentUserInMap, 'currentUserId:', currentUserId);
-
             if (!currentUserInMap && currentUserId) {
-                // Find current user in allPeople or create a placeholder
                 const currentUserFromAllPeople = allPeople.find(p => p.id === currentUserId);
                 if (currentUserFromAllPeople) {
                     map.set(currentUserId, currentUserFromAllPeople);
-                    console.log('✅ Added current user from allPeople to localPeople');
-                } else {
-                    console.warn('⚠️ Current user not found in allPeople, this might cause display issues');
                 }
             }
 
@@ -134,24 +118,15 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
 
     const handleSubmit = (e?: React.FormEvent | React.MouseEvent) => {
         e?.preventDefault();
-        console.log('GroupFormModal handleSubmit called with:', { name, members, currency, groupType, tripStartDate, tripEndDate });
-
         if (!name || members.length === 0) {
-            console.log('Validation failed: missing name or members');
             return;
         }
 
         if (requiresTripDates(groupType)) {
             if (!tripStartDate || !tripEndDate) {
                 const today = new Date().toISOString().split('T')[0];
-                if (!tripStartDate) {
-                    console.log('Auto-setting trip start date to today');
-                    setTripStartDate(today);
-                }
-                if (!tripEndDate) {
-                    console.log('Auto-setting trip end date to today');
-                    setTripEndDate(today);
-                }
+                if (!tripStartDate) setTripStartDate(today);
+                if (!tripEndDate) setTripEndDate(today);
                 alert('Trip dates were auto-set to today. Please adjust them as needed and save again.');
                 return;
             }
@@ -172,7 +147,6 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
             enableCuteIcons,
         };
 
-        console.log('Calling onSave with payload:', payload);
         onSave(payload);
         // Don't call onClose() here - let the parent handle it after API success
     };
@@ -257,15 +231,6 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
     }).filter(Boolean);
 
     const availableContacts = localPeople.filter(p => !members.includes(p.id));
-
-    // Debug logging for member display issue
-    console.log('🔍 GroupFormModal render debug:', {
-        members,
-        localPeople: localPeople.map(p => `${p.name} (${p.id})`),
-        currentMembers: currentMembers.map(p => `${p.name} (${p.id})`),
-        currentUserId,
-        peopleMapSize: peopleMap.size
-    });
 
     return (
         <>

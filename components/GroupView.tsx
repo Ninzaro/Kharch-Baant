@@ -187,12 +187,10 @@ const GroupView: React.FC<GroupViewProps> = ({
           </button>
           <button
             onClick={() => {
-              console.log('Edit group button clicked');
               onEditGroup();
             }}
             className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-colors"
-          >
-            <SettingsIcon />
+          >            <SettingsIcon />
           </button>
           <button
             onClick={handleShare}

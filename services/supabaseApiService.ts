@@ -158,9 +158,6 @@ export const getGroups = async (personId?: string): Promise<Group[]> => {
   const groups = await Promise.all(
     (data || []).map(async dbGroup => {
       const g = await transformDbGroupToAppGroup(dbGroup);
-      if (dbGroup.name === 'Trip 2025' || dbGroup.id === '308ca153-61f0-4127-bad0-766ed1572551') {
-        console.log('🔍 getGroups - Transformed group:', g.name, 'Members:', g.members);
-      }
       return g;
     })
   );
@@ -194,13 +191,8 @@ export const addGroup = async (groupData: Omit<Group, 'id'>, personId?: string):
     membersToAdd.push(personId);
   }
 
-  console.log('🔍 addGroup - Members to add:', membersToAdd);
-  console.log('🔍 addGroup - Creator personId:', personId);
-  console.log('🔍 addGroup - groupData.members:', groupData.members);
-
   // Insert group members - Filter out empty/invalid UUIDs
   const validMembers = membersToAdd.filter(memberId => memberId && memberId.trim() !== '');
-  console.log('🔍 Valid members after filtering:', validMembers);
 
   if (validMembers.length > 0) {
     const { error: membersError } = await supabase
@@ -332,22 +324,6 @@ export const rejectGroupDeletion = async (requestId: string): Promise<{ success:
 };
 
 export const updateGroup = async (groupId: string, groupData: Omit<Group, 'id'>): Promise<Group> => {
-  console.log('updateGroup called with:', { groupId, groupData });
-
-  // First, test basic connectivity and check table structure
-  try {
-    const { data: testData, error: testError } = await supabase
-      .from('groups')
-      .select('*')
-      .limit(1);
-    console.log('Table structure test:', { testData, testError });
-    if (testData && testData.length > 0) {
-      console.log('Available columns:', Object.keys(testData[0]));
-    }
-  } catch (connError) {
-    console.error('Connectivity test failed:', connError);
-  }
-
   // Update the group with all fields
   const updateData: any = {
     name: groupData.name,
@@ -358,16 +334,12 @@ export const updateGroup = async (groupId: string, groupData: Omit<Group, 'id'>)
     enable_cute_icons: groupData.enableCuteIcons ?? true,
   };
 
-  console.log('Attempting to update with data:', updateData);
-
   const { data: groupResult, error: groupError } = await supabase
     .from('groups')
     .update(updateData)
     .eq('id', groupId)
     .select()
     .single();
-
-  console.log('Group update result:', { groupResult, groupError });
 
   if (groupError) {
     console.error('Detailed error:', groupError);
@@ -379,8 +351,6 @@ export const updateGroup = async (groupId: string, groupData: Omit<Group, 'id'>)
     .from('group_members')
     .delete()
     .eq('group_id', groupId);
-
-  console.log('Delete members result:', { deleteError });
 
   if (deleteError) throw deleteError;
 
@@ -395,14 +365,10 @@ export const updateGroup = async (groupId: string, groupData: Omit<Group, 'id'>)
         }))
       );
 
-    console.log('Insert members result:', { membersError });
-
     if (membersError) throw membersError;
   }
 
   const finalResult = await transformDbGroupToAppGroup(groupResult);
-  console.log('Final transformed result:', finalResult);
-
   return finalResult;
 };
 
@@ -421,10 +387,8 @@ const mapDbGroupRowBasic = (dbGroup: any) => ({
 });
 
 export const subscribeToGroups = (personId: string, callback: (payload: any) => void) => {
-  console.log('🔌 Subscribing to groups realtime for person:', personId);
   const channel = supabase.channel('public:groups')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'groups' }, (payload) => {
-      console.log('📡 Raw groups payload received:', payload);
       if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
         const basic = mapDbGroupRowBasic(payload.new);
         callback({ ...payload, new: basic });
@@ -432,40 +396,44 @@ export const subscribeToGroups = (personId: string, callback: (payload: any) => 
         callback(payload);
       }
     })
-    .subscribe((status) => {
-      console.log('🔌 Groups subscription status:', status);
-    });
+    .subscribe();
   return channel;
 };
 
 // Realtime: Transactions
-export const subscribeToTransactions = (personId: string, callback: (payload: any) => void) => {
-  console.log('🔌 Subscribing to transactions realtime for person:', personId);
-  const channel = supabase
+export const subscribeToTransactions = (
+  personId: string,
+  callback: (payload: any) => void,
+  onBroadcast?: (groupId: string) => void,
+) => {
+  let channel = supabase
     .channel('public:transactions')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, (payload) => {
-      console.log('📡 Raw transactions payload received:', payload);
-      // Transform the database record to app format
       if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
         const transformedTransaction = transformDbTransactionToAppTransaction(payload.new as DbTransaction);
         callback({ ...payload, new: transformedTransaction });
       } else {
         callback(payload);
       }
-    })
-    .subscribe((status) => {
-      console.log('🔌 Transactions subscription status:', status);
     });
+
+  // Piggyback broadcast listener on the same authenticated channel so it
+  // uses the Clerk JWT already set on this connection (avoids sub:null error).
+  if (onBroadcast) {
+    channel = (channel as any).on('broadcast', { event: 'tx' }, (payload: any) => {
+      onBroadcast(payload.payload?.groupId);
+    });
+  }
+
+  channel.subscribe();
   return channel;
 };
 
 // Realtime: Payment Sources
 export const subscribeToPaymentSources = (personId: string, callback: (payload: any) => void) => {
-  console.log('🔌 Subscribing to payment sources realtime for person:', personId);
   const channel = supabase
     .channel('public:payment_sources')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'payment_sources' }, (payload) => {
-      console.log('📡 Raw payment sources payload received:', payload);
       // Transform the database record to app format
       if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
         const transformedPaymentSource = transformDbPaymentSourceToAppPaymentSource(payload.new as DbPaymentSource);
@@ -474,19 +442,15 @@ export const subscribeToPaymentSources = (personId: string, callback: (payload: 
         callback(payload);
       }
     })
-    .subscribe((status) => {
-      console.log('🔌 Payment sources subscription status:', status);
-    });
+    .subscribe();
   return channel;
 };
 
 // Realtime: People
 export const subscribeToPeople = (personId: string, callback: (payload: any) => void) => {
-  console.log('🔌 Subscribing to people realtime for person:', personId);
   const channel = supabase
     .channel('public:people')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'people' }, (payload) => {
-      console.log('📡 Raw people payload received:', payload);
       // Transform the database record to app format
       if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
         const transformedPerson = transformDbPersonToAppPerson(payload.new as DbPerson);
@@ -495,26 +459,32 @@ export const subscribeToPeople = (personId: string, callback: (payload: any) => 
         callback(payload);
       }
     })
-    .subscribe((status) => {
-      console.log('🔌 People subscription status:', status);
-    });
+    .subscribe();
   return channel;
 };
 
 // Realtime: Group Members (to reflect membership changes in UI)
 export const subscribeToGroupMembers = (personId: string, callback: (payload: any) => void) => {
-  console.log('🔌 Subscribing to group members realtime for person:', personId);
   const channel = supabase
     .channel('public:group_members')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'group_members' }, (payload) => {
-      console.log('📡 Raw group members payload received:', payload);
       callback(payload);
     })
-    .subscribe((status) => {
-      console.log('🔌 Group members subscription status:', status);
-    });
+    .subscribe();
   return channel;
 };
+
+// Publisher: sends broadcast on the same channel name as the subscriber ('public:transactions')
+// so both sides share the same authenticated Realtime topic.
+let _txPublishChannel: ReturnType<typeof supabase.channel> | null = null
+
+const _broadcastTxChange = (groupId: string) => {
+  if (!_txPublishChannel) {
+    _txPublishChannel = supabase.channel('public:transactions')
+    _txPublishChannel.subscribe()
+  }
+  _txPublishChannel.send({ type: 'broadcast', event: 'tx', payload: { groupId } })
+}
 
 // TRANSACTIONS API
 export const getTransactions = async (personId?: string): Promise<Transaction[]> => {
@@ -571,6 +541,9 @@ export const addTransaction = async (
 
   const transaction = transformDbTransactionToAppTransaction(data);
 
+  // Notify other group members via broadcast (bypasses postgres_changes RLS filtering)
+  _broadcastTxChange(groupId)
+
   // Send email notifications (async, don't block)
   if (emailService.isEmailServiceEnabled()) {
     // Get group info
@@ -598,12 +571,6 @@ export const addTransaction = async (
           .single();
 
         if (receiverData) {
-          console.log('📧 Settlement recorded:', {
-            payer: payerData.name,
-            receiver: receiverData.name,
-            amount: transactionData.amount,
-            group: groupData.name
-          });
 
           // Note: Email addresses are now available in the people table
           // Can send emails using payerData.email and receiverData.email
@@ -624,13 +591,6 @@ export const addTransaction = async (
           const splitWithNames = participantsData.map(p => p.name);
           const expenseUrl = `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}`;
 
-          console.log('📧 New expense added:', {
-            description: transactionData.description,
-            amount: transactionData.amount,
-            paidBy: payerData.name,
-            splitWith: splitWithNames,
-            group: groupData.name
-          });
 
           // Note: Email addresses are now available in the people table
           // Can send emails using participantsData[].email
@@ -674,7 +634,9 @@ export const updateTransaction = async (
 
   if (error) throw error;
 
-  return transformDbTransactionToAppTransaction(data);
+  const updated = transformDbTransactionToAppTransaction(data);
+  _broadcastTxChange(updated.groupId)
+  return updated;
 };
 
 const TAG_EMOJIS: Record<string, string> = {
@@ -701,7 +663,7 @@ export const batchApplyEmojisToGroupTransactions = async (groupId: string): Prom
   }
 };
 
-export const deleteTransaction = async (transactionId: string): Promise<{ success: boolean }> => {
+export const deleteTransaction = async (transactionId: string, groupId?: string): Promise<{ success: boolean }> => {
   const { error } = await supabase
     .from('transactions')
     .delete()
@@ -709,6 +671,7 @@ export const deleteTransaction = async (transactionId: string): Promise<{ succes
 
   if (error) throw error;
 
+  if (groupId) _broadcastTxChange(groupId)
   return { success: true };
 };
 
@@ -828,7 +791,6 @@ export const getPeople = async (personId?: string): Promise<Person[]> => {
   }
 
   const people = (peopleData || []).map(transformDbPersonToAppPerson);
-  console.log(`🔍 getPeople - Found ${people.length} people for user ${personId}:`, people.map(p => p.name));
   return people;
 };
 
@@ -1053,7 +1015,6 @@ export const createGroupInvite = async (request: CreateInviteRequest & { invited
 
       // Send email invitation
       if (emailService.isEmailServiceEnabled() && groupData && inviterData) {
-        console.log('📧 Sending group invite email to:', email);
         emailService.sendGroupInviteEmail({
           inviteeEmail: email,
           inviterName: inviterData.name,
@@ -1061,9 +1022,7 @@ export const createGroupInvite = async (request: CreateInviteRequest & { invited
           inviteUrl,
           expiresInDays,
         }).then(result => {
-          if (result.success) {
-            console.log('✅ Group invite email sent to:', email);
-          } else {
+          if (!result.success) {
             console.warn('⚠️ Group invite email failed:', result.error);
           }
         }).catch(err => {
@@ -1249,15 +1208,6 @@ export const acceptInvite = async (request: AcceptInviteRequest): Promise<Accept
 
     if (newMemberData && inviterData) {
       const groupUrl = `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}`;
-
-      console.log('📧 New member added to group:', {
-        member: newMemberData.name,
-        email: newMemberData.email,
-        group: validation.group.name,
-        addedBy: inviterData.name
-      });
-
-      // Note: Email address is now available in newMemberData.email
       // Can send welcome email using emailService
       // emailService.sendWelcomeToGroupEmail({...})
     }
@@ -1313,7 +1263,7 @@ export const cleanupExpiredInvites = async (): Promise<number> => {
 export const updateUserAvatar = async (personId: string, avatarUrl: string | null): Promise<{ success: boolean }> => {
   const { error } = await supabase
     .from('people')
-    .update({ avatar_url: avatarUrl })
+    .update({ avatar_url: avatarUrl ?? '' }) // null → '' to satisfy NOT NULL constraint; Avatar component shows initials for empty string
     .eq('id', personId);
 
   if (error) {

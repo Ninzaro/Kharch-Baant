@@ -53,3 +53,5 @@ android/.idea/
 
 # Git worktrees
 .worktrees/
+
+.vercel

@@ -27,7 +27,6 @@ export const useRealtimeConnection = (personId?: string) => {
       // Set the access token on the realtime client so WS upgrade carries it
       if (token) {
         (supabase.realtime as any).setAuth(token);
-        console.log('🔑 Realtime auth token set');
       }
     };
 
@@ -73,16 +72,13 @@ export const useRealtimeGroupsBridge = (personId?: string) => {
   const qc = useQueryClient()
   React.useEffect(() => {
     if (!personId) return
-    console.log('🔌 Setting up groups realtime bridge for:', personId)
     const sub = api.subscribeToGroups(personId, (payload: any) => {
-      console.log('📡 Groups bridge received:', payload.eventType, payload)
       qc.setQueryData<Group[]>(qk.groups(personId), (current = []) => {
         const { eventType, new: newRow, old: oldRow } = payload
         if (eventType === 'INSERT') {
           const newGroup = newRow as Group
           // Prevent duplicate: check if ID already exists
           if (current.some(g => g.id === newGroup.id)) {
-            console.log('⚠️ Skipping duplicate INSERT for group:', newGroup.id)
             return current
           }
           return [...current, newGroup]
@@ -106,7 +102,6 @@ export const useRealtimeGroupsBridge = (personId?: string) => {
       })
     })
     return () => {
-      console.log('🔌 Unsubscribing groups realtime bridge for:', personId)
       sub.unsubscribe()
     }
   }, [personId, qc])
@@ -117,28 +112,28 @@ export const useRealtimeTransactionsBridge = (personId?: string) => {
   const qc = useQueryClient()
   React.useEffect(() => {
     if (!personId) return
-    console.log('🔌 Setting up transaction realtime bridge for:', personId)
-    const sub = api.subscribeToTransactions(personId, (payload: any) => {
-      console.log('📡 Transaction bridge received:', payload.eventType, payload)
-      qc.setQueryData<Transaction[]>(qk.transactions(personId), (current = []) => {
-        const { eventType, new: newRow, old: oldRow } = payload
-        if (eventType === 'INSERT') {
-          const newTx = newRow as Transaction
-          // Prevent duplicate: check if ID already exists
-          if (current.some(t => t.id === newTx.id)) {
-            console.log('⚠️ Skipping duplicate INSERT for transaction:', newTx.id)
-            return current
+    const pgSub = api.subscribeToTransactions(
+      personId,
+      (payload: any) => {
+        qc.setQueryData<Transaction[]>(qk.transactions(personId), (current = []) => {
+          const { eventType, new: newRow, old: oldRow } = payload
+          if (eventType === 'INSERT') {
+            const newTx = newRow as Transaction
+            if (current.some(t => t.id === newTx.id)) return current
+            return [newTx, ...current]
           }
-          return [newTx, ...current]
-        }
-        if (eventType === 'UPDATE') return current.map(t => t.id === (newRow as Transaction).id ? (newRow as Transaction) : t)
-        if (eventType === 'DELETE') return current.filter(t => t.id !== (oldRow as any).id)
-        return current
-      })
-    })
+          if (eventType === 'UPDATE') return current.map(t => t.id === (newRow as Transaction).id ? (newRow as Transaction) : t)
+          if (eventType === 'DELETE') return current.filter(t => t.id !== (oldRow as any).id)
+          return current
+        })
+      },
+      (_groupId: string) => {
+        qc.invalidateQueries({ queryKey: qk.transactions(personId) })
+      },
+    )
+
     return () => {
-      console.log('🔌 Unsubscribing transaction realtime bridge for:', personId)
-      sub.unsubscribe()
+      pgSub.unsubscribe()
     }
   }, [personId, qc])
 }
@@ -148,16 +143,13 @@ export const useRealtimePaymentSourcesBridge = (personId?: string) => {
   const qc = useQueryClient()
   React.useEffect(() => {
     if (!personId) return
-    console.log('🔌 Setting up payment sources realtime bridge for:', personId)
     const sub = api.subscribeToPaymentSources(personId, (payload: any) => {
-      console.log('📡 Payment sources bridge received:', payload.eventType, payload)
       qc.setQueryData<PaymentSource[]>(qk.paymentSources(personId), (current = []) => {
         const { eventType, new: newRow, old: oldRow } = payload
         if (eventType === 'INSERT') {
           const newPS = newRow as PaymentSource
           // Prevent duplicate: check if ID already exists
           if (current.some(ps => ps.id === newPS.id)) {
-            console.log('⚠️ Skipping duplicate INSERT for payment source:', newPS.id)
             return current
           }
           return [newPS, ...current]
@@ -168,7 +160,6 @@ export const useRealtimePaymentSourcesBridge = (personId?: string) => {
       })
     })
     return () => {
-      console.log('🔌 Unsubscribing payment sources realtime bridge for:', personId)
       sub.unsubscribe()
     }
   }, [personId, qc])
@@ -179,16 +170,13 @@ export const useRealtimePeopleBridge = (personId?: string) => {
   const qc = useQueryClient()
   React.useEffect(() => {
     if (!personId) return
-    console.log('🔌 Setting up people realtime bridge for:', personId)
     const sub = api.subscribeToPeople(personId, (payload: any) => {
-      console.log('📡 People bridge received:', payload.eventType, payload)
       qc.setQueryData<Person[]>(qk.people(personId), (current = []) => {
         const { eventType, new: newRow, old: oldRow } = payload
         if (eventType === 'INSERT') {
           const newPerson = newRow as Person
           // Prevent duplicate: check if ID already exists
           if (current.some(p => p.id === newPerson.id)) {
-            console.log('⚠️ Skipping duplicate INSERT for person:', newPerson.id)
             return current
           }
           return [...current, newPerson]
@@ -199,8 +187,54 @@ export const useRealtimePeopleBridge = (personId?: string) => {
       })
     })
     return () => {
-      console.log('🔌 Unsubscribing people realtime bridge for:', personId)
       sub.unsubscribe()
     }
+  }, [personId, qc])
+}
+
+
+// Helper: realtime bridge for Group Members
+// When the current user is added/removed from a group, invalidate groups so the
+// new group appears (or disappears) immediately without a manual refresh.
+// When any member is added/removed from one of the user's groups, also invalidate
+// so the group's member list stays current for all participants.
+export const useRealtimeGroupMembersBridge = (personId?: string) => {
+  const qc = useQueryClient()
+  React.useEffect(() => {
+    if (!personId) return
+    const sub = api.subscribeToGroupMembers(personId, (payload: any) => {
+      const { eventType, new: newRow, old: oldRow } = payload
+      const row = newRow || oldRow
+
+      if (eventType === 'INSERT' && newRow?.person_id === personId) {
+        // Current user was added to a new group — refetch groups AND transactions
+        // (transactions are filtered by group membership, so they need a refresh too)
+        qc.invalidateQueries({ queryKey: qk.groups(personId) })
+        qc.invalidateQueries({ queryKey: qk.transactions(personId) })
+        return
+      }
+
+      if (eventType === 'DELETE' && oldRow?.person_id === personId) {
+        // Current user was removed from a group — remove group from cache immediately,
+        // and drop transactions that belonged to that group
+        const removedGroupId = row?.group_id
+        qc.setQueryData<Group[]>(qk.groups(personId), (current = []) =>
+          current.filter(g => g.id !== removedGroupId)
+        )
+        qc.setQueryData<Transaction[]>(qk.transactions(personId), (current = []) =>
+          current.filter(t => t.groupId !== removedGroupId)
+        )
+        return
+      }
+
+      // Another member was added/removed from one of our groups — refresh so
+      // member lists stay in sync for all participants in the group.
+      const currentGroups = qc.getQueryData<Group[]>(qk.groups(personId)) ?? []
+      const affectedGroupId = row?.group_id
+      if (affectedGroupId && currentGroups.some(g => g.id === affectedGroupId)) {
+        qc.invalidateQueries({ queryKey: qk.groups(personId) })
+      }
+    })
+    return () => { sub.unsubscribe() }
   }, [personId, qc])
 }

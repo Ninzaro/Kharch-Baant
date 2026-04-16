@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import * as Sentry from '@sentry/react';
 import toast from 'react-hot-toast';
 import { Group, Transaction, Person, PaymentSource } from './types';
 import * as api from './services/apiService';
@@ -27,7 +28,7 @@ import { UserMenu } from './components/auth/UserMenu';
 import * as emailService from './services/emailService';
 import InvitePage from './components/invite/InvitePage';
 import { RealtimeStatus } from './components/RealtimeStatus';
-import { useGroupsQuery, useTransactionsQuery, usePaymentSourcesQuery, usePeopleQuery, useRealtimeGroupsBridge, useRealtimeTransactionsBridge, useRealtimePaymentSourcesBridge, useRealtimePeopleBridge, useRealtimeConnection, qk } from './services/queries';
+import { useGroupsQuery, useTransactionsQuery, usePaymentSourcesQuery, usePeopleQuery, useRealtimeGroupsBridge, useRealtimeTransactionsBridge, useRealtimePaymentSourcesBridge, useRealtimePeopleBridge, useRealtimeGroupMembersBridge, useRealtimeConnection, qk } from './services/queries';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from './store/appStore';
 import { useBackButton } from './hooks/useBackButton';
@@ -46,6 +47,15 @@ const App: React.FC = () => {
     const { data: paymentSources = [], isLoading: psLoading } = usePaymentSourcesQuery(person?.id);
     const { data: people = [], isLoading: peopleLoading } = usePeopleQuery(person?.id);
 
+    // Identify the user in Sentry so error reports show who was affected
+    useEffect(() => {
+      if (person) {
+        Sentry.setUser({ id: person.id, email: person.email, username: person.name });
+      } else {
+        Sentry.setUser(null);
+      }
+    }, [person?.id]);
+
     // Prime the Realtime WebSocket connection with the Clerk JWT FIRST
     useRealtimeConnection(person?.id);
 
@@ -54,6 +64,7 @@ const App: React.FC = () => {
     useRealtimeTransactionsBridge(person?.id);
     useRealtimePaymentSourcesBridge(person?.id);
     useRealtimePeopleBridge(person?.id);
+    useRealtimeGroupMembersBridge(person?.id);
     const activeGroups = React.useMemo(() => groups.filter(g => !g.isArchived), [groups]);
     // Moved to TanStack Query: transactions, people, paymentSources
     const [isLoading, setIsLoading] = useState(true);
@@ -150,7 +161,6 @@ const App: React.FC = () => {
     // Handle invite acceptance
     const handleInviteAcceptance = async (inviteToken: string, personId: string) => {
         try {
-            console.log('🎫 Validating invite token:', inviteToken);
             const validation = await validateInvite(inviteToken);
 
             if (!validation.isValid) {
@@ -159,8 +169,6 @@ const App: React.FC = () => {
                 return;
             }
 
-            console.log('✅ Invite is valid for group:', validation.group?.name);
-
             // Accept the invite
             const result = await acceptInvite({
                 inviteToken,
@@ -168,8 +176,6 @@ const App: React.FC = () => {
             });
 
             if (result.success) {
-                console.log('✅ Successfully joined group:', result.group?.name);
-
                 // Clear the invite URL
                 window.history.replaceState({}, '', '/');
 
@@ -233,19 +239,14 @@ const App: React.FC = () => {
     // Listen for group member additions to refresh data
     useEffect(() => {
         const handleGroupMemberAdded = async (event: CustomEvent) => {
-            const { groupId, person } = event.detail;
-            console.log('🔄 Group member added, refreshing data...', { groupId, person });
+            const { groupId } = event.detail;
 
             try {
-                // Refresh people data to include the new member
                 const updatedPeople = await api.getPeople(currentUserId);
                 qc.setQueryData(qk.people(currentUserId), updatedPeople);
 
-                // Refresh groups data to get updated member lists
                 const updatedGroups = await api.getGroups(currentUserId);
                 qc.setQueryData(qk.groups(currentUserId), updatedGroups);
-
-                console.log('✅ Data refreshed after member addition');
             } catch (error) {
                 console.error('❌ Failed to refresh data after member addition:', error);
             }
@@ -259,32 +260,7 @@ const App: React.FC = () => {
     }, [currentUserId, qc]);
 
     // Groups realtime handled via useRealtimeGroupsBridge in Query layer
-
-    // Realtime for transactions/payment sources/people handled by bridges
-
-    // Realtime: Membership changes — refresh groups and people
-    useEffect(() => {
-        if (!person) return;
-        const gmSubscription = api.subscribeToGroupMembers(person.id, async (payload) => {
-            console.log('📡 Group members realtime event:', payload.eventType, payload);
-            try {
-                console.log('🔄 Refreshing groups and people after membership change...');
-                const [updatedGroups, updatedPeople] = await Promise.all([
-                    api.getGroups(person.id),
-                    api.getPeople(person.id),
-                ]);
-                qc.setQueryData(qk.groups(person.id), updatedGroups);
-                qc.setQueryData(qk.people(person.id), updatedPeople);
-                console.log('✅ Refreshed after membership change');
-            } catch (err) {
-                console.error('Failed to refresh after membership change', err);
-            }
-        });
-        return () => {
-            console.log('🔌 Unsubscribing from group members realtime');
-            gmSubscription.unsubscribe();
-        };
-    }, [person, qc]);
+    // Realtime for transactions/payment sources/people/group members handled by bridges
 
     const handleSelectGroup = (groupId: string) => {
         setSelectedGroupId(groupId);
@@ -317,7 +293,7 @@ const App: React.FC = () => {
         if (!pendingDeleteTransaction) return;
         setIsDeletingTransaction(true);
         try {
-            await api.deleteTransaction(pendingDeleteTransaction.id);
+            await api.deleteTransaction(pendingDeleteTransaction.id, pendingDeleteTransaction.groupId);
             qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) => prev.filter(t => t.id !== pendingDeleteTransaction.id));
             setPendingDeleteTransaction(null);
         } catch (error) {
@@ -350,15 +326,10 @@ const App: React.FC = () => {
     };
 
     const handleEditGroupClick = () => {
-        console.log('handleEditGroupClick called, selectedGroupId:', selectedGroupId);
         const selectedGroup = groups.find(g => g.id === selectedGroupId);
-        console.log('Found group:', selectedGroup);
         if (selectedGroup) {
             setEditingGroup(selectedGroup);
             setIsGroupModalOpen(true);
-            console.log('Modal should now be open with editingGroup:', selectedGroup);
-        } else {
-            console.log('No group found with id:', selectedGroupId);
         }
     };
 
@@ -370,11 +341,7 @@ const App: React.FC = () => {
                 return;
             }
 
-            console.log('🔍 handleSaveGroup - currentUserId:', currentUserId);
-            console.log('🔍 handleSaveGroup - groupData.members:', groupData.members);
-
             if (editingGroup) {
-                console.log('Updating group:', editingGroup.id, 'with data:', groupData);
 
                 // Check if user is removing themselves from the group
                 const wasUserMember = editingGroup.members.includes(currentUserId);
@@ -392,7 +359,6 @@ const App: React.FC = () => {
                 }
 
                 await api.updateGroup(editingGroup.id, groupData);
-                console.log('Group updated successfully');
 
                 // If cute icons was just turned ON, apply emojis to all existing transactions
                 const wasEnabled = editingGroup.enableCuteIcons ?? true;
@@ -408,42 +374,27 @@ const App: React.FC = () => {
 
                 // Refresh groups with proper filtering to ensure accurate state
                 await qc.invalidateQueries({ queryKey: qk.groups(currentUserId) });
-                console.log('Groups refreshed after update');
 
                 if (removingSelf) {
-                    // User removed themselves - redirect to home
                     setSelectedGroupId(null);
                     setIsGroupModalOpen(false);
                     setEditingGroup(null);
                     toast.success(`You have left the group "${editingGroup.name}".`);
-                    console.log('User removed themselves from group, redirected to home');
                 } else {
-                    // Normal update - close modal
                     setIsGroupModalOpen(false);
                     setEditingGroup(null);
-                    console.log('Group updated, modal closed');
                 }
             } else {
-                console.log('Adding new group with data:', groupData);
-                console.log('🔍 Creating group with currentUserId:', currentUserId);
-
                 if (!currentUserId) {
                     toast.error('User data not loaded properly. Please refresh the page and try again.');
                     return;
                 }
 
                 const newGroup = await api.addGroup(groupData, currentUserId);
-                console.log('New group result:', newGroup);
 
-                // OPTIMISTIC UPDATE: Add the new group to cache immediately to prevent blank screen
                 qc.setQueryData<Group[]>(qk.groups(currentUserId), (prev = []) => {
-                    // Check if group already exists (from realtime bridge)
-                    if (prev.some(g => g.id === newGroup.id)) {
-                        console.log('Group already in cache, skipping duplicate');
-                        return prev; // Already there, don't duplicate
-                    }
-                    console.log('Adding new group to cache:', newGroup.id);
-                    return [...prev, newGroup]; // Add new group to cache
+                    if (prev.some(g => g.id === newGroup.id)) return prev;
+                    return [...prev, newGroup];
                 });
 
                 // Close modal first
@@ -459,10 +410,8 @@ const App: React.FC = () => {
                 const groupExists = cachedGroups.some(g => g.id === newGroup.id);
 
                 if (groupExists) {
-                    console.log('Group found in cache, selecting it');
                     setSelectedGroupId(newGroup.id);
                 } else {
-                    console.warn('Group not in cache immediately, invalidating and refetching...');
                     // Fallback: invalidate and refetch, then select
                     await qc.invalidateQueries({ queryKey: qk.groups(currentUserId) });
                     await qc.refetchQueries({ queryKey: qk.groups(currentUserId) });
@@ -761,12 +710,14 @@ const App: React.FC = () => {
                             return updated;
                         } else {
                             const created = await api.addTransaction(selectedGroup.id, tx);
-                            // Let realtime bridge add to cache for consistency, but return it here for modal
+                            // Immediately add to cache so the screen updates without waiting for realtime
+                            qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) =>
+                                prev.some(t => t.id === created.id) ? prev : [created, ...prev]
+                            );
                             return created;
                         }
                     }}
-                    onCreated={(tx) => {
-                        // Let realtime bridge add to cache for consistency
+                    onCreated={(_tx: Transaction) => {
                         setIsSettleUpOpen(false);
                         setDefaultSettleAmount(undefined);
                         setEditingTransaction(null);
