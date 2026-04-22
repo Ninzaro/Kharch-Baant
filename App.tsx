@@ -58,9 +58,6 @@ const App: React.FC = () => {
       }
     }, [person?.id]);
 
-    // Prime the Realtime WebSocket connection with the Clerk JWT FIRST
-    useRealtimeConnection(person?.id);
-
     // Realtime bridges
     useRealtimeGroupsBridge(person?.id);
     useRealtimeTransactionsBridge(person?.id);

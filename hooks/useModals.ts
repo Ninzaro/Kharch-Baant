@@ -180,16 +180,18 @@ export function useModals(
   type ModalKey = keyof Omit<ModalState, 'deleteTransaction' | 'deletePaymentSource'>;
   const createAction = <K extends ModalKey>(key: K) =>
     useCallback((payload?: Partial<ModalState[K]>) => {
-      // Input guards for each modal type
-      if (key === 'transactionForm' && payload && 'editing' in payload && (payload as any).editing !== null && typeof (payload as any).editing !== 'object') {
+      // Input guards for each modal type. `undefined` always means "no payload
+      // for this field" and must be accepted — wrappers pass `{ editing: undefined }`
+      // when the caller invokes openTransactionForm() with no arg.
+      if (key === 'transactionForm' && payload && 'editing' in payload && (payload as any).editing != null && typeof (payload as any).editing !== 'object') {
         console.warn('transactionForm: Invalid editing value', (payload as any).editing);
         return;
       }
-      if (key === 'transactionDetail' && payload && 'transaction' in payload && (!(payload as any).transaction || typeof (payload as any).transaction !== 'object' || !(payload as any).transaction.id)) {
+      if (key === 'transactionDetail' && payload && 'transaction' in payload && (payload as any).transaction !== undefined && (!(payload as any).transaction || typeof (payload as any).transaction !== 'object' || !(payload as any).transaction.id)) {
         console.warn('transactionDetail: Invalid transaction', (payload as any).transaction);
         return;
       }
-      if (key === 'groupForm' && payload && 'editing' in payload && (payload as any).editing !== null && (typeof (payload as any).editing !== 'object' || !(payload as any).editing.id)) {
+      if (key === 'groupForm' && payload && 'editing' in payload && (payload as any).editing != null && (typeof (payload as any).editing !== 'object' || !(payload as any).editing.id)) {
         console.warn('groupForm: Invalid editing value', (payload as any).editing);
         return;
       }
@@ -213,7 +215,17 @@ export function useModals(
         console.warn('settleUp: Invalid config', payload);
         return;
       }
-      setState(s => ({ ...s, [key]: { ...initialState[key], ...payload, isOpen: true } }));
+      // Strip `undefined` properties so the spread doesn't clobber `null`
+      // defaults from `initialState[key]` (e.g. `editing: null` → `undefined`
+      // when the wrapper passes `{ editing: undefined }` for no-arg calls).
+      const cleanedPayload: any = {};
+      if (payload) {
+        for (const k of Object.keys(payload)) {
+          const v = (payload as any)[k];
+          if (v !== undefined) cleanedPayload[k] = v;
+        }
+      }
+      setState(s => ({ ...s, [key]: { ...initialState[key], ...cleanedPayload, isOpen: true } }));
     }, []);
   // Restore close functions for each modal
   const closeTransactionForm = useCallback(() => {
@@ -300,22 +312,6 @@ export function useModals(
   const openDateFilterWrapper = useCallback((startDate?: Date, endDate?: Date) => openDateFilter({ startDate, endDate }), [openDateFilter]);
   const openAddActionWrapper = useCallback(() => openAddAction(), [openAddAction]);
   const openSettingsWrapper = useCallback(() => openSettings(), [openSettings]);
-  const openTransactionForm = createAction('transactionForm');
-  const openTransactionDetail = createAction('transactionDetail');
-  const openGroupForm = createAction('groupForm');
-  const openShareModal = createAction('shareModal');
-  const openMemberInvite = createAction('memberInvite');
-  const openArchivedGroups = createAction('archivedGroups');
-  const openArchivePrompt = createAction('archivePrompt');
-  const openPaymentSourceForm = createAction('paymentSourceForm');
-  const openPaymentSourceManage = createAction('paymentSourceManage');
-  const openSettleUp = createAction('settleUp');
-  const openBalanceBreakdown = createAction('balanceBreakdown');
-  const openCalendar = createAction('calendar');
-  const openDateFilter = createAction('dateFilter');
-  const openAddAction = createAction('addAction');
-  const openSettings = createAction('settings');
-
 
   // Delete confirmations (robust: always use latest state, propagate errors)
   const requestDeleteTransaction = useCallback((transaction: Transaction) => {

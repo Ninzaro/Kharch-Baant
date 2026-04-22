@@ -108,8 +108,9 @@ describe('SettleUpModal', () => {
       expect.objectContaining({
         type: 'settlement',
         amount: 25.50,
-        // Implementation uses receiver as paidById to model transfer
-        paidById: 'p2',
+        // The payer (who hands the money over) is recorded as paidById; the
+        // split then credits the receiver with the full amount.
+        paidById: 'p1',
         split: expect.objectContaining({ mode: 'unequal' })
       })
     );

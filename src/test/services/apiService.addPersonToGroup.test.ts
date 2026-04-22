@@ -1,28 +1,38 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { addPersonToGroup } from '../../../services/apiService'
 import * as supabaseApi from '../../../services/supabaseApiService'
-import { supabase } from '../../../lib/supabase'
+
+// `vi.mock` factories run before any top-level `const` initializers because
+// Vitest hoists them. Anything a factory references must also be hoisted via
+// `vi.hoisted` — otherwise we hit a TDZ error at module load.
+const h = vi.hoisted(() => {
+  // `from()` must return the same object on every call so the `insert` spy
+  // the test wires up (`mockSupabase.from().insert.mockResolvedValue(...)`)
+  // is the same one production code hits (`supabase.from('x').insert(...)`).
+  const fromResult = {
+    insert: vi.fn().mockResolvedValue({ error: null }),
+    select: vi.fn().mockReturnThis() as any,
+    update: vi.fn().mockReturnThis() as any,
+    delete: vi.fn().mockReturnThis() as any,
+    eq: vi.fn().mockReturnThis() as any,
+    single: vi.fn(),
+  }
+  const mockSupabase = {
+    from: vi.fn(() => fromResult),
+  }
+  return { mockSupabase, fromResult }
+})
 
 // Mock the supabaseApi module
 vi.mock('../../../services/supabaseApiService', () => ({
-  addPerson: vi.fn()
+  addPerson: vi.fn(),
 }))
-
-// Mock the supabase client
-const mockSupabase = {
-  from: vi.fn(() => ({
-    insert: vi.fn().mockReturnThis(),
-    select: vi.fn().mockReturnThis(),
-    update: vi.fn().mockReturnThis(),
-    delete: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    single: vi.fn()
-  }))
-}
 
 vi.mock('../../../lib/supabase', () => ({
-  supabase: mockSupabase
+  supabase: h.mockSupabase,
 }))
+
+const mockSupabase = h.mockSupabase
 
 describe('addPersonToGroup', () => {
   beforeEach(() => {
@@ -49,15 +59,17 @@ describe('addPersonToGroup', () => {
     
     expect(supabaseApi.addPerson).toHaveBeenCalledWith({
       name: 'John Doe',
-      avatarUrl: 'https://custom-avatar.com/john.jpg'
+      email: undefined,
+      avatarUrl: 'https://custom-avatar.com/john.jpg',
+      source: 'manual',
     })
-    
+
     expect(mockSupabase.from).toHaveBeenCalledWith('group_members')
     expect(mockSupabase.from().insert).toHaveBeenCalledWith({
       group_id: groupId,
       person_id: 'p1'
     })
-    
+
     expect(result).toEqual(mockPerson)
   })
 
@@ -80,7 +92,9 @@ describe('addPersonToGroup', () => {
     
     expect(supabaseApi.addPerson).toHaveBeenCalledWith({
       name: 'Jane Smith',
-      avatarUrl: 'https://i.pravatar.cc/150?u=Jane%20Smith'
+      email: undefined,
+      avatarUrl: 'https://i.pravatar.cc/150?u=Jane%20Smith',
+      source: 'manual',
     })
     
     expect(mockSupabase.from).toHaveBeenCalledWith('group_members')
@@ -111,7 +125,9 @@ describe('addPersonToGroup', () => {
     
     expect(supabaseApi.addPerson).toHaveBeenCalledWith({
       name: 'José María',
-      avatarUrl: 'https://i.pravatar.cc/150?u=Jos%C3%A9%20Mar%C3%ADa'
+      email: undefined,
+      avatarUrl: 'https://i.pravatar.cc/150?u=Jos%C3%A9%20Mar%C3%ADa',
+      source: 'manual',
     })
     
     expect(result).toEqual(mockPerson)
@@ -130,9 +146,11 @@ describe('addPersonToGroup', () => {
     
     expect(supabaseApi.addPerson).toHaveBeenCalledWith({
       name: 'John Doe',
-      avatarUrl: 'https://i.pravatar.cc/150?u=John%20Doe'
+      email: undefined,
+      avatarUrl: 'https://i.pravatar.cc/150?u=John%20Doe',
+      source: 'manual',
     })
-    
+
     // Should not attempt to insert group membership if person creation fails
     expect(mockSupabase.from).not.toHaveBeenCalled()
   })
@@ -157,9 +175,11 @@ describe('addPersonToGroup', () => {
     
     expect(supabaseApi.addPerson).toHaveBeenCalledWith({
       name: 'John Doe',
-      avatarUrl: 'https://i.pravatar.cc/150?u=John%20Doe'
+      email: undefined,
+      avatarUrl: 'https://i.pravatar.cc/150?u=John%20Doe',
+      source: 'manual',
     })
-    
+
     expect(mockSupabase.from).toHaveBeenCalledWith('group_members')
     expect(mockSupabase.from().insert).toHaveBeenCalledWith({
       group_id: groupId,
@@ -186,7 +206,9 @@ describe('addPersonToGroup', () => {
     
     expect(supabaseApi.addPerson).toHaveBeenCalledWith({
       name: '',
-      avatarUrl: 'https://i.pravatar.cc/150?u='
+      email: undefined,
+      avatarUrl: 'https://i.pravatar.cc/150?u=',
+      source: 'manual',
     })
     
     expect(result).toEqual(mockPerson)

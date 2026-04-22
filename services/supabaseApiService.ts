@@ -488,28 +488,48 @@ const _broadcastTxChange = (groupId: string) => {
 
 // TRANSACTIONS API
 export const getTransactions = async (personId?: string): Promise<Transaction[]> => {
-  let query = supabase
-    .from('transactions')
-    .select('*')
-    .order('date', { ascending: false });
-
-  // If personId provided, only get transactions from groups where person is a member
-  if (personId) {
-    query = supabase
+  // If no personId provided, we can't filter by membership reliably
+  if (!personId) {
+    const { data, error } = await supabase
       .from('transactions')
-      .select(`
-        *,
-        groups!inner(
-          id,
-          group_members!inner(person_id)
-        )
-      `)
-      .eq('groups.group_members.person_id', personId)
+      .select('*')
       .order('date', { ascending: false });
+    if (error) throw error;
+    return (data || []).map(transformDbTransactionToAppTransaction);
   }
 
-  const { data, error } = await query;
-  if (error) throw error;
+  // 1. Get all group IDs where this person is a member
+  const { data: memberRows, error: memberError } = await supabase
+    .from('group_members')
+    .select('group_id')
+    .eq('person_id', personId);
+
+  if (memberError) {
+    console.warn('⚠️ Error fetching group memberships for transactions:', memberError);
+    return [];
+  }
+
+  if (!memberRows || memberRows.length === 0) {
+    console.log('📊 No group memberships found for transactions');
+    return [];
+  }
+
+  const groupIds = memberRows.map(row => row.group_id);
+  console.log('📊 Fetching transactions for groups:', groupIds);
+
+  // 2. Get all transactions for those groups
+  const { data, error } = await supabase
+    .from('transactions')
+    .select('*')
+    .in('group_id', groupIds)
+    .order('date', { ascending: false });
+
+  if (error) {
+    console.error('❌ Error fetching transactions for groups:', error);
+    throw error;
+  }
+  
+  console.log(`📊 Fetched ${data?.length || 0} transactions from DB`);
 
   return (data || []).map(transformDbTransactionToAppTransaction);
 };

@@ -110,6 +110,8 @@ export function validateSplit(mode: SplitMode, amount: number, participants: Spl
             if (totalShares <= 0) return { valid: false, reason: 'Total shares must be > 0' };
             return { valid: true };
         }
+        default:
+            return { valid: false, reason: 'Unknown split mode' };
     }
 }
 

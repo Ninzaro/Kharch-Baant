@@ -218,6 +218,7 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
               <select
                 value={payerId}
                 onChange={e => setPayerId(e.target.value)}
+                aria-label="Payer"
                 className="w-full appearance-none bg-slate-700 hover:bg-slate-600 text-white p-3 rounded-lg border border-transparent focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all font-medium"
               >
                 <option value="" disabled>Select payer</option>
@@ -246,6 +247,7 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
               <select
                 value={receiverId}
                 onChange={e => setReceiverId(e.target.value)}
+                aria-label="Receiver"
                 className="w-full appearance-none bg-slate-700 hover:bg-slate-600 text-white p-3 rounded-lg border border-transparent focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all font-medium"
               >
                 <option value="" disabled>Select receiver</option>

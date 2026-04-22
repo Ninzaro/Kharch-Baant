@@ -8,6 +8,17 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
+    // Exclude Playwright specs (tests/**) and stale parallel-session worktrees
+    // (.claude/worktrees/**). Defaults include node_modules, dist, .{idea,git,cache}.
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/build/**',
+      '**/.{idea,git,cache,output,temp}/**',
+      '**/.claude/**',
+      'tests/**',
+      'android/**',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

@@ -289,10 +289,12 @@ describe('materializeSplit', () => {
       { personId: 'p3', value: 1 }
     ]
     const result = materializeSplit('equal', 100, participants)
-    
-    expect(result.get('p1')).toBeCloseTo(33.33, 2)
+
+    // distributeRounding assigns the leftover cent to the first participant
+    // (largest-remainder method; stable sort resolves fraction-equality ties).
+    expect(result.get('p1')).toBeCloseTo(33.34, 2)
     expect(result.get('p2')).toBeCloseTo(33.33, 2)
-    expect(result.get('p3')).toBeCloseTo(33.34, 2)
+    expect(result.get('p3')).toBeCloseTo(33.33, 2)
     
     const total = Array.from(result.values()).reduce((sum, val) => sum + val, 0)
     expect(total).toBeCloseTo(100, 2)

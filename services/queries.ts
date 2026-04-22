@@ -14,28 +14,9 @@ export const qk = {
 
 // Hook to prime the Realtime connection with the Clerk JWT before any bridges subscribe.
 // Supabase Realtime authenticates at WS connect time, so we must set the token first.
-export const useRealtimeConnection = (personId?: string) => {
-  React.useEffect(() => {
-    if (!personId) return;
-
-    let cancelled = false;
-
-    const connectWithToken = async () => {
-      const token = await getClerkSupabaseToken();
-      if (cancelled) return;
-
-      // Set the access token on the realtime client so WS upgrade carries it
-      if (token) {
-        (supabase.realtime as any).setAuth(token);
-      }
-    };
-
-    connectWithToken();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [personId]);
+// DEPRECATED: Auth is now handled in SupabaseAuthProvider.tsx
+export const useRealtimeConnection = (_personId?: string) => {
+  // Logic moved to AuthProvider
 };
 
 // Groups

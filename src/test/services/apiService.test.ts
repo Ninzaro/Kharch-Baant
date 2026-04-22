@@ -78,7 +78,7 @@ describe('apiService', () => {
       
       const result = await apiService.addGroup(groupData)
       
-      expect(supabaseApi.addGroup).toHaveBeenCalledWith(groupData)
+      expect(supabaseApi.addGroup).toHaveBeenCalledWith(groupData, undefined)
       expect(result).toEqual(mockGroup)
     })
 
@@ -199,7 +199,7 @@ describe('apiService', () => {
       
       const result = await apiService.deleteTransaction(transactionId)
       
-      expect(supabaseApi.deleteTransaction).toHaveBeenCalledWith(transactionId)
+      expect(supabaseApi.deleteTransaction).toHaveBeenCalledWith(transactionId, undefined)
       expect(result).toEqual(mockResult)
     })
   })
@@ -267,7 +267,7 @@ describe('apiService', () => {
       
       const result = await apiService.addPaymentSource(sourceData)
       
-      expect(supabaseApi.addPaymentSource).toHaveBeenCalledWith(sourceData)
+      expect(supabaseApi.addPaymentSource).toHaveBeenCalledWith(sourceData, undefined)
       expect(result).toEqual(mockPaymentSource)
     })
 
@@ -353,27 +353,35 @@ describe('apiService', () => {
     })
 
     it('should assert Supabase environment with missing variables', () => {
-      // Mock environment variables as missing
+      // assertSupabaseEnvironment falls back to process.env when import.meta.env
+      // is empty, so we have to stub both sources. Otherwise the test-setup env
+      // still satisfies the check and no warning fires.
       const originalEnv = import.meta.env
+      const originalProcUrl = process.env.VITE_SUPABASE_URL
+      const originalProcKey = process.env.VITE_SUPABASE_ANON_KEY
       Object.defineProperty(import.meta, 'env', {
         value: {},
         writable: true
       })
-      
+      delete process.env.VITE_SUPABASE_URL
+      delete process.env.VITE_SUPABASE_ANON_KEY
+
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-      
+
       apiService.assertSupabaseEnvironment()
-      
+
       expect(consoleSpy).toHaveBeenCalledWith(
-        '[Supabase] Missing environment variables:', 
+        '[Supabase] Missing environment variables:',
         'VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY'
       )
-      
+
       consoleSpy.mockRestore()
       Object.defineProperty(import.meta, 'env', {
         value: originalEnv,
         writable: true
       })
+      if (originalProcUrl !== undefined) process.env.VITE_SUPABASE_URL = originalProcUrl
+      if (originalProcKey !== undefined) process.env.VITE_SUPABASE_ANON_KEY = originalProcKey
     })
 
     it('should assert Supabase environment with present variables', () => {

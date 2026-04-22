@@ -46,11 +46,29 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   },
   realtime: {
     params: {
-      // Pass token as a realtime connection param so WS auth works
       apikey: supabaseAnonKey!,
     },
   },
 })
+
+/**
+ * Pushes a Clerk JWT into the Supabase Realtime WebSocket so RLS policies that
+ * depend on `auth.jwt()` can see the authenticated user. Pass `null` on sign-out
+ * to drop back to anonymous.
+ *
+ * The HTTP path is handled separately by the `global.fetch` override above —
+ * this helper only exists because Realtime maintains a long-lived connection
+ * that needs its auth context refreshed independently of per-request headers.
+ *
+ * Invoked from `contexts/SupabaseAuthContext.tsx` on session load, on a 50s
+ * refresh interval (Clerk JWT TTL is 60s by default), and on sign-out.
+ */
+export const setRealtimeAuth = async (token?: string | null): Promise<void> => {
+  const authToken = token === undefined ? await getClerkSupabaseToken() : token
+  // supabase-js v2's setAuth accepts string | null; its type surface isn't
+  // re-exported cleanly, hence the cast.
+  ;(supabase.realtime as any).setAuth(authToken || null)
+}
 
 // Types for our database
 export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
