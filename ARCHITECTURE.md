@@ -503,24 +503,19 @@ These are real and worth flagging in any PR that touches nearby code. Items grou
 13. **No client-side rate limiting on Gemini calls.**
 
 ### Cruft
-14. **`SimpleApp.tsx` is dead** — not imported anywhere. Delete or convert to a Storybook-style demo.
-15. **`/src/` is vestigial** — only `src/test/` is used. Either flatten to `tests/` or commit to a full `/src/` move (don't leave it half-done).
-16. **`archive/react-vendor-ZHBkY_-N.js`** is a checked-in 248 KB build artifact. Delete after verifying nothing references it.
-17. **`components/ErrorBoundary.tsx`** — exists but not used in `index.tsx` provider stack. Verify and delete or wire up.
-18. **`package-lock 2.json`** at root — Windows copy artifact. Delete.
-19. **`hs_err_pid*.log`, `replay_pid*.log`** — JVM crash dumps. Delete + add to `.gitignore`.
-20. **`process.env.REACT_APP_*` shims** in `vite.config.ts` `define` block — CRA legacy. Remove when no consumers remain.
-21. **`diagPlugin` in `vite.config.ts`** — comment says "temporary" but it's still committed. Console noise on every dev startup.
-22. **47 root-level `.md` files** — most are fix-log session notes. Move to `docs/archive/`.
-23. **Tailwind double-installed** — README says CDN, but `tailwind.config.js` + `postcss` are present and `index.css` is imported. Pick one.
-24. **`Sentry.ErrorBoundary` fallback is `<p>Something went wrong.</p>`** — minimal UX. Add a real error screen with reload + report buttons.
+14. **`/src/` is vestigial** — only `src/test/` is used. Either flatten to `tests/` or commit to a full `/src/` move (don't leave it half-done).
+15. **`components/ErrorBoundary.tsx`** — exists but not used in `index.tsx` provider stack. Verify and delete or wire up.
+16. **`process.env.REACT_APP_*` shims** in `vite.config.ts` `define` block — CRA legacy. Remove when no consumers remain.
+17. **`diagPlugin` in `vite.config.ts`** — comment says "temporary" but it's still committed. Console noise on every dev startup.
+18. **47 root-level `.md` files** — most are fix-log session notes. Move to `docs/archive/`.
+19. **Tailwind double-installed** — README says CDN, but `tailwind.config.js` + `postcss` are present and `index.css` is imported. Pick one.
+20. **`Sentry.ErrorBoundary` fallback is `<p>Something went wrong.</p>`** — minimal UX. Add a real error screen with reload + report buttons.
 
 ### Process / coverage
-25. **Playwright coverage near zero** — 1 spec in `tests/`. No coverage of: invite flow, settle-up flow, multi-payer, archive, deletion-request workflow.
-26. **Vitest thresholds (85/70/85/85) are aspirational** — actual coverage is far below (99 tests across 10 files as of last run).
-27. **Supabase Auth migration planned but not started** — Clerk is still the only IdP.
-28. **Markdown filename casing** — root docs use `SCREAMING_SNAKE_CASE` (legacy). Standardize on `kebab-case.md` for new docs.
-29. **`COMPLETE_REALTIME_FIX.sql` / `REALTIME_SERVER_FIX.sql` in repo root** — debug scripts that disable RLS globally. Move under `docs/archive/` or delete; they shouldn't live at the root where someone might run them against prod.
+21. **Playwright coverage near zero** — 1 spec in `tests/`. No coverage of: invite flow, settle-up flow, multi-payer, archive, deletion-request workflow.
+22. **Vitest thresholds (85/70/85/85) are aspirational** — actual coverage is far below (99 tests across 10 files as of last run).
+23. **Supabase Auth migration planned but not started** — Clerk is still the only IdP.
+24. **Markdown filename casing** — root docs use `SCREAMING_SNAKE_CASE` (legacy). Standardize on `kebab-case.md` for new docs.
 
 ---
 
