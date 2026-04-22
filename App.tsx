@@ -544,7 +544,7 @@ const App: React.FC = () => {
                         transactions={groupTransactions}
                         people={people}
                         currentUserId={currentUserId}
-                        onAddExpense={() => setIsTransactionModalOpen(true)}
+                        onAddExpense={() => { setEditingTransaction(null); setIsTransactionModalOpen(true); }}
                         onSettleUp={() => {
                             setEditingTransaction(null);
                             setIsSettleUpOpen(true);
@@ -599,7 +599,7 @@ const App: React.FC = () => {
             {isTransactionModalOpen && selectedGroup && (
                 <TransactionFormModal
                     isOpen={isTransactionModalOpen}
-                    onClose={() => setIsTransactionModalOpen(false)}
+                    onClose={() => { setIsTransactionModalOpen(false); setEditingTransaction(null); }}
                     onSave={handleSaveTransaction}
                     transaction={editingTransaction}
                     people={groupMembers}
