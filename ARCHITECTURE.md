@@ -504,18 +504,14 @@ These are real and worth flagging in any PR that touches nearby code. Items grou
 
 ### Cruft
 14. **`/src/` is vestigial** — only `src/test/` is used. Either flatten to `tests/` or commit to a full `/src/` move (don't leave it half-done).
-15. **`components/ErrorBoundary.tsx`** — exists but not used in `index.tsx` provider stack. Verify and delete or wire up.
-16. **`process.env.REACT_APP_*` shims** in `vite.config.ts` `define` block — CRA legacy. Remove when no consumers remain.
-17. **`diagPlugin` in `vite.config.ts`** — comment says "temporary" but it's still committed. Console noise on every dev startup.
-18. **47 root-level `.md` files** — most are fix-log session notes. Move to `docs/archive/`.
-19. **Tailwind double-installed** — README says CDN, but `tailwind.config.js` + `postcss` are present and `index.css` is imported. Pick one.
-20. **`Sentry.ErrorBoundary` fallback is `<p>Something went wrong.</p>`** — minimal UX. Add a real error screen with reload + report buttons.
+15. **47 root-level `.md` files** — most are fix-log session notes. Move to `docs/archive/`.
+16. **Tailwind double-installed** — README says CDN, but `tailwind.config.js` + `postcss` are present and `index.css` is imported. Pick one.
 
 ### Process / coverage
-21. **Playwright coverage near zero** — 1 spec in `tests/`. No coverage of: invite flow, settle-up flow, multi-payer, archive, deletion-request workflow.
-22. **Vitest thresholds (85/70/85/85) are aspirational** — actual coverage is far below (99 tests across 10 files as of last run).
-23. **Supabase Auth migration planned but not started** — Clerk is still the only IdP.
-24. **Markdown filename casing** — root docs use `SCREAMING_SNAKE_CASE` (legacy). Standardize on `kebab-case.md` for new docs.
+17. **Playwright coverage near zero** — 1 spec in `tests/`. No coverage of: invite flow, settle-up flow, multi-payer, archive, deletion-request workflow.
+18. **Vitest thresholds (85/70/85/85) are aspirational** — actual coverage is far below (99 tests across 10 files as of last run).
+19. **Supabase Auth migration planned but not started** — Clerk is still the only IdP.
+20. **Markdown filename casing** — root docs use `SCREAMING_SNAKE_CASE` (legacy). Standardize on `kebab-case.md` for new docs.
 
 ---
 

@@ -13,6 +13,7 @@ import { SplashScreen } from '@capacitor/splash-screen';
 import { App as CapacitorApp } from '@capacitor/app';
 
 import { ClerkProvider } from '@clerk/clerk-react';
+import ErrorBoundary from './components/ErrorBoundary';
 
 Sentry.init({
   dsn: 'https://241dafbc0787e2e71906ec5aaff9a3f9@o4511203625795584.ingest.us.sentry.io/4511203644342272',
@@ -73,7 +74,7 @@ if (!PUBLISHABLE_KEY) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <Sentry.ErrorBoundary fallback={<p>Something went wrong.</p>}>
+    <ErrorBoundary>
       <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
         <QueryClientProvider client={queryClient}>
           <SupabaseAuthProvider>
@@ -83,6 +84,6 @@ root.render(
           </SupabaseAuthProvider>
         </QueryClientProvider>
       </ClerkProvider>
-    </Sentry.ErrorBoundary>
+    </ErrorBoundary>
   </React.StrictMode>
 );

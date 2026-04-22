@@ -3,43 +3,15 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
-// Diagnostic plugin (temporary) to trace Vite startup phases
-const diagPlugin = () => ({
-  name: 'diag-startup',
-  config(config) {
-    // eslint-disable-next-line no-console
-    console.log('[VITE DIAG] initial config hook');
-    return config;
-  },
-  configResolved(resolved) {
-    // eslint-disable-next-line no-console
-    console.log('[VITE DIAG] config resolved: root=%s mode=%s plugins=%d', resolved.root, resolved.mode, resolved.plugins.length);
-  },
-  buildStart() {
-    // eslint-disable-next-line no-console
-    console.log('[VITE DIAG] buildStart (dev server bootstrap)');
-  },
-});
-
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, process.cwd(), '');
-    const isProduction = mode === 'production';
-    
-    // Log environment variables during build (for debugging)
-    console.log('[VITE] Building with mode:', mode);
-    console.log('[VITE] process.env.VITE_CLERK_PUBLISHABLE_KEY:', !!process.env.VITE_CLERK_PUBLISHABLE_KEY);
-    console.log('[VITE] env.VITE_CLERK_PUBLISHABLE_KEY:', !!env.VITE_CLERK_PUBLISHABLE_KEY);
-    console.log('[VITE] process.env.VITE_SUPABASE_URL:', !!process.env.VITE_SUPABASE_URL);
-    console.log('[VITE] env.VITE_SUPABASE_URL:', !!env.VITE_SUPABASE_URL);
-    
+
     return {
       server: {
         port: 3000,
         host: '0.0.0.0',
       },
       plugins: [
-        // Only add diag plugin in development
-        ...(isProduction ? [] : [diagPlugin()]),
         react(),
         nodePolyfills({
           // Whether to polyfill `node:` protocol imports.
@@ -124,12 +96,9 @@ export default defineConfig(({ mode }) => {
         'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(process.env.VITE_SUPABASE_URL || env.VITE_SUPABASE_URL),
         'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(process.env.VITE_SUPABASE_ANON_KEY || env.VITE_SUPABASE_ANON_KEY),
         'import.meta.env.VITE_API_MODE': JSON.stringify(process.env.VITE_API_MODE || env.VITE_API_MODE || 'supabase'),
-        // Support both VITE_ and REACT_APP_ prefixes for compatibility
+        // Gemini API key shims for process.env access in geminiService.ts
         'process.env.API_KEY': JSON.stringify(env.VITE_GEMINI_API_KEY || env.GEMINI_API_KEY),
         'process.env.GEMINI_API_KEY': JSON.stringify(env.VITE_GEMINI_API_KEY || env.GEMINI_API_KEY),
-        'process.env.REACT_APP_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL || env.REACT_APP_SUPABASE_URL),
-        'process.env.REACT_APP_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY || env.REACT_APP_SUPABASE_ANON_KEY),
-        'process.env.REACT_APP_API_MODE': JSON.stringify(env.VITE_API_MODE || env.REACT_APP_API_MODE || 'mock'),
         // Polyfills for Node.js modules
         global: 'globalThis',
       }
