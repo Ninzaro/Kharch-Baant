@@ -484,45 +484,43 @@ Forty-seven `.md` files currently live at the repo root. Most are session/fix no
 These are real and worth flagging in any PR that touches nearby code. Items grouped by severity.
 
 ### Likely bugs
-1. **`useGroupsQuery`, `useTransactionsQuery`, `usePaymentSourcesQuery` aren't gated on `personId`** (only `usePeopleQuery` is). They fire on first render with `personId === undefined`.
-2. **Realtime UPDATE on `groups`** explicitly preserves `members` from local state because the payload omits them — works today but fragile if any other field is dropped from payloads.
-3. **Inconsistent `API_MODE` defaults** in `vite.config.ts`: `import.meta.env.VITE_API_MODE` defaults to `'supabase'`, `process.env.REACT_APP_API_MODE` defaults to `'mock'`. Same setting, two defaults.
-4. **`VITE_API_MODE` listed as required** in `utils/envValidation.ts` but README says mock mode was removed — one of the two is stale.
+1. **Realtime UPDATE on `groups`** explicitly preserves `members` from local state because the payload omits them — works today but fragile if any other field is dropped from payloads.
+2. **Inconsistent `API_MODE` defaults** in `vite.config.ts`: `import.meta.env.VITE_API_MODE` defaults to `'supabase'`, `process.env.REACT_APP_API_MODE` defaults to `'mock'`. Same setting, two defaults.
+3. **`VITE_API_MODE` listed as required** in `utils/envValidation.ts` but README says mock mode was removed — one of the two is stale.
 
 ### Architecture / size
-5. **`App.tsx` is 912 LOC.** Manages auth, queries, realtime, view switching, and 15 modal `useState`s. Should split into `AppContainer` / `MainLayout` / `ModalRoot`.
-6. **`services/supabaseApiService.ts` is 1343 LOC.** Should split by domain (groups / transactions / invites / deletion-requests / people).
-7. **Modal state is bifurcated** — `appStore.openModals` exists but `App.tsx` still uses local `useState`, *and* the `ModalName` enum is missing `groupSummary`, `groupBalances`, `confirmDelete`.
-8. **TypeScript is not strict.** `tsconfig.json` lacks `strict: true`. §13's standards are aspirational.
-9. **No `.prettierrc` / `.eslintrc`** committed. Style is enforced by convention only.
+4. **`App.tsx` is 912 LOC.** Manages auth, queries, realtime, view switching, and 15 modal `useState`s. Should split into `AppContainer` / `MainLayout` / `ModalRoot`.
+5. **`services/supabaseApiService.ts` is 1343 LOC.** Should split by domain (groups / transactions / invites / deletion-requests / people).
+6. **Modal state is bifurcated** — `appStore.openModals` exists but `App.tsx` still uses local `useState`, *and* the `ModalName` enum is missing `groupSummary`, `groupBalances`, `confirmDelete`.
+7. **TypeScript is not strict.** `tsconfig.json` lacks `strict: true`. §13's standards are aspirational.
+8. **No `.prettierrc` / `.eslintrc`** committed. Style is enforced by convention only.
 
 ### Security / config
-10. **Sentry DSN hardcoded** in `index.tsx`. Should be `VITE_SENTRY_DSN`.
-11. **Hardcoded LAN IP** (`192.168.1.10`) in `capacitor.config.ts` `server.url`. Will not work on any other developer's machine.
-12. **`(window as any).Clerk` global access** in `lib/supabase.ts` `getClerkSupabaseToken`. Couples to Clerk's window injection — fragile.
-13. **MailerSend calls are fire-and-forget** with no retry/queue. A failed send is silent.
-14. **No client-side rate limiting on Gemini calls.**
+9. **Sentry DSN hardcoded** in `index.tsx`. Should be `VITE_SENTRY_DSN`.
+10. **Hardcoded LAN IP** (`192.168.1.10`) in `capacitor.config.ts` `server.url`. Will not work on any other developer's machine.
+11. **`(window as any).Clerk` global access** in `lib/supabase.ts` `getClerkSupabaseToken`. Couples to Clerk's window injection — fragile.
+12. **MailerSend calls are fire-and-forget** with no retry/queue. A failed send is silent.
+13. **No client-side rate limiting on Gemini calls.**
 
 ### Cruft
-15. **`SimpleApp.tsx` is dead** — not imported anywhere. Delete or convert to a Storybook-style demo.
-16. **`/src/` is vestigial** — only `src/test/` is used. Either flatten to `tests/` or commit to a full `/src/` move (don't leave it half-done).
-17. **`archive/react-vendor-ZHBkY_-N.js`** is a checked-in 248 KB build artifact. Delete after verifying nothing references it.
-18. **`components/ErrorBoundary.tsx`** — exists but not used in `index.tsx` provider stack. Verify and delete or wire up.
-19. **Duplicate imports in `App.tsx`** — `ConfirmDeleteModal` and `ArchivePromptModal` imported twice. Cleanup pass needed.
-20. **`package-lock 2.json`** at root — Windows copy artifact. Delete.
-21. **`hs_err_pid*.log`, `replay_pid*.log`** — JVM crash dumps. Delete + add to `.gitignore`.
-22. **`process.env.REACT_APP_*` shims** in `vite.config.ts` `define` block — CRA legacy. Remove when no consumers remain.
-23. **`diagPlugin` in `vite.config.ts`** — comment says "temporary" but it's still committed. Console noise on every dev startup.
-24. **47 root-level `.md` files** — most are fix-log session notes. Move to `docs/archive/`.
-25. **Tailwind double-installed** — README says CDN, but `tailwind.config.js` + `postcss` are present and `index.css` is imported. Pick one.
-26. **`Sentry.ErrorBoundary` fallback is `<p>Something went wrong.</p>`** — minimal UX. Add a real error screen with reload + report buttons.
+14. **`SimpleApp.tsx` is dead** — not imported anywhere. Delete or convert to a Storybook-style demo.
+15. **`/src/` is vestigial** — only `src/test/` is used. Either flatten to `tests/` or commit to a full `/src/` move (don't leave it half-done).
+16. **`archive/react-vendor-ZHBkY_-N.js`** is a checked-in 248 KB build artifact. Delete after verifying nothing references it.
+17. **`components/ErrorBoundary.tsx`** — exists but not used in `index.tsx` provider stack. Verify and delete or wire up.
+18. **`package-lock 2.json`** at root — Windows copy artifact. Delete.
+19. **`hs_err_pid*.log`, `replay_pid*.log`** — JVM crash dumps. Delete + add to `.gitignore`.
+20. **`process.env.REACT_APP_*` shims** in `vite.config.ts` `define` block — CRA legacy. Remove when no consumers remain.
+21. **`diagPlugin` in `vite.config.ts`** — comment says "temporary" but it's still committed. Console noise on every dev startup.
+22. **47 root-level `.md` files** — most are fix-log session notes. Move to `docs/archive/`.
+23. **Tailwind double-installed** — README says CDN, but `tailwind.config.js` + `postcss` are present and `index.css` is imported. Pick one.
+24. **`Sentry.ErrorBoundary` fallback is `<p>Something went wrong.</p>`** — minimal UX. Add a real error screen with reload + report buttons.
 
 ### Process / coverage
-27. **Playwright coverage near zero** — 1 spec in `tests/`. No coverage of: invite flow, settle-up flow, multi-payer, archive, deletion-request workflow.
-28. **Vitest thresholds (85/70/85/85) are aspirational** — actual coverage is far below (99 tests across 10 files as of last run).
-29. **Supabase Auth migration planned but not started** — Clerk is still the only IdP.
-30. **Markdown filename casing** — root docs use `SCREAMING_SNAKE_CASE` (legacy). Standardize on `kebab-case.md` for new docs.
-31. **`COMPLETE_REALTIME_FIX.sql` / `REALTIME_SERVER_FIX.sql` in repo root** — debug scripts that disable RLS globally. Move under `docs/archive/` or delete; they shouldn't live at the root where someone might run them against prod.
+25. **Playwright coverage near zero** — 1 spec in `tests/`. No coverage of: invite flow, settle-up flow, multi-payer, archive, deletion-request workflow.
+26. **Vitest thresholds (85/70/85/85) are aspirational** — actual coverage is far below (99 tests across 10 files as of last run).
+27. **Supabase Auth migration planned but not started** — Clerk is still the only IdP.
+28. **Markdown filename casing** — root docs use `SCREAMING_SNAKE_CASE` (legacy). Standardize on `kebab-case.md` for new docs.
+29. **`COMPLETE_REALTIME_FIX.sql` / `REALTIME_SERVER_FIX.sql` in repo root** — debug scripts that disable RLS globally. Move under `docs/archive/` or delete; they shouldn't live at the root where someone might run them against prod.
 
 ---
 

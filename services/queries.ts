@@ -24,6 +24,7 @@ export const useGroupsQuery = (personId?: string) =>
   useQuery({
     queryKey: qk.groups(personId),
     queryFn: () => api.getGroups(personId),
+    enabled: !!personId,
   })
 
 // Transactions
@@ -31,6 +32,7 @@ export const useTransactionsQuery = (personId?: string) =>
   useQuery({
     queryKey: qk.transactions(personId),
     queryFn: () => api.getTransactions(personId),
+    enabled: !!personId,
   })
 
 // Payment Sources
@@ -38,6 +40,7 @@ export const usePaymentSourcesQuery = (personId?: string) =>
   useQuery({
     queryKey: qk.paymentSources(personId),
     queryFn: () => api.getPaymentSources(personId),
+    enabled: !!personId,
   })
 
 // People

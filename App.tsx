@@ -30,8 +30,6 @@ import InvitePage from './components/invite/InvitePage';
 import { RealtimeStatus } from './components/RealtimeStatus';
 import { useGroupsQuery, useTransactionsQuery, usePaymentSourcesQuery, usePeopleQuery, useRealtimeGroupsBridge, useRealtimeTransactionsBridge, useRealtimePaymentSourcesBridge, useRealtimePeopleBridge, useRealtimeGroupMembersBridge, useRealtimeConnection, qk } from './services/queries';
 import { useQueryClient } from '@tanstack/react-query';
-import ConfirmDeleteModal from './components/ConfirmDeleteModal';
-import ArchivePromptModal from './components/ArchivePromptModal';
 import { useAppStore } from './store/appStore';
 import { useBackButton } from './hooks/useBackButton';
 
