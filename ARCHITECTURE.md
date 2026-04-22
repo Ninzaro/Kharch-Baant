@@ -122,7 +122,7 @@ The repo is **flat**, not split into `/backend /frontend /common`. Source folder
   - Hooks: `useCamelCase.ts` (`useModals.ts`)
   - Services / utils / stores: `camelCase.ts` (`apiService.ts`)
   - SQL migrations: `YYYYMMDDHHMMSS_description.sql` (mostly — some legacy files break this)
-- **Markdown filenames** at the root use `SCREAMING_SNAKE_CASE` (legacy artifact — debt §15).
+- **Markdown filenames** at the root use `SCREAMING_SNAKE_CASE` (legacy, not renamed). **New docs** go in `kebab-case.md`.
 
 ### Where new code goes
 
@@ -341,7 +341,7 @@ Owns all server state. Components and hooks read via the hooks in `services/quer
 - All RLS policies assume the Clerk JWT in the `Authorization` header.
 
 ### Migration target
-`SUPABASE_AUTH_MIGRATION_PLAN.md` describes a Clerk → Supabase Auth migration. **Not started in code.** When migration begins, update this section in the same PR.
+**Decision (2026-04-22):** Clerk is the permanent IdP. There is no planned migration to Supabase Auth. `SUPABASE_AUTH_MIGRATION_PLAN.md` is a stale planning artifact and can be deleted.
 
 ---
 
@@ -394,7 +394,7 @@ Supabase Postgres. Schema in `supabase-schema.sql`; deltas in `migrations/` and 
 - New user flows get a Playwright spec in `tests/`.
 - Never commit `.skip` / `.only` (enforce in review).
 
-**Reality check:** thresholds are configured but actual coverage is well below them — Playwright suite has 1 spec, unit tests cover a handful of files. Treat thresholds as aspirational until a coverage backfill lands.
+**Reality check (2026-04-22):** 99 unit tests across 10 files; global coverage 10.76% stmts / 68.94% branches / 31.29% functions. Thresholds in `vitest.config.ts` track reality (8/65/28/8) and will cause CI to fail on genuine regression. Playwright suite: `tests/app.spec.ts` (unauthenticated, always runs) + `tests/authenticated.*.spec.ts` (Clerk login required; self-skip when credentials absent). See §15 item 17 for remaining gaps.
 
 ---
 
@@ -508,10 +508,9 @@ These are real and worth flagging in any PR that touches nearby code. Items grou
 16. **Tailwind double-installed** — README says CDN, but `tailwind.config.js` + `postcss` are present and `index.css` is imported. Pick one.
 
 ### Process / coverage
-17. **Playwright coverage near zero** — 1 spec in `tests/`. No coverage of: invite flow, settle-up flow, multi-payer, archive, deletion-request workflow.
-18. **Vitest thresholds (85/70/85/85) are aspirational** — actual coverage is far below (99 tests across 10 files as of last run).
-19. **Supabase Auth migration planned but not started** — Clerk is still the only IdP.
-20. **Markdown filename casing** — root docs use `SCREAMING_SNAKE_CASE` (legacy). Standardize on `kebab-case.md` for new docs.
+17. **Playwright authenticated flows need real test credentials** — `tests/auth.setup.ts` exists and handles Clerk login; authenticated specs (`tests/authenticated.*.spec.ts`) cover add-expense and settle-up flows. They self-skip when `TEST_USER_EMAIL` / `TEST_USER_PASSWORD` are absent. Remaining gaps: invite flow, archive, deletion-request, multi-payer split.
+18. **Unit-test coverage is thin** — 99 tests across 10 files (measured 2026-04-22: 10.76% stmts / 68.94% branches / 31.29% functions). Thresholds in `vitest.config.ts` now track reality (8/65/28/8) rather than being aspirational. Priority backfill targets: `App.tsx`, `supabaseApiService.ts`, `queries.ts`, and the component family.
+20. **Markdown filename casing** — root docs use `SCREAMING_SNAKE_CASE` (legacy). Going forward, **new docs use `kebab-case.md`**. Existing files are not renamed (breaking bookmarks not worth it).
 
 ---
 

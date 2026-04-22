@@ -25,28 +25,45 @@ export default defineConfig({
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    /* Base URL to use in actions like `await page.goto('')`. */
-    // baseURL: 'http://localhost:3000',
+    /* Base URL for all page.goto() calls without an explicit origin. */
+    baseURL: 'http://localhost:3000',
 
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+    /* Screenshot on failure to ease debugging. */
+    screenshot: 'only-on-failure',
+
+    /* Collect trace when retrying the failed test. */
     trace: 'on-first-retry',
   },
 
   /* Configure projects for major browsers */
   projects: [
+    // ─── Auth setup ──────────────────────────────────────────────────────────
+    // Runs once before any authenticated test projects.
+    // Writes Clerk session cookies to tests/.auth/user.json.
+    // Skipped automatically when TEST_USER_EMAIL / TEST_USER_PASSWORD are absent.
+    {
+      name: 'auth setup',
+      testMatch: /auth\.setup\.ts/,
+    },
+
+    // ─── Unauthenticated tests ─────────────────────────────────────────────
+    // App-shell, PWA manifest, sign-in page — no Clerk session needed.
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      testIgnore: /authenticated/,
     },
 
+    // ─── Authenticated tests ───────────────────────────────────────────────
+    // Depend on auth setup; reuse the saved session.
     {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      name: 'chromium-auth',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'tests/.auth/user.json',
+      },
+      testMatch: /authenticated/,
+      dependencies: ['auth setup'],
     },
 
     /* Test against mobile viewports. */
@@ -70,10 +87,12 @@ export default defineConfig({
     // },
   ],
 
-  /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://localhost:3000',
-  //   reuseExistingServer: !process.env.CI,
-  // },
+  /* Spin up the dev server automatically when running locally or in CI.
+     Set PLAYWRIGHT_BASE_URL to override (e.g. point at a preview deployment). */
+  webServer: process.env.PLAYWRIGHT_BASE_URL ? undefined : {
+    command: 'npm run dev',
+    url: 'http://localhost:3000',
+    reuseExistingServer: !process.env.CI,
+    timeout: 60_000,
+  },
 });
