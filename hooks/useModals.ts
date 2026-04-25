@@ -46,6 +46,7 @@ interface ModalState {
     defaultPayer?: string;
     defaultReceiver?: string;
     defaultAmount?: number;
+    initialTransaction?: Transaction;
   };
   balanceBreakdown: {
     isOpen: boolean;
@@ -83,6 +84,24 @@ interface ModalState {
     paymentSource: PaymentSource | null;
     isDeleting: boolean;
   };
+
+  // Group action confirmations
+  confirmDeleteGroup: {
+    isOpen: boolean;
+    group: Group | null;
+    isProcessing: boolean;
+  };
+  confirmArchiveGroup: {
+    isOpen: boolean;
+    group: Group | null;
+    isProcessing: boolean;
+  };
+  confirmLeaveGroup: {
+    isOpen: boolean;
+    group: Group | null;
+    pendingSaveData: Omit<Group, 'id'> | null;
+    isProcessing: boolean;
+  };
 }
 
 interface ModalActions {
@@ -115,6 +134,7 @@ interface ModalActions {
     defaultPayer?: string;
     defaultReceiver?: string;
     defaultAmount?: number;
+    initialTransaction?: Transaction;
   }) => void;
   closeSettleUp: () => void;
   openBalanceBreakdown: (groupId: string, personId: string) => void;
@@ -140,6 +160,17 @@ interface ModalActions {
   confirmDeletePaymentSource: () => Promise<void>;
   cancelDeletePaymentSource: () => void;
   
+  // Group confirmation actions
+  requestConfirmDeleteGroup: (group: Group) => void;
+  confirmDeleteGroup: () => Promise<void>;
+  cancelConfirmDeleteGroup: () => void;
+  requestConfirmArchiveGroup: (group: Group) => void;
+  confirmArchiveGroup: () => Promise<void>;
+  cancelConfirmArchiveGroup: () => void;
+  requestConfirmLeaveGroup: (group: Group, saveData: Omit<Group, 'id'>) => void;
+  confirmLeaveGroup: () => Promise<void>;
+  cancelConfirmLeaveGroup: () => void;
+
   // Utility
   closeAll: () => void;
 }
@@ -154,7 +185,7 @@ const initialState: ModalState = {
   archivePrompt: { isOpen: false, groupId: null },
   paymentSourceForm: { isOpen: false },
   paymentSourceManage: { isOpen: false },
-  settleUp: { isOpen: false, defaultPayer: undefined, defaultReceiver: undefined, defaultAmount: undefined },
+  settleUp: { isOpen: false, defaultPayer: undefined, defaultReceiver: undefined, defaultAmount: undefined, initialTransaction: undefined },
   balanceBreakdown: { isOpen: false, groupId: null, personId: null },
   calendar: { isOpen: false, selectedDate: undefined },
   dateFilter: { isOpen: false, startDate: undefined, endDate: undefined },
@@ -162,11 +193,17 @@ const initialState: ModalState = {
   settings: { isOpen: false },
   deleteTransaction: { isOpen: false, transaction: null, isDeleting: false },
   deletePaymentSource: { isOpen: false, paymentSource: null, isDeleting: false },
+  confirmDeleteGroup: { isOpen: false, group: null, isProcessing: false },
+  confirmArchiveGroup: { isOpen: false, group: null, isProcessing: false },
+  confirmLeaveGroup: { isOpen: false, group: null, pendingSaveData: null, isProcessing: false },
 };
 
 export function useModals(
   onDeleteTransaction?: (id: string) => Promise<void>,
-  onDeletePaymentSource?: (id: string) => Promise<void>
+  onDeletePaymentSource?: (id: string) => Promise<void>,
+  onDeleteGroup?: (group: Group) => Promise<void>,
+  onArchiveGroup?: (group: Group) => Promise<void>,
+  onLeaveGroup?: (group: Group, saveData: Omit<Group, 'id'>) => Promise<void>,
 ) {
   const [state, setState] = useState<ModalState>(initialState);
   const stateRef = React.useRef(state);
@@ -177,7 +214,7 @@ export function useModals(
 
 
   // Dynamic modal openers
-  type ModalKey = keyof Omit<ModalState, 'deleteTransaction' | 'deletePaymentSource'>;
+  type ModalKey = keyof Omit<ModalState, 'deleteTransaction' | 'deletePaymentSource' | 'confirmDeleteGroup' | 'confirmArchiveGroup' | 'confirmLeaveGroup'>;
   const createAction = <K extends ModalKey>(key: K) =>
     useCallback((payload?: Partial<ModalState[K]>) => {
       // Input guards for each modal type. `undefined` always means "no payload
@@ -276,10 +313,6 @@ export function useModals(
   }, []);
 
   // Modal openers
-  // Modal openers
-
-
-  // Modal openers
   const openTransactionForm = createAction('transactionForm');
   const openTransactionDetail = createAction('transactionDetail');
   const openGroupForm = createAction('groupForm');
@@ -306,7 +339,7 @@ export function useModals(
   const openArchivePromptWrapper = useCallback((groupId: string) => openArchivePrompt({ groupId }), [openArchivePrompt]);
   const openPaymentSourceFormWrapper = useCallback(() => openPaymentSourceForm(), [openPaymentSourceForm]);
   const openPaymentSourceManageWrapper = useCallback(() => openPaymentSourceManage(), [openPaymentSourceManage]);
-  const openSettleUpWrapper = useCallback((config?: { defaultPayer?: string; defaultReceiver?: string; defaultAmount?: number }) => openSettleUp(config), [openSettleUp]);
+  const openSettleUpWrapper = useCallback((config?: { defaultPayer?: string; defaultReceiver?: string; defaultAmount?: number; initialTransaction?: Transaction }) => openSettleUp(config), [openSettleUp]);
   const openBalanceBreakdownWrapper = useCallback((groupId: string, personId: string) => openBalanceBreakdown({ groupId, personId }), [openBalanceBreakdown]);
   const openCalendarWrapper = useCallback((selectedDate?: Date) => openCalendar({ selectedDate }), [openCalendar]);
   const openDateFilterWrapper = useCallback((startDate?: Date, endDate?: Date) => openDateFilter({ startDate, endDate }), [openDateFilter]);
@@ -394,47 +427,136 @@ export function useModals(
     }));
   }, []);
 
+  // ── Group confirmation actions ──────────────────────────────────────
+  const requestConfirmDeleteGroup = useCallback((group: Group) => {
+    if (!group || typeof group !== 'object' || !group.id) {
+      console.warn('requestConfirmDeleteGroup: Invalid group', group);
+      return;
+    }
+    setState(s => ({ ...s, confirmDeleteGroup: { isOpen: true, group, isProcessing: false } }));
+  }, []);
+
+  const confirmDeleteGroupAction = useCallback(async () => {
+    const group = stateRef.current.confirmDeleteGroup.group;
+    if (!group || !onDeleteGroup) return;
+    setState(s => ({ ...s, confirmDeleteGroup: { ...s.confirmDeleteGroup, isProcessing: true } }));
+    try {
+      await onDeleteGroup(group);
+      setState(s => ({ ...s, confirmDeleteGroup: initialState.confirmDeleteGroup }));
+    } catch (error) {
+      setState(s => ({ ...s, confirmDeleteGroup: { ...s.confirmDeleteGroup, isProcessing: false } }));
+      throw error;
+    }
+  }, [onDeleteGroup]);
+
+  const cancelConfirmDeleteGroup = useCallback(() => {
+    setState(s => ({ ...s, confirmDeleteGroup: initialState.confirmDeleteGroup }));
+  }, []);
+
+  const requestConfirmArchiveGroup = useCallback((group: Group) => {
+    if (!group || typeof group !== 'object' || !group.id) {
+      console.warn('requestConfirmArchiveGroup: Invalid group', group);
+      return;
+    }
+    setState(s => ({ ...s, confirmArchiveGroup: { isOpen: true, group, isProcessing: false } }));
+  }, []);
+
+  const confirmArchiveGroupAction = useCallback(async () => {
+    const group = stateRef.current.confirmArchiveGroup.group;
+    if (!group || !onArchiveGroup) return;
+    setState(s => ({ ...s, confirmArchiveGroup: { ...s.confirmArchiveGroup, isProcessing: true } }));
+    try {
+      await onArchiveGroup(group);
+      setState(s => ({ ...s, confirmArchiveGroup: initialState.confirmArchiveGroup }));
+    } catch (error) {
+      setState(s => ({ ...s, confirmArchiveGroup: { ...s.confirmArchiveGroup, isProcessing: false } }));
+      throw error;
+    }
+  }, [onArchiveGroup]);
+
+  const cancelConfirmArchiveGroup = useCallback(() => {
+    setState(s => ({ ...s, confirmArchiveGroup: initialState.confirmArchiveGroup }));
+  }, []);
+
+  const requestConfirmLeaveGroup = useCallback((group: Group, saveData: Omit<Group, 'id'>) => {
+    if (!group || typeof group !== 'object' || !group.id) {
+      console.warn('requestConfirmLeaveGroup: Invalid group', group);
+      return;
+    }
+    if (!saveData || typeof saveData !== 'object') {
+      console.warn('requestConfirmLeaveGroup: Invalid saveData', saveData);
+      return;
+    }
+    setState(s => ({ ...s, confirmLeaveGroup: { isOpen: true, group, pendingSaveData: saveData, isProcessing: false } }));
+  }, []);
+
+  const confirmLeaveGroupAction = useCallback(async () => {
+    const { group, pendingSaveData } = stateRef.current.confirmLeaveGroup;
+    if (!group || !pendingSaveData || !onLeaveGroup) return;
+    setState(s => ({ ...s, confirmLeaveGroup: { ...s.confirmLeaveGroup, isProcessing: true } }));
+    try {
+      await onLeaveGroup(group, pendingSaveData);
+      setState(s => ({ ...s, confirmLeaveGroup: initialState.confirmLeaveGroup }));
+    } catch (error) {
+      setState(s => ({ ...s, confirmLeaveGroup: { ...s.confirmLeaveGroup, isProcessing: false } }));
+      throw error;
+    }
+  }, [onLeaveGroup]);
+
+  const cancelConfirmLeaveGroup = useCallback(() => {
+    setState(s => ({ ...s, confirmLeaveGroup: initialState.confirmLeaveGroup }));
+  }, []);
+
   const closeAll = useCallback(() => {
     setState(initialState);
   }, []);
 
   const actions: ModalActions = {
-  openTransactionForm: openTransactionFormWrapper,
-  closeTransactionForm,
-  openTransactionDetail: openTransactionDetailWrapper,
-  closeTransactionDetail,
-  openGroupForm: openGroupFormWrapper,
-  closeGroupForm,
-  openShareModal: openShareModalWrapper,
-  closeShareModal,
-  openMemberInvite: openMemberInviteWrapper,
-  closeMemberInvite,
-  openArchivedGroups: openArchivedGroupsWrapper,
-  closeArchivedGroups,
-  openArchivePrompt: openArchivePromptWrapper,
-  closeArchivePrompt,
-  openPaymentSourceForm: openPaymentSourceFormWrapper,
-  closePaymentSourceForm,
-  openPaymentSourceManage: openPaymentSourceManageWrapper,
-  closePaymentSourceManage,
-  openSettleUp: openSettleUpWrapper,
-  closeSettleUp,
-  openBalanceBreakdown: openBalanceBreakdownWrapper,
-  closeBalanceBreakdown,
-  openCalendar: openCalendarWrapper,
-  closeCalendar,
-  openDateFilter: openDateFilterWrapper,
-  closeDateFilter,
-  openAddAction: openAddActionWrapper,
-  closeAddAction,
-  openSettings: openSettingsWrapper,
-  closeSettings,
+    openTransactionForm: openTransactionFormWrapper,
+    closeTransactionForm,
+    openTransactionDetail: openTransactionDetailWrapper,
+    closeTransactionDetail,
+    openGroupForm: openGroupFormWrapper,
+    closeGroupForm,
+    openShareModal: openShareModalWrapper,
+    closeShareModal,
+    openMemberInvite: openMemberInviteWrapper,
+    closeMemberInvite,
+    openArchivedGroups: openArchivedGroupsWrapper,
+    closeArchivedGroups,
+    openArchivePrompt: openArchivePromptWrapper,
+    closeArchivePrompt,
+    openPaymentSourceForm: openPaymentSourceFormWrapper,
+    closePaymentSourceForm,
+    openPaymentSourceManage: openPaymentSourceManageWrapper,
+    closePaymentSourceManage,
+    openSettleUp: openSettleUpWrapper,
+    closeSettleUp,
+    openBalanceBreakdown: openBalanceBreakdownWrapper,
+    closeBalanceBreakdown,
+    openCalendar: openCalendarWrapper,
+    closeCalendar,
+    openDateFilter: openDateFilterWrapper,
+    closeDateFilter,
+    openAddAction: openAddActionWrapper,
+    closeAddAction,
+    openSettings: openSettingsWrapper,
+    closeSettings,
     requestDeleteTransaction,
     confirmDeleteTransaction,
     cancelDeleteTransaction,
     requestDeletePaymentSource,
     confirmDeletePaymentSource,
     cancelDeletePaymentSource,
+    requestConfirmDeleteGroup,
+    confirmDeleteGroup: confirmDeleteGroupAction,
+    cancelConfirmDeleteGroup,
+    requestConfirmArchiveGroup,
+    confirmArchiveGroup: confirmArchiveGroupAction,
+    cancelConfirmArchiveGroup,
+    requestConfirmLeaveGroup,
+    confirmLeaveGroup: confirmLeaveGroupAction,
+    cancelConfirmLeaveGroup,
     closeAll,
   };
 
