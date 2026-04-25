@@ -691,14 +691,6 @@ const App: React.FC = () => {
                     onClose={actions.closeTransactionDetail}
                     groupMembers={groupMembers}
                     paymentSources={paymentSources}
-                    onEdit={(transaction) => {
-                        actions.openTransactionForm(transaction);
-                        actions.closeTransactionDetail();
-                    }}
-                    onDelete={(transaction) => {
-                        actions.requestDeleteTransaction(transaction);
-                        actions.closeTransactionDetail();
-                    }}
                 />
             )}
 

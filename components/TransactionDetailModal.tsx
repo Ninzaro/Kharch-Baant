@@ -3,14 +3,13 @@ import { Transaction, Person, Group, PaymentSource } from '../types';
 import { calculateShares } from '../utils/calculations';
 import Avatar from './Avatar';
 import { TAGS } from '../types';
+import { useModalContext } from '../contexts/ModalContext';
 
 interface TransactionDetailModalProps {
     transaction: Transaction;
     groupMembers: Person[];
     paymentSources: PaymentSource[];
     onClose: () => void;
-    onEdit?: (transaction: Transaction) => void;
-    onDelete?: (transaction: Transaction) => void;
 }
 
 const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
@@ -18,9 +17,8 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
     groupMembers,
     paymentSources,
     onClose,
-    onEdit,
-    onDelete
 }) => {
+    const { actions } = useModalContext();
     if (!transaction) return null;
 
     // Find the payer
@@ -158,22 +156,24 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                         ID: {transaction.id.slice(0, 8)}...
                     </div>
                     <div className="flex items-center gap-3">
-                        {onDelete && (
-                            <button
-                                onClick={() => onDelete(transaction)}
-                                className="px-4 py-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors"
-                            >
-                                Delete
-                            </button>
-                        )}
-                        {onEdit && (
-                            <button
-                                onClick={() => onEdit(transaction)}
-                                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
-                            >
-                                Edit
-                            </button>
-                        )}
+                        <button
+                            onClick={() => {
+                                actions.requestDeleteTransaction(transaction);
+                                actions.closeTransactionDetail();
+                            }}
+                            className="px-4 py-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors"
+                        >
+                            Delete
+                        </button>
+                        <button
+                            onClick={() => {
+                                actions.openTransactionForm(transaction);
+                                actions.closeTransactionDetail();
+                            }}
+                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+                        >
+                            Edit
+                        </button>
                         <button
                             onClick={onClose}
                             className="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-lg transition-colors"
