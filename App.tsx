@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { Group, Transaction, Person, PaymentSource } from './types';
 import * as api from './services/apiService';
@@ -19,8 +19,11 @@ import AddActionModal from './components/AddActionModal';
 import { assertSupabaseEnvironment } from './services/apiService';
 import SettingsModal from './components/SettingsModal';
 import TransactionDetailModal from './components/TransactionDetailModal';
+import BaseModal from './components/BaseModal';
 import { SettingsIcon } from './components/icons/Icons';
 import { useAuth } from './contexts/SupabaseAuthContext';
+import { ModalContext } from './contexts/ModalContext';
+import { useModals } from './hooks/useModals';
 import { UserMenu } from './components/auth/UserMenu';
 // imports removed
 import * as emailService from './services/emailService';
@@ -58,22 +61,6 @@ const App: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const selectedGroupId = useAppStore(s => s.selectedGroupId);
     const setSelectedGroupId = useAppStore(s => s.setSelectedGroupId);
-    const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
-    const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
-    const [isAddActionModalOpen, setIsAddActionModalOpen] = useState(false);
-    const [isPaymentSourceModalOpen, setIsPaymentSourceModalOpen] = useState(false);
-    const [isPaymentSourceManageOpen, setIsPaymentSourceManageOpen] = useState(false);
-    const [isSettleUpOpen, setIsSettleUpOpen] = useState(false);
-    const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-    const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
-    const [editingGroup, setEditingGroup] = useState<Group | null>(null);
-    const [isProcessingGroupAction, setIsProcessingGroupAction] = useState(false);
-    const [isTransactionDetailOpen, setIsTransactionDetailOpen] = useState(false);
-    const [selectedTransactionForDetail, setSelectedTransactionForDetail] = useState<Transaction | null>(null);
-    const [defaultSettlePayer, setDefaultSettlePayer] = useState<string | undefined>(undefined);
-    const [defaultSettleReceiver, setDefaultSettleReceiver] = useState<string | undefined>(undefined);
-    const [defaultSettleAmount, setDefaultSettleAmount] = useState<number | undefined>(undefined);
-
 
     // Calculate balances for selected group (simple sum for demo; replace with real logic)
     const groupBalances = React.useMemo(() => {
@@ -93,10 +80,6 @@ const App: React.FC = () => {
     // All settled if all balances are zero (within epsilon)
     const allSettled = Object.values(groupBalances ?? {}).every(b => typeof b === 'number' && Math.abs(b) < 0.01);
     const userSettled = currentUserId && Math.abs((groupBalances?.[currentUserId] ?? 0)) < 0.01;
-    const [pendingDeleteTransaction, setPendingDeleteTransaction] = useState<Transaction | null>(null);
-    const [isDeletingTransaction, setIsDeletingTransaction] = useState(false);
-    const [pendingDeletePaymentSource, setPendingDeletePaymentSource] = useState<PaymentSource | null>(null);
-    const [isDeletingPaymentSource, setIsDeletingPaymentSource] = useState(false);
 
     const paymentSourceUsageCounts = React.useMemo(() => {
         const counts: Record<string, number> = {};
@@ -121,24 +104,82 @@ const App: React.FC = () => {
         return last;
     }, [transactions]);
 
+    // ── Modal async callbacks (closed over App-level state) ────────────────
+    const executeGroupSaveRef = React.useRef<((data: Omit<Group, 'id'>, removingSelf: boolean) => Promise<void>) | null>(null);
+
+    const handleDeleteTransactionCb = useCallback(async (id: string) => {
+        const tx = transactions.find(t => t.id === id);
+        if (!tx) return;
+        await api.deleteTransaction(tx.id);
+        qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) =>
+            prev.filter(t => t.id !== tx.id)
+        );
+    }, [transactions, currentUserId, qc]);
+
+    const handleDeletePaymentSourceCb = useCallback(async (id: string) => {
+        await api.deletePaymentSource(id);
+        qc.setQueryData<PaymentSource[]>(qk.paymentSources(currentUserId), (prev = []) =>
+            prev.filter(ps => ps.id !== id)
+        );
+        qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) =>
+            prev.map(t => t.paymentSourceId === id ? { ...t, paymentSourceId: undefined } as Transaction : t)
+        );
+    }, [currentUserId, qc]);
+
+    const handleDeleteGroupCb = useCallback(async (group: Group) => {
+        const isAdmin = group.createdBy === currentUserId;
+        if (isAdmin) {
+            await deleteGroup(group.id, currentUserId, true, allSettled);
+            qc.setQueryData<Group[]>(qk.groups(currentUserId), (prev = []) =>
+                prev.filter(g => g.id !== group.id)
+            );
+            setSelectedGroupId(null);
+        } else {
+            const res = await requestGroupDeletion(group.id, currentUserId);
+            toast.success(res.message || 'Deletion request sent to the group admin.');
+        }
+    }, [currentUserId, allSettled, qc, setSelectedGroupId]);
+
+    const handleArchiveGroupCb = useCallback(async (group: Group) => {
+        await archiveGroup(group.id, currentUserId, group.createdBy === currentUserId, userSettled, allSettled);
+        qc.setQueryData<Group[]>(qk.groups(currentUserId), (prev = []) =>
+            prev.map(g => g.id === group.id ? { ...g, isArchived: true } : g)
+        );
+    }, [currentUserId, userSettled, allSettled, qc]);
+
+    const handleLeaveGroupCb = useCallback(async (_group: Group, saveData: Omit<Group, 'id'>) => {
+        await executeGroupSaveRef.current?.(saveData, true);
+    }, []);
+
+    // ── Single modal state source ──────────────────────────────────────────
+    const { modals, actions } = useModals(
+        handleDeleteTransactionCb,
+        handleDeletePaymentSourceCb,
+        handleDeleteGroupCb,
+        handleArchiveGroupCb,
+        handleLeaveGroupCb,
+    );
+
+    // Derive isProcessingGroupAction from modal state
+    const isProcessingGroupAction = modals.confirmDeleteGroup.isProcessing || modals.confirmArchiveGroup.isProcessing;
+
     useBackButton(() => {
-        if (isTransactionDetailOpen) { setIsTransactionDetailOpen(false); return true; }
-        if (isTransactionModalOpen) { setIsTransactionModalOpen(false); return true; }
-        if (isGroupModalOpen) { setIsGroupModalOpen(false); return true; }
-        if (isAddActionModalOpen) { setIsAddActionModalOpen(false); return true; }
-        if (isPaymentSourceModalOpen) { setIsPaymentSourceModalOpen(false); return true; }
-        if (isPaymentSourceManageOpen) { setIsPaymentSourceManageOpen(false); return true; }
-        if (isSettleUpOpen) { setIsSettleUpOpen(false); return true; }
-        if (isSettingsModalOpen) { setIsSettingsModalOpen(false); return true; }
-        if (pendingDeleteTransaction) { setPendingDeleteTransaction(null); return true; }
-        if (pendingDeletePaymentSource) { setPendingDeletePaymentSource(null); return true; }
-        
-        // If no modal but a group is selected, go back to home screen
+        if (modals.transactionDetail.isOpen) { actions.closeTransactionDetail(); return true; }
+        if (modals.transactionForm.isOpen) { actions.closeTransactionForm(); return true; }
+        if (modals.groupForm.isOpen) { actions.closeGroupForm(); return true; }
+        if (modals.addAction.isOpen) { actions.closeAddAction(); return true; }
+        if (modals.paymentSourceForm.isOpen) { actions.closePaymentSourceForm(); return true; }
+        if (modals.paymentSourceManage.isOpen) { actions.closePaymentSourceManage(); return true; }
+        if (modals.settleUp.isOpen) { actions.closeSettleUp(); return true; }
+        if (modals.settings.isOpen) { actions.closeSettings(); return true; }
+        if (modals.deleteTransaction.isOpen) { actions.cancelDeleteTransaction(); return true; }
+        if (modals.deletePaymentSource.isOpen) { actions.cancelDeletePaymentSource(); return true; }
+
         if (selectedGroupId) {
             setSelectedGroupId(null);
             return true;
         }
-        
+
         return false;
     });
 
@@ -302,164 +343,108 @@ const App: React.FC = () => {
         setSelectedGroupId(null);
     };
 
-    const handleAddTransactionClick = () => {
-        setEditingTransaction(null);
-        setIsTransactionModalOpen(true);
-    };
-
     const handleEditTransactionClick = (transaction: Transaction) => {
-        setEditingTransaction(transaction);
         if (transaction.type === 'settlement') {
-            setIsSettleUpOpen(true);
+            actions.openSettleUp({ initialTransaction: transaction });
         } else {
-            setIsTransactionModalOpen(true);
+            actions.openTransactionForm(transaction);
         }
     };
 
     const requestDeleteTransaction = (id: string) => {
         const tx = transactions.find(t => t.id === id) || null;
-        setPendingDeleteTransaction(tx);
-    };
-
-    const handleConfirmDeleteTransaction = async () => {
-        if (!pendingDeleteTransaction) return;
-        setIsDeletingTransaction(true);
-        try {
-            await api.deleteTransaction(pendingDeleteTransaction.id);
-            qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) => prev.filter(t => t.id !== pendingDeleteTransaction.id));
-            setPendingDeleteTransaction(null);
-        } catch (error) {
-            console.error('Failed to delete transaction', error);
-        } finally {
-            setIsDeletingTransaction(false);
-        }
+        if (tx) actions.requestDeleteTransaction(tx);
     };
 
     const handleSaveTransaction = async (transactionData: Omit<Transaction, 'id' | 'groupId'>) => {
+        const editingTransaction = modals.transactionForm.editing;
         if (!selectedGroupId && !editingTransaction) return;
         try {
             if (editingTransaction) {
                 const updatedTransaction = await api.updateTransaction(editingTransaction.id, transactionData);
                 qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) => prev.map(t => t.id === editingTransaction.id ? updatedTransaction : t));
             } else if (selectedGroupId) {
-                // Just add to DB; realtime bridge will update cache for all users consistently
                 await api.addTransaction(selectedGroupId, transactionData);
             }
-            setIsTransactionModalOpen(false);
-            setEditingTransaction(null);
+            actions.closeTransactionForm();
         } catch (error) {
             console.error('Failed to save transaction', error);
         }
     };
 
-    const handleAddGroupClick = () => {
-        setEditingGroup(null);
-        setIsGroupModalOpen(true);
+    const handleEditGroupClick = () => {
+        const selectedGroup = groups.find(g => g.id === selectedGroupId);
+        if (selectedGroup) actions.openGroupForm(selectedGroup);
     };
 
-    const handleEditGroupClick = () => {
-        console.log('handleEditGroupClick called, selectedGroupId:', selectedGroupId);
-        const selectedGroup = groups.find(g => g.id === selectedGroupId);
-        console.log('Found group:', selectedGroup);
-        if (selectedGroup) {
-            setEditingGroup(selectedGroup);
-            setIsGroupModalOpen(true);
-            console.log('Modal should now be open with editingGroup:', selectedGroup);
-        } else {
-            console.log('No group found with id:', selectedGroupId);
+    const executeGroupSave = useCallback(async (groupData: Omit<Group, 'id'>, removingSelf: boolean) => {
+        const editingGroup = modals.groupForm.editing;
+        if (!editingGroup) return;
+        try {
+            await api.updateGroup(editingGroup.id, groupData);
+
+            await qc.invalidateQueries({ queryKey: qk.groups(currentUserId) });
+
+            if (removingSelf) {
+                setSelectedGroupId(null);
+                actions.closeGroupForm();
+                actions.cancelConfirmLeaveGroup();
+                toast.success(`You have left the group "${editingGroup.name}".`);
+            } else {
+                actions.closeGroupForm();
+            }
+        } catch (error) {
+            console.error('Failed to save group', error);
+            toast.error('Failed to save group updates.');
         }
-    };
+    }, [modals.groupForm.editing, currentUserId, qc, setSelectedGroupId, actions]);
+
+    // Keep the ref in sync for handleLeaveGroupCb
+    React.useEffect(() => { executeGroupSaveRef.current = executeGroupSave; }, [executeGroupSave]);
 
     const handleSaveGroup = async (groupData: Omit<Group, 'id'>) => {
         try {
-            // Validate currentUserId before proceeding
             if (!currentUserId || currentUserId.trim() === '') {
                 toast.error('User not properly loaded. Please refresh the page and try again.');
                 return;
             }
 
-            console.log('🔍 handleSaveGroup - currentUserId:', currentUserId);
-            console.log('🔍 handleSaveGroup - groupData.members:', groupData.members);
+            const editingGroup = modals.groupForm.editing;
 
             if (editingGroup) {
-                console.log('Updating group:', editingGroup.id, 'with data:', groupData);
-
-                // Check if user is removing themselves from the group
                 const wasUserMember = editingGroup.members.includes(currentUserId);
                 const isUserStillMember = groupData.members.includes(currentUserId);
                 const removingSelf = wasUserMember && !isUserStillMember;
 
                 if (removingSelf) {
-                    // Confirm self-removal
-                    const confirmed = window.confirm(
-                        'You are removing yourself from this group. You will no longer have access to it. Are you sure?'
-                    );
-                    if (!confirmed) {
-                        return; // Cancel the operation
-                    }
+                    actions.requestConfirmLeaveGroup(editingGroup, groupData);
+                    return;
                 }
 
-                await api.updateGroup(editingGroup.id, groupData);
-                console.log('Group updated successfully');
-
-                // Refresh groups with proper filtering to ensure accurate state
-                await qc.invalidateQueries({ queryKey: qk.groups(currentUserId) });
-                console.log('Groups refreshed after update');
-
-                if (removingSelf) {
-                    // User removed themselves - redirect to home
-                    setSelectedGroupId(null);
-                    setIsGroupModalOpen(false);
-                    setEditingGroup(null);
-                    toast.success(`You have left the group "${editingGroup.name}".`);
-                    console.log('User removed themselves from group, redirected to home');
-                } else {
-                    // Normal update - close modal
-                    setIsGroupModalOpen(false);
-                    setEditingGroup(null);
-                    console.log('Group updated, modal closed');
-                }
+                await executeGroupSave(groupData, false);
             } else {
-                console.log('Adding new group with data:', groupData);
-                console.log('🔍 Creating group with currentUserId:', currentUserId);
-
                 if (!currentUserId) {
                     toast.error('User data not loaded properly. Please refresh the page and try again.');
                     return;
                 }
 
                 const newGroup = await api.addGroup(groupData, currentUserId);
-                console.log('New group result:', newGroup);
 
-                // OPTIMISTIC UPDATE: Add the new group to cache immediately to prevent blank screen
                 qc.setQueryData<Group[]>(qk.groups(currentUserId), (prev = []) => {
-                    // Check if group already exists (from realtime bridge)
-                    if (prev.some(g => g.id === newGroup.id)) {
-                        console.log('Group already in cache, skipping duplicate');
-                        return prev; // Already there, don't duplicate
-                    }
-                    console.log('Adding new group to cache:', newGroup.id);
-                    return [...prev, newGroup]; // Add new group to cache
+                    if (prev.some(g => g.id === newGroup.id)) return prev;
+                    return [...prev, newGroup];
                 });
 
-                // Close modal first
-                setIsGroupModalOpen(false);
-                setEditingGroup(null);
+                actions.closeGroupForm();
 
-                // Wait for next tick to ensure cache update is processed, then select group
-                // This ensures React Query has updated the groups array before we try to find it
                 await new Promise(resolve => setTimeout(resolve, 0));
 
-                // Verify group exists in cache before selecting
                 const cachedGroups = qc.getQueryData<Group[]>(qk.groups(currentUserId)) || [];
                 const groupExists = cachedGroups.some(g => g.id === newGroup.id);
 
                 if (groupExists) {
-                    console.log('Group found in cache, selecting it');
                     setSelectedGroupId(newGroup.id);
                 } else {
-                    console.warn('Group not in cache immediately, invalidating and refetching...');
-                    // Fallback: invalidate and refetch, then select
                     await qc.invalidateQueries({ queryKey: qk.groups(currentUserId) });
                     await qc.refetchQueries({ queryKey: qk.groups(currentUserId) });
                     setSelectedGroupId(newGroup.id);
@@ -468,32 +453,18 @@ const App: React.FC = () => {
         } catch (error) {
             console.error("Failed to save group", error);
             toast.error(`Error saving group: ${error?.message || error}`);
-            // Don't close the modal if there's an error
-            return;
         }
-    };
-
-    // Add Action Modal handlers
-    const handleAddActionClick = () => {
-        setIsAddActionModalOpen(true);
     };
 
     const handleSelectGroupForExpense = (groupId: string) => {
         setSelectedGroupId(groupId);
-        setEditingTransaction(null);
-        setIsTransactionModalOpen(true);
-    };
-
-    const handleCreateGroupFromAddAction = () => {
-        setEditingGroup(null);
-        setIsGroupModalOpen(true);
+        actions.openTransactionForm();
     };
 
     const handleSavePaymentSource = async (sourceData: Omit<PaymentSource, 'id'>) => {
         try {
             await api.addPaymentSource(sourceData, person?.id);
-            // Let realtime bridge add to cache for consistency
-            setIsPaymentSourceModalOpen(false);
+            actions.closePaymentSourceForm();
         } catch (error) {
             console.error("Failed to save payment source", error);
         }
@@ -501,7 +472,7 @@ const App: React.FC = () => {
 
     const requestDeletePaymentSource = (id: string) => {
         const src = paymentSources.find(p => p.id === id) || null;
-        if (src) setPendingDeletePaymentSource(src);
+        if (src) actions.requestDeletePaymentSource(src);
     };
 
     const handleArchivePaymentSource = async (id: string) => {
@@ -513,27 +484,8 @@ const App: React.FC = () => {
         }
     };
 
-    const handleConfirmDeletePaymentSource = async () => {
-        if (!pendingDeletePaymentSource) return;
-        setIsDeletingPaymentSource(true);
-        try {
-            // Optional pre-check: ensure no transactions reference it. For now we allow deletion even if referenced.
-            await api.deletePaymentSource(pendingDeletePaymentSource.id);
-            qc.setQueryData<PaymentSource[]>(qk.paymentSources(currentUserId), (prev = []) => prev.filter(ps => ps.id !== pendingDeletePaymentSource.id));
-            // Also clear from any editing transaction state (defensive) in cache
-            qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) => prev.map(t => t.paymentSourceId === pendingDeletePaymentSource.id ? { ...t, paymentSourceId: undefined } as Transaction : t));
-            setPendingDeletePaymentSource(null);
-        } catch (error) {
-            console.error('Failed to delete payment source', error);
-            toast.error('Failed to delete payment source. It might be referenced by transactions.');
-        } finally {
-            setIsDeletingPaymentSource(false);
-        }
-    };
-
     const handleViewTransactionDetail = (transaction: Transaction) => {
-        setSelectedTransactionForDetail(transaction);
-        setIsTransactionDetailOpen(true);
+        actions.openTransactionDetail(transaction);
     };
 
     const loading = isLoading || groupsLoading;
@@ -550,6 +502,7 @@ const App: React.FC = () => {
     const groupMembers = selectedGroup ? people.filter(p => selectedGroup.members.includes(p.id)) : [];
 
     return (
+      <ModalContext.Provider value={{ modals, actions }}>
         <div className="h-screen w-screen text-slate-200 flex font-sans">
             {selectedGroup ? (
                 <>
@@ -565,11 +518,8 @@ const App: React.FC = () => {
                         transactions={groupTransactions}
                         people={people}
                         currentUserId={currentUserId}
-                        onAddExpense={() => setIsTransactionModalOpen(true)}
-                        onSettleUp={() => {
-                            setEditingTransaction(null);
-                            setIsSettleUpOpen(true);
-                        }}
+                        onAddExpense={() => actions.openTransactionForm()}
+                        onSettleUp={() => { actions.openSettleUp(); }}
                         onEditTransaction={handleEditTransactionClick}
                         onDeleteTransaction={requestDeleteTransaction}
                         onEditGroup={handleEditGroupClick}
@@ -584,7 +534,7 @@ const App: React.FC = () => {
                         <div className="flex items-center gap-2">
                             <UserMenu />
                             <button
-                                onClick={() => setIsSettingsModalOpen(true)}
+                                onClick={() => actions.openSettings()}
                                 className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-colors"
                                 aria-label="Open App Settings"
                             >
@@ -599,215 +549,233 @@ const App: React.FC = () => {
                             people={people}
                             currentUserId={currentUserId}
                             onSelectGroup={handleSelectGroup}
-                            onAddGroup={handleCreateGroupFromAddAction}
+                            onAddGroup={() => actions.openGroupForm()}
                         />
                     </div>
                 </div>
             )}
-            {isSettingsModalOpen && (
+            {modals.settings.isOpen && (
                 <SettingsModal
-                    isOpen={isSettingsModalOpen}
-                    onClose={() => setIsSettingsModalOpen(false)}
-                    onManagePaymentSources={() => setIsPaymentSourceManageOpen(true)}
+                    isOpen={modals.settings.isOpen}
+                    onClose={actions.closeSettings}
+                    onManagePaymentSources={() => {
+                        actions.closeSettings();
+                        actions.openPaymentSourceManage();
+                    }}
                     currentUserId={currentUserId}
                     currentUserPerson={person}
                 />
             )}
 
-            {isTransactionModalOpen && selectedGroup && (
+            {modals.transactionForm.isOpen && selectedGroup && (
                 <TransactionFormModal
-                    isOpen={isTransactionModalOpen}
-                    onClose={() => setIsTransactionModalOpen(false)}
+                    isOpen={modals.transactionForm.isOpen}
+                    onClose={actions.closeTransactionForm}
                     onSave={handleSaveTransaction}
-                    transaction={editingTransaction}
+                    transaction={modals.transactionForm.editing}
                     people={groupMembers}
                     currentUserId={currentUserId}
                     paymentSources={paymentSources}
-                    onAddNewPaymentSource={() => setIsPaymentSourceModalOpen(true)}
+                    onAddNewPaymentSource={() => actions.openPaymentSourceForm()}
                     enableCuteIcons={selectedGroup.enableCuteIcons ?? true}
                 />
             )}
 
-            {isGroupModalOpen && (
+            {modals.groupForm.isOpen && (
                 <GroupFormModal
-                    isOpen={isGroupModalOpen}
-                    onClose={() => setIsGroupModalOpen(false)}
+                    isOpen={modals.groupForm.isOpen}
+                    onClose={actions.closeGroupForm}
                     onSave={handleSaveGroup}
-                    group={editingGroup}
+                    group={modals.groupForm.editing}
                     allPeople={people}
                     currentUserId={currentUserId}
                     groupBalances={groupBalances}
                     allSettled={allSettled}
                     userSettled={userSettled}
                     isProcessingGroupAction={isProcessingGroupAction}
-                    onDeleteGroup={async () => {
-                        if (!editingGroup) return;
-                        if (!window.confirm('Are you sure you want to delete this group? This cannot be undone.')) return;
-                        setIsProcessingGroupAction(true);
-                        try {
-                            const isAdmin = editingGroup.createdBy === currentUserId;
-                            if (isAdmin) {
-                                await deleteGroup(editingGroup.id, currentUserId, true, allSettled);
-                                qc.setQueryData<Group[]>(qk.groups(currentUserId), (prev = []) => prev.filter(g => g.id !== editingGroup.id));
-                                setIsGroupModalOpen(false);
-                                setSelectedGroupId(null);
-                            } else {
-                                const res = await requestGroupDeletion(editingGroup.id, currentUserId);
-                                toast.success(res.message || 'Deletion request sent to the group admin.');
-                            }
-                        } catch (e) {
-                            toast.error(e.message || 'Failed to delete group.');
-                        } finally {
-                            setIsProcessingGroupAction(false);
-                        }
+                    onDeleteGroup={() => {
+                        const g = modals.groupForm.editing;
+                        if (g) actions.requestConfirmDeleteGroup(g);
                     }}
-                    onArchiveGroup={async () => {
-                        if (!editingGroup) return;
-                        if (!window.confirm('Archive this group? You can find archived groups in App Settings.')) return;
-                        setIsProcessingGroupAction(true);
-                        try {
-                            await archiveGroup(editingGroup.id, currentUserId, editingGroup.createdBy === currentUserId, userSettled, allSettled);
-                            qc.setQueryData<Group[]>(qk.groups(currentUserId), (prev = []) => prev.map(g => g.id === editingGroup.id ? { ...g, isArchived: true } : g));
-                            setIsGroupModalOpen(false);
-                        } catch (e) {
-                            toast.error(e.message || 'Failed to archive group.');
-                        } finally {
-                            setIsProcessingGroupAction(false);
-                        }
+                    onArchiveGroup={() => {
+                        const g = modals.groupForm.editing;
+                        if (g) actions.requestConfirmArchiveGroup(g);
                     }}
                     onOpenPaymentSources={() => {
-                        setIsGroupModalOpen(false);
-                        setIsPaymentSourceManageOpen(true);
+                        actions.closeGroupForm();
+                        actions.openPaymentSourceManage();
                     }}
                 />
             )}
 
-            {isPaymentSourceModalOpen && (
+            {modals.paymentSourceForm.isOpen && (
                 <PaymentSourceFormModal
-                    isOpen={isPaymentSourceModalOpen}
-                    onClose={() => setIsPaymentSourceModalOpen(false)}
+                    isOpen={modals.paymentSourceForm.isOpen}
+                    onClose={actions.closePaymentSourceForm}
                     onSave={handleSavePaymentSource}
                 />
             )}
 
             {/* Confirm Delete Transaction Modal */}
-            {pendingDeleteTransaction && (
+            {modals.deleteTransaction.isOpen && (
                 <ConfirmDeleteModal
-                    open={!!pendingDeleteTransaction}
+                    open={modals.deleteTransaction.isOpen}
                     entityType="transaction"
-                    entityName={pendingDeleteTransaction.description}
+                    entityName={modals.deleteTransaction.transaction?.description ?? ''}
                     impactDescription="Balances will recalculate after deletion. This cannot be undone."
-                    onCancel={() => setPendingDeleteTransaction(null)}
-                    onConfirm={async () => {
-                        await handleConfirmDeleteTransaction();
-                    }}
+                    loading={modals.deleteTransaction.isDeleting}
+                    onCancel={actions.cancelDeleteTransaction}
+                    onConfirm={actions.confirmDeleteTransaction}
                 />
             )}
 
-            {pendingDeletePaymentSource && (
+            {modals.deletePaymentSource.isOpen && (
                 <ConfirmDeleteModal
-                    open={!!pendingDeletePaymentSource}
+                    open={modals.deletePaymentSource.isOpen}
                     entityType="paymentSource"
-                    entityName={pendingDeletePaymentSource.name}
-                    impactDescription={`This source is referenced in ${paymentSourceUsageCounts[pendingDeletePaymentSource.id] || 0} transaction(s). ${paymentSourceLastUsed[pendingDeletePaymentSource.id] ? `Last used on ${paymentSourceLastUsed[pendingDeletePaymentSource.id]}. ` : ''}After deletion those transactions will display no payment source. This cannot be undone.`}
-                    loading={isDeletingPaymentSource}
-                    onCancel={() => setPendingDeletePaymentSource(null)}
-                    onConfirm={async () => { await handleConfirmDeletePaymentSource(); }}
+                    entityName={modals.deletePaymentSource.paymentSource?.name ?? ''}
+                    impactDescription={`This source is referenced in ${paymentSourceUsageCounts[modals.deletePaymentSource.paymentSource?.id ?? ''] || 0} transaction(s). ${paymentSourceLastUsed[modals.deletePaymentSource.paymentSource?.id ?? ''] ? `Last used on ${paymentSourceLastUsed[modals.deletePaymentSource.paymentSource?.id ?? '']}. ` : ''}After deletion those transactions will display no payment source. This cannot be undone.`}
+                    loading={modals.deletePaymentSource.isDeleting}
+                    onCancel={actions.cancelDeletePaymentSource}
+                    onConfirm={actions.confirmDeletePaymentSource}
                 />
             )}
 
-
-            {isPaymentSourceManageOpen && (
+            {modals.paymentSourceManage.isOpen && (
                 <PaymentSourceManageModal
-                    isOpen={isPaymentSourceManageOpen}
-                    onClose={() => setIsPaymentSourceManageOpen(false)}
+                    isOpen={modals.paymentSourceManage.isOpen}
+                    onClose={actions.closePaymentSourceManage}
                     paymentSources={paymentSources}
                     usageCounts={paymentSourceUsageCounts}
                     lastUsedMap={paymentSourceLastUsed}
                     onAddNew={() => {
-                        setIsPaymentSourceManageOpen(false);
-                        setIsPaymentSourceModalOpen(true);
+                        actions.closePaymentSourceManage();
+                        actions.openPaymentSourceForm();
                     }}
                     onRequestDelete={(id) => requestDeletePaymentSource(id)}
                     onArchive={(id) => handleArchivePaymentSource(id)}
                 />
             )}
 
-            {isSettleUpOpen && selectedGroup && (
+            {modals.settleUp.isOpen && selectedGroup && (
                 <SettleUpModal
-                    open={isSettleUpOpen}
-                    onClose={() => {
-                        setIsSettleUpOpen(false);
-                        setEditingTransaction(null);
-                    }}
+                    open={modals.settleUp.isOpen}
+                    onClose={() => { actions.closeSettleUp(); }}
                     groupId={selectedGroup.id}
                     members={groupMembers}
                     paymentSources={paymentSources}
                     transactions={groupTransactions}
                     currency={selectedGroup.currency}
-                    defaultPayerId={defaultSettlePayer}
-                    defaultReceiverId={defaultSettleReceiver}
-                    defaultAmount={defaultSettleAmount}
-                    initialTransaction={editingTransaction?.type === 'settlement' ? editingTransaction : undefined}
+                    defaultPayerId={modals.settleUp.defaultPayer}
+                    defaultReceiverId={modals.settleUp.defaultReceiver}
+                    defaultAmount={modals.settleUp.defaultAmount}
+                    initialTransaction={modals.settleUp.initialTransaction}
                     onSubmit={async (tx) => {
-                        if (editingTransaction && editingTransaction.type === 'settlement') {
-                            const updated = await api.updateTransaction(editingTransaction.id, tx);
-                            qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) => prev.map(t => t.id === editingTransaction.id ? updated : t));
+                        const initialTx = modals.settleUp.initialTransaction;
+                        if (initialTx) {
+                            const updated = await api.updateTransaction(initialTx.id, tx);
+                            qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) =>
+                                prev.map(t => t.id === initialTx.id ? updated : t)
+                            );
                             return updated;
                         } else {
                             const created = await api.addTransaction(selectedGroup.id, tx);
-                            // Let realtime bridge add to cache for consistency, but return it here for modal
+                            qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) =>
+                                prev.some(t => t.id === created.id) ? prev : [created, ...prev]
+                            );
                             return created;
                         }
                     }}
-                    onCreated={(tx) => {
-                        // Let realtime bridge add to cache for consistency
-                        setIsSettleUpOpen(false);
-                        setDefaultSettleAmount(undefined);
-                        setEditingTransaction(null);
-                    }}
+                    onCreated={(_tx: Transaction) => { actions.closeSettleUp(); }}
                 />
             )}
 
-            {isTransactionDetailOpen && selectedTransactionForDetail && (
+            {modals.transactionDetail.isOpen && modals.transactionDetail.transaction && (
                 <TransactionDetailModal
-                    transaction={selectedTransactionForDetail}
-                    onClose={() => {
-                        setIsTransactionDetailOpen(false);
-                        setSelectedTransactionForDetail(null);
-                    }}
+                    transaction={modals.transactionDetail.transaction}
+                    onClose={actions.closeTransactionDetail}
                     groupMembers={groupMembers}
                     paymentSources={paymentSources}
                     onEdit={(transaction) => {
-                        setEditingTransaction(transaction);
-                        setIsTransactionModalOpen(true);
-                        setIsTransactionDetailOpen(false);
-                        setSelectedTransactionForDetail(null);
+                        actions.openTransactionForm(transaction);
+                        actions.closeTransactionDetail();
                     }}
                     onDelete={(transaction) => {
-                        setPendingDeleteTransaction(transaction);
-                        setIsTransactionDetailOpen(false);
-                        setSelectedTransactionForDetail(null);
+                        actions.requestDeleteTransaction(transaction);
+                        actions.closeTransactionDetail();
                     }}
                 />
             )}
 
             <AddActionModal
-                open={isAddActionModalOpen}
-                onClose={() => setIsAddActionModalOpen(false)}
+                open={modals.addAction.isOpen}
+                onClose={actions.closeAddAction}
                 groups={activeGroups}
                 people={people}
-                onCreateGroup={handleCreateGroupFromAddAction}
+                onCreateGroup={() => actions.openGroupForm()}
                 onSelectGroupForExpense={handleSelectGroupForExpense}
                 currentGroupId={selectedGroupId}
             />
 
+            {/* Confirm Delete Group */}
+            {modals.confirmDeleteGroup.isOpen && modals.confirmDeleteGroup.group && (
+                <ConfirmDeleteModal
+                    open={modals.confirmDeleteGroup.isOpen}
+                    entityType="group"
+                    entityName={modals.confirmDeleteGroup.group.name}
+                    loading={modals.confirmDeleteGroup.isProcessing}
+                    onConfirm={actions.confirmDeleteGroup}
+                    onCancel={actions.cancelConfirmDeleteGroup}
+                />
+            )}
 
+            {/* Confirm Archive Group */}
+            {modals.confirmArchiveGroup.isOpen && modals.confirmArchiveGroup.group && (
+                <ArchivePromptModal
+                    isOpen={modals.confirmArchiveGroup.isOpen}
+                    onClose={actions.cancelConfirmArchiveGroup}
+                    onArchive={actions.confirmArchiveGroup}
+                />
+            )}
+
+            {/* Confirm Leave Group */}
+            {modals.confirmLeaveGroup.isOpen && modals.confirmLeaveGroup.group && modals.confirmLeaveGroup.pendingSaveData && (
+                <BaseModal
+                    open={modals.confirmLeaveGroup.isOpen}
+                    onClose={actions.cancelConfirmLeaveGroup}
+                    title="Leave Group?"
+                    size="sm"
+                    description={<span className="text-slate-300 text-sm">You are removing yourself from this group.</span>}
+                    footer={
+                        <div className="flex gap-2">
+                            <button
+                                onClick={actions.cancelConfirmLeaveGroup}
+                                className="px-4 py-2 bg-white/10 text-white rounded-md hover:bg-white/20"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={actions.confirmLeaveGroup}
+                                disabled={modals.confirmLeaveGroup.isProcessing}
+                                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-md disabled:opacity-50"
+                            >
+                                {modals.confirmLeaveGroup.isProcessing ? 'Leaving...' : 'Leave Group'}
+                            </button>
+                        </div>
+                    }
+                >
+                    <p className="text-sm text-slate-300">
+                        You will no longer have access to "{modals.confirmLeaveGroup.group.name}" or its transactions.
+                        This action cannot be undone unless someone invites you back.
+                    </p>
+                </BaseModal>
+            )}
 
             {/* <ApiStatusIndicator /> removed per user request */}
             {/* <DebugPanel groups={groups} transactions={transactions} /> removed per user request */}
             <RealtimeStatus />
         </div>
+      </ModalContext.Provider>
     );
 }
 
