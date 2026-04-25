@@ -520,4 +520,144 @@ describe('useModals', () => {
       expect(mockDeleteFn).not.toHaveBeenCalledWith('txn-1');
     });
   });
+
+  describe('Group Confirmation Modals', () => {
+    it('requestConfirmDeleteGroup opens modal with the group', () => {
+      const { result } = renderHook(() => useModals());
+      expect(result.current.modals.confirmDeleteGroup.isOpen).toBe(false);
+
+      act(() => {
+        result.current.actions.requestConfirmDeleteGroup(mockGroup);
+      });
+
+      expect(result.current.modals.confirmDeleteGroup.isOpen).toBe(true);
+      expect(result.current.modals.confirmDeleteGroup.group).toEqual(mockGroup);
+      expect(result.current.modals.confirmDeleteGroup.isProcessing).toBe(false);
+    });
+
+    it('cancelConfirmDeleteGroup resets state', () => {
+      const { result } = renderHook(() => useModals());
+      act(() => { result.current.actions.requestConfirmDeleteGroup(mockGroup); });
+      act(() => { result.current.actions.cancelConfirmDeleteGroup(); });
+
+      expect(result.current.modals.confirmDeleteGroup.isOpen).toBe(false);
+      expect(result.current.modals.confirmDeleteGroup.group).toBeNull();
+    });
+
+    it('confirmDeleteGroup calls onDeleteGroup and resets state on success', async () => {
+      const onDeleteGroup = vi.fn().mockResolvedValue(undefined);
+      const { result } = renderHook(() => useModals(undefined, undefined, onDeleteGroup));
+
+      act(() => { result.current.actions.requestConfirmDeleteGroup(mockGroup); });
+      await act(async () => { await result.current.actions.confirmDeleteGroup(); });
+
+      expect(onDeleteGroup).toHaveBeenCalledWith(mockGroup);
+      expect(result.current.modals.confirmDeleteGroup.isOpen).toBe(false);
+      expect(result.current.modals.confirmDeleteGroup.isProcessing).toBe(false);
+    });
+
+    it('requestConfirmArchiveGroup opens modal with the group', () => {
+      const { result } = renderHook(() => useModals());
+      act(() => { result.current.actions.requestConfirmArchiveGroup(mockGroup); });
+
+      expect(result.current.modals.confirmArchiveGroup.isOpen).toBe(true);
+      expect(result.current.modals.confirmArchiveGroup.group).toEqual(mockGroup);
+    });
+
+    it('confirmArchiveGroup calls onArchiveGroup and resets state on success', async () => {
+      const onArchiveGroup = vi.fn().mockResolvedValue(undefined);
+      const { result } = renderHook(() => useModals(undefined, undefined, undefined, onArchiveGroup));
+
+      act(() => { result.current.actions.requestConfirmArchiveGroup(mockGroup); });
+      await act(async () => { await result.current.actions.confirmArchiveGroup(); });
+
+      expect(onArchiveGroup).toHaveBeenCalledWith(mockGroup);
+      expect(result.current.modals.confirmArchiveGroup.isOpen).toBe(false);
+      expect(result.current.modals.confirmArchiveGroup.isProcessing).toBe(false);
+    });
+
+    it('confirmDeleteGroup re-throws error and resets isProcessing on failure', async () => {
+      const onDeleteGroup = vi.fn().mockRejectedValue(new Error('Delete group failed'));
+      const { result } = renderHook(() => useModals(undefined, undefined, onDeleteGroup));
+
+      act(() => { result.current.actions.requestConfirmDeleteGroup(mockGroup); });
+
+      await expect(async () => {
+        await act(async () => { await result.current.actions.confirmDeleteGroup(); });
+      }).rejects.toThrow('Delete group failed');
+
+      expect(result.current.modals.confirmDeleteGroup.isOpen).toBe(true);
+      expect(result.current.modals.confirmDeleteGroup.isProcessing).toBe(false);
+    });
+
+    it('confirmArchiveGroup re-throws error and resets isProcessing on failure', async () => {
+      const onArchiveGroup = vi.fn().mockRejectedValue(new Error('Archive group failed'));
+      const { result } = renderHook(() => useModals(undefined, undefined, undefined, onArchiveGroup));
+
+      act(() => { result.current.actions.requestConfirmArchiveGroup(mockGroup); });
+
+      await expect(async () => {
+        await act(async () => { await result.current.actions.confirmArchiveGroup(); });
+      }).rejects.toThrow('Archive group failed');
+
+      expect(result.current.modals.confirmArchiveGroup.isOpen).toBe(true);
+      expect(result.current.modals.confirmArchiveGroup.isProcessing).toBe(false);
+    });
+
+    it('confirmLeaveGroup re-throws error and resets isProcessing on failure', async () => {
+      const onLeaveGroup = vi.fn().mockRejectedValue(new Error('Leave group failed'));
+      const saveData: Omit<Group, 'id'> = { name: 'Test Group', members: ['person-2'], currency: 'USD', groupType: 'other' };
+      const { result } = renderHook(() =>
+        useModals(undefined, undefined, undefined, undefined, onLeaveGroup)
+      );
+
+      act(() => { result.current.actions.requestConfirmLeaveGroup(mockGroup, saveData); });
+
+      await expect(async () => {
+        await act(async () => { await result.current.actions.confirmLeaveGroup(); });
+      }).rejects.toThrow('Leave group failed');
+
+      expect(result.current.modals.confirmLeaveGroup.isOpen).toBe(true);
+      expect(result.current.modals.confirmLeaveGroup.isProcessing).toBe(false);
+    });
+
+    it('requestConfirmLeaveGroup opens modal with group and saveData', () => {
+      const saveData: Omit<Group, 'id'> = {
+        name: 'Test Group',
+        members: ['person-2'],
+        currency: 'USD',
+        groupType: 'other',
+      };
+      const { result } = renderHook(() => useModals());
+      act(() => { result.current.actions.requestConfirmLeaveGroup(mockGroup, saveData); });
+
+      expect(result.current.modals.confirmLeaveGroup.isOpen).toBe(true);
+      expect(result.current.modals.confirmLeaveGroup.group).toEqual(mockGroup);
+      expect(result.current.modals.confirmLeaveGroup.pendingSaveData).toEqual(saveData);
+    });
+
+    it('confirmLeaveGroup calls onLeaveGroup with group and saveData', async () => {
+      const onLeaveGroup = vi.fn().mockResolvedValue(undefined);
+      const saveData: Omit<Group, 'id'> = { name: 'Test Group', members: ['person-2'], currency: 'USD', groupType: 'other' };
+      const { result } = renderHook(() =>
+        useModals(undefined, undefined, undefined, undefined, onLeaveGroup)
+      );
+
+      act(() => { result.current.actions.requestConfirmLeaveGroup(mockGroup, saveData); });
+      await act(async () => { await result.current.actions.confirmLeaveGroup(); });
+
+      expect(onLeaveGroup).toHaveBeenCalledWith(mockGroup, saveData);
+      expect(result.current.modals.confirmLeaveGroup.isOpen).toBe(false);
+    });
+
+    it('settleUp can carry an initialTransaction', () => {
+      const { result } = renderHook(() => useModals());
+      act(() => {
+        result.current.actions.openSettleUp({ initialTransaction: mockTransaction });
+      });
+
+      expect(result.current.modals.settleUp.isOpen).toBe(true);
+      expect(result.current.modals.settleUp.initialTransaction).toEqual(mockTransaction);
+    });
+  });
 });
