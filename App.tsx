@@ -639,12 +639,7 @@ const App: React.FC = () => {
                     paymentSources={paymentSources}
                     usageCounts={paymentSourceUsageCounts}
                     lastUsedMap={paymentSourceLastUsed}
-                    onAddNew={() => {
-                        actions.closePaymentSourceManage();
-                        actions.openPaymentSourceForm();
-                    }}
-                    onRequestDelete={(id) => requestDeletePaymentSource(id)}
-                    onArchive={(id) => handleArchivePaymentSource(id)}
+                    onArchive={handleArchivePaymentSource}
                 />
             )}
 

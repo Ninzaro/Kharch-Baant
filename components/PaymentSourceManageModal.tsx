@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import BaseModal from './BaseModal';
 import { PaymentSource } from '../types';
+import { useModalContext } from '../contexts/ModalContext';
 
 interface PaymentSourceManageModalProps {
   isOpen: boolean;
@@ -8,8 +9,6 @@ interface PaymentSourceManageModalProps {
   paymentSources: PaymentSource[];
   usageCounts: Record<string, number>; // map paymentSourceId -> transaction count
   lastUsedMap: Record<string, string | undefined>; // map paymentSourceId -> last used date
-  onAddNew: () => void; // opens PaymentSourceFormModal
-  onRequestDelete: (id: string) => void; // triggers ConfirmDeleteModal in parent
   onArchive: (id: string) => void;
 }
 
@@ -26,10 +25,9 @@ const PaymentSourceManageModal: React.FC<PaymentSourceManageModalProps> = ({
   paymentSources,
   usageCounts,
   lastUsedMap,
-  onAddNew,
-  onRequestDelete,
   onArchive,
 }) => {
+  const { actions } = useModalContext();
   const [query, setQuery] = useState('');
   const filtered = useMemo(() => {
     if (!query.trim()) return paymentSources;
@@ -42,7 +40,10 @@ const PaymentSourceManageModal: React.FC<PaymentSourceManageModalProps> = ({
     <div className="flex items-center justify-between w-full">
       <button
         type="button"
-        onClick={onAddNew}
+        onClick={() => {
+          actions.closePaymentSourceManage();
+          actions.openPaymentSourceForm();
+        }}
         className="px-3 py-2 bg-indigo-600/90 hover:bg-indigo-500 text-white text-sm rounded-md"
       >
         + Add New Source
@@ -108,7 +109,10 @@ const PaymentSourceManageModal: React.FC<PaymentSourceManageModalProps> = ({
                   <div className="flex gap-2">
                     {count === 0 && (
                       <button
-                        onClick={() => onRequestDelete(ps.id)}
+                        onClick={() => {
+                          const src = paymentSources.find(p => p.id === ps.id);
+                          if (src) actions.requestDeletePaymentSource(src);
+                        }}
                         className="text-rose-400 hover:text-rose-300 text-xs px-2 py-1 rounded-md border border-rose-500/30 hover:border-rose-400/50"
                         aria-label={`Delete ${ps.name}`}
                       >Delete</button>
