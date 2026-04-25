@@ -343,19 +343,6 @@ const App: React.FC = () => {
         setSelectedGroupId(null);
     };
 
-    const handleEditTransactionClick = (transaction: Transaction) => {
-        if (transaction.type === 'settlement') {
-            actions.openSettleUp({ initialTransaction: transaction });
-        } else {
-            actions.openTransactionForm(transaction);
-        }
-    };
-
-    const requestDeleteTransaction = (id: string) => {
-        const tx = transactions.find(t => t.id === id) || null;
-        if (tx) actions.requestDeleteTransaction(tx);
-    };
-
     const handleSaveTransaction = async (transactionData: Omit<Transaction, 'id' | 'groupId'>) => {
         const editingTransaction = modals.transactionForm.editing;
         if (!selectedGroupId && !editingTransaction) return;
@@ -470,11 +457,6 @@ const App: React.FC = () => {
         }
     };
 
-    const requestDeletePaymentSource = (id: string) => {
-        const src = paymentSources.find(p => p.id === id) || null;
-        if (src) actions.requestDeletePaymentSource(src);
-    };
-
     const handleArchivePaymentSource = async (id: string) => {
         try {
             await api.archivePaymentSource(id);
@@ -482,10 +464,6 @@ const App: React.FC = () => {
         } catch (error) {
             console.error('Failed to archive payment source', error);
         }
-    };
-
-    const handleViewTransactionDetail = (transaction: Transaction) => {
-        actions.openTransactionDetail(transaction);
     };
 
     const loading = isLoading || groupsLoading;

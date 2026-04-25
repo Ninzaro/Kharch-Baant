@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Transaction, Person, Group, PaymentSource } from '../types';
 import { calculateShares } from '../utils/calculations';
 import Avatar from './Avatar';
@@ -167,7 +167,11 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                         </button>
                         <button
                             onClick={() => {
-                                actions.openTransactionForm(transaction);
+                                if (transaction.type === 'settlement') {
+                                    actions.openSettleUp({ initialTransaction: transaction });
+                                } else {
+                                    actions.openTransactionForm(transaction);
+                                }
                                 actions.closeTransactionDetail();
                             }}
                             className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
