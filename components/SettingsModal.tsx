@@ -13,11 +13,11 @@ import * as api from '../services/apiService';
 import { Person } from '../types';
 import toast from 'react-hot-toast';
 import { updateUserAvatar, updatePerson } from '../services/supabaseApiService';
+import { useModalContext } from '../contexts/ModalContext';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onManagePaymentSources: () => void;
   currentUserId?: string;
   currentUserPerson?: Person | null;
 }
@@ -25,7 +25,8 @@ interface SettingsModalProps {
 const LANGUAGES = ['English', 'Hindi'];
 const CURRENCIES = ['INR', 'USD', 'EUR', 'GBP'];
 
-const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onManagePaymentSources, currentUserId, currentUserPerson }) => {
+const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, currentUserId, currentUserPerson }) => {
+  const { actions } = useModalContext();
   const [showArchivedGroups, setShowArchivedGroups] = useState(false);
 
   // Placeholder state for demo
@@ -211,7 +212,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onManage
           type="button"
           onClick={() => {
             onClose();
-            onManagePaymentSources();
+            actions.openPaymentSourceManage();
           }}
           className="px-3 py-2 bg-indigo-600/90 hover:bg-indigo-500 text-white text-sm rounded-md text-left"
         >

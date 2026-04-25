@@ -553,10 +553,6 @@ const App: React.FC = () => {
                 <SettingsModal
                     isOpen={modals.settings.isOpen}
                     onClose={actions.closeSettings}
-                    onManagePaymentSources={() => {
-                        actions.closeSettings();
-                        actions.openPaymentSourceManage();
-                    }}
                     currentUserId={currentUserId}
                     currentUserPerson={person}
                 />
