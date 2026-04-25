@@ -2,7 +2,7 @@
 
 > **Status:** Descriptive. This document reflects the codebase **as it exists today**, not an aspirational target. Any deviation from what's described here is either (a) a bug in this doc, or (b) drift that needs to be reconciled. Update this file whenever structural changes land.
 >
-> **Last verified against repo:** 2026-04-19
+> **Last verified against repo:** 2026-04-25
 >
 > **Verification scope:** all files cited by path were read directly. Component-family descriptions (§7) are based on filename inventory only.
 
@@ -255,8 +255,8 @@ Responsibilities (today, not ideal):
 - Reads auth via `useAuth()` from `SupabaseAuthContext`.
 - Calls all four `use*Query` hooks + mounts all five realtime bridges.
 - Owns the manual view switch: `selectedGroupId == null ? <HomeScreen/> : <GroupView/>`.
-- Holds local `useState` for ~15 modals (debt §15: should use `appStore.openModals`, but the store enum is incomplete — see §8).
-- Has duplicate imports for `ConfirmDeleteModal` and `ArchivePromptModal` (debt §15).
+- Modal state is managed by `useModals()` hook, provided via `ModalContext.Provider` wrapping the JSX return. Child components call `useModalContext()` directly — no prop-drilling.
+- `appStore` retains only `selectedGroupId` and `theme` (modal slice removed 2026-04-25).
 
 ### Routing
 **No router.** Navigation is state-driven via `appStore.selectedGroupId`. The invite flow (`InvitePage.tsx`) is a special case keyed off URL params / localStorage. Introducing real URL routes (e.g. `react-router`, TanStack Router) would require updating this section.
@@ -290,11 +290,8 @@ UI-only state. Persisted to `localStorage` under key `app-ui` (v1). DevTools ena
 |---|---|
 | `selectedGroupId` | Current group view (drives top-level navigation) |
 | `theme` | `'light' \| 'dark' \| 'system'` |
-| `openModals: Partial<Record<ModalName, boolean>>` | 15 named modals |
 
-**`ModalName` enum (15 entries):** `transactionForm`, `transactionDetail`, `groupForm`, `shareModal`, `memberInvite`, `archivedGroups`, `archivePrompt`, `paymentSourceForm`, `paymentSourceManage`, `settleUp`, `balanceBreakdown`, `calendar`, `dateFilter`, `addAction`, `settings`.
-
-**⚠ Gap:** the following modal components exist but are **not** in `ModalName`: `groupSummary`, `groupBalances`, `confirmDelete`. They must be controlled via ad-hoc `useState` somewhere (likely `App.tsx`). Convention is "every new modal gets a `ModalName` and goes through `openModal/closeModal`" — bring the missing three in line in any PR that touches them.
+**Note:** The former `openModals`/`ModalName`/`openModal`/`closeModal` slice was removed 2026-04-25. Modal state is now entirely owned by `useModals()` in `App.tsx`, exposed via `ModalContext`. See `hooks/useModals.ts` and `contexts/ModalContext.tsx`.
 
 ### Context — `contexts/SupabaseAuthContext.tsx` (107 LOC)
 Bridges Clerk → Supabase. Exposes `useAuth()` returning:
@@ -412,7 +409,7 @@ Supabase Postgres. Schema in `supabase-schema.sql`; deltas in `migrations/` and 
 - `npm run android:run` — install + launch on connected device (requires `JAVA_HOME=jdk-21`).
 - `npm run android:build:release` — produce AAB.
 - App ID: `com.kharchbaant.app`, web dir `dist/`.
-- **⚠ `capacitor.config.ts` hardcodes `server.url: 'http://192.168.1.10:3000'`** — a LAN IP for live-reload. Will not work on any other developer's machine. Should be `.env.local`-driven (debt §15).
+- `capacitor.config.ts` reads `CAPACITOR_DEV_SERVER_URL` from the environment. Set it in `.env.local` or your shell for live-reload dev. Leave it unset for production — Capacitor serves `dist/` natively.
 
 ### CI
 - GitHub Actions: `.github/workflows/playwright.yml` runs Playwright on push.
@@ -436,6 +433,7 @@ Reads come from three layers (any one may resolve a key):
 | `VITE_MAILERSEND_FROM_EMAIL` | optional | Sender |
 | `VITE_MAILERSEND_TEMPLATE_*` | optional | Five template IDs |
 | `VITE_DEBUG_ENABLED`, `VITE_DEV_MODE` | optional | Surface in `envValidation.ts`; usage thin |
+| `CAPACITOR_DEV_SERVER_URL` | optional | Live-reload dev server URL (e.g. `http://192.168.1.10:3000`). Unset in production. Set in shell or `.env.local` — **never commit**. |
 
 **Rule:** new env reads should go through `utils/env.ts` `getEnvValue()` for fallback support, **not** `import.meta.env.X` directly. Existing direct reads (in `index.tsx`, `vite.config.ts`, etc.) are tolerated as legacy.
 
@@ -491,13 +489,13 @@ These are real and worth flagging in any PR that touches nearby code. Items grou
 ### Architecture / size
 4. **`App.tsx` is 912 LOC.** Manages auth, queries, realtime, view switching, and 15 modal `useState`s. Should split into `AppContainer` / `MainLayout` / `ModalRoot`.
 5. **`services/supabaseApiService.ts` is 1343 LOC.** Should split by domain (groups / transactions / invites / deletion-requests / people).
-6. **Modal state is bifurcated** — `appStore.openModals` exists but `App.tsx` still uses local `useState`, *and* the `ModalName` enum is missing `groupSummary`, `groupBalances`, `confirmDelete`.
+6. ~~**Modal state is bifurcated**~~ — **Resolved 2026-04-25.** `appStore.openModals`/`ModalName` removed; `App.tsx` now uses `useModals()` + `ModalContext.Provider`; leaf components call `useModalContext()` directly.
 7. **TypeScript is not strict.** `tsconfig.json` lacks `strict: true`. §13's standards are aspirational.
 8. **No `.prettierrc` / `.eslintrc`** committed. Style is enforced by convention only.
 
 ### Security / config
 9. **Sentry DSN hardcoded** in `index.tsx`. Should be `VITE_SENTRY_DSN`.
-10. **Hardcoded LAN IP** (`192.168.1.10`) in `capacitor.config.ts` `server.url`. Will not work on any other developer's machine.
+10. ~~**Hardcoded LAN IP** (`192.168.1.10`) in `capacitor.config.ts` `server.url`~~ — **Resolved 2026-04-25.** Now driven by `CAPACITOR_DEV_SERVER_URL` env var; unset = production (native `dist/` serving).
 11. **`(window as any).Clerk` global access** in `lib/supabase.ts` `getClerkSupabaseToken`. Couples to Clerk's window injection — fragile.
 12. **MailerSend calls are fire-and-forget** with no retry/queue. A failed send is silent.
 13. **No client-side rate limiting on Gemini calls.**

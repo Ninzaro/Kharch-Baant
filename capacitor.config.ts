@@ -1,15 +1,19 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
+// Set CAPACITOR_DEV_SERVER_URL in your shell or .env.local for live-reload
+// during development (e.g. http://192.168.1.10:3000).
+// Leave it unset for production / release builds — Capacitor will serve
+// the bundled dist/ files natively instead.
+const devServerUrl = process.env.CAPACITOR_DEV_SERVER_URL;
+
 const config: CapacitorConfig = {
   appId: 'com.kharchbaant.app',
   appName: 'Kharch Baant',
   webDir: 'dist',
 
-  // Live Reload Development Server
-  server: {
-    url: 'http://192.168.1.10:3000',
-    cleartext: true
-  },
+  ...(devServerUrl
+    ? { server: { url: devServerUrl, cleartext: true } }
+    : {}),
 
   android: {
     buildOptions: {
