@@ -12,19 +12,15 @@ import DateFilterModal from './DateFilterModal';
 import GroupBalancesModal from './GroupBalancesModal';
 import GroupSummaryModal from './GroupSummaryModal';
 import { SettingsIcon, HomeIcon, ShareIcon, ChartIcon } from './icons/Icons';
+import { useModalContext } from '../contexts/ModalContext';
 
 interface GroupViewProps {
   group: Group;
   transactions: Transaction[];
   people: Person[];
   currentUserId: string;
-  onAddExpense: () => void;
-  onSettleUp: () => void;
-  onEditTransaction: (transaction: Transaction) => void;
-  onDeleteTransaction: (id: string) => void;
   onEditGroup: () => void;
   onGoHome: () => void;
-  onViewDetails: (transaction: Transaction) => void;
 }
 
 const GroupView: React.FC<GroupViewProps> = ({
@@ -32,13 +28,8 @@ const GroupView: React.FC<GroupViewProps> = ({
   transactions,
   people,
   currentUserId,
-  onAddExpense,
-  onSettleUp,
-  onEditTransaction,
-  onDeleteTransaction,
   onEditGroup,
   onGoHome,
-  onViewDetails,
 }) => {
   const [filters, setFilters] = useState<Filter>({ tag: 'all' });
   const [sortOption, setSortOption] = useState<SortOption>('date-desc');
@@ -49,6 +40,21 @@ const GroupView: React.FC<GroupViewProps> = ({
   const [isDateFilterOpen, setIsDateFilterOpen] = useState(false);
   const [isBalancesModalOpen, setIsBalancesModalOpen] = useState(false);
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
+
+  const { actions } = useModalContext();
+
+  const handleEditTransaction = (transaction: Transaction) => {
+    if (transaction.type === 'settlement') {
+      actions.openSettleUp({ initialTransaction: transaction });
+    } else {
+      actions.openTransactionForm(transaction);
+    }
+  };
+
+  const handleDeleteTransaction = (id: string) => {
+    const tx = transactions.find(t => t.id === id);
+    if (tx) actions.requestDeleteTransaction(tx);
+  };
 
   if (!group) {
     return (
@@ -207,7 +213,7 @@ const GroupView: React.FC<GroupViewProps> = ({
         {/* Actions container just below group information */}
         <div className="mb-4 flex flex-wrap gap-3">
           <button
-            onClick={onAddExpense}
+            onClick={() => actions.openTransactionForm()}
             className="px-4 py-2 rounded-md bg-gradient-to-br from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 text-sm font-medium shadow"
           >
             Add Expense
@@ -219,7 +225,7 @@ const GroupView: React.FC<GroupViewProps> = ({
             Balances
           </button>
           <button
-            onClick={onSettleUp}
+            onClick={() => actions.openSettleUp()}
             className="px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium shadow"
           >
             Settle Up
@@ -256,9 +262,9 @@ const GroupView: React.FC<GroupViewProps> = ({
               people={people}
               currentUserId={currentUserId}
               currency={group.currency}
-              onEdit={onEditTransaction}
-              onDelete={onDeleteTransaction}
-              onViewDetails={onViewDetails}
+              onEdit={handleEditTransaction}
+              onDelete={handleDeleteTransaction}
+              onViewDetails={(tx) => actions.openTransactionDetail(tx)}
             />
           </div>
 

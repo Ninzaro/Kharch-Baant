@@ -518,13 +518,8 @@ const App: React.FC = () => {
                         transactions={groupTransactions}
                         people={people}
                         currentUserId={currentUserId}
-                        onAddExpense={() => actions.openTransactionForm()}
-                        onSettleUp={() => { actions.openSettleUp(); }}
-                        onEditTransaction={handleEditTransactionClick}
-                        onDeleteTransaction={requestDeleteTransaction}
                         onEditGroup={handleEditGroupClick}
                         onGoHome={handleGoHome}
-                        onViewDetails={handleViewTransactionDetail}
                     />
                 </>
             ) : (
