@@ -1,23 +1,6 @@
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 
-export type ModalName =
-  | 'transactionForm'
-  | 'transactionDetail'
-  | 'groupForm'
-  | 'shareModal'
-  | 'memberInvite'
-  | 'archivedGroups'
-  | 'archivePrompt'
-  | 'paymentSourceForm'
-  | 'paymentSourceManage'
-  | 'settleUp'
-  | 'balanceBreakdown'
-  | 'calendar'
-  | 'dateFilter'
-  | 'addAction'
-  | 'settings'
-
 export type Theme = 'light' | 'dark' | 'system'
 
 interface UIState {
@@ -26,10 +9,6 @@ interface UIState {
 
   theme: Theme
   setTheme: (theme: Theme) => void
-
-  openModals: Partial<Record<ModalName, boolean>>
-  openModal: (name: ModalName) => void
-  closeModal: (name: ModalName) => void
 }
 
 export const useAppStore = create<UIState>()(
@@ -41,20 +20,14 @@ export const useAppStore = create<UIState>()(
 
         theme: 'system',
         setTheme: (theme) => set({ theme }),
-
-        openModals: {},
-        openModal: (name) => set((s) => ({ openModals: { ...s.openModals, [name]: true } })),
-        closeModal: (name) => set((s) => ({ openModals: { ...s.openModals, [name]: false } })),
       }),
       {
         name: 'app-ui',
-        // Persist only lightweight, safe UI state
-        partialize: (s) => ({ 
-          selectedGroupId: s.selectedGroupId, 
-          openModals: s.openModals,
-          theme: s.theme 
+        partialize: (s) => ({
+          selectedGroupId: s.selectedGroupId,
+          theme: s.theme,
         }),
-        version: 1,
+        version: 2, // bump version to clear persisted openModals from localStorage
       }
     ),
     { name: 'app-ui' }

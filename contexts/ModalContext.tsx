@@ -1,9 +1,11 @@
 import React, { createContext, useContext } from 'react';
 import { useModals } from '../hooks/useModals';
-import { Group } from '../types';
 
 // The context value is the exact return type of useModals
 type ModalContextValue = ReturnType<typeof useModals>;
+
+// Derive callback types directly from useModals to prevent silent drift
+type UseModalsParams = Parameters<typeof useModals>;
 
 const ModalContext = createContext<ModalContextValue | null>(null);
 
@@ -15,11 +17,11 @@ const ModalContext = createContext<ModalContextValue | null>(null);
  */
 interface ModalProviderProps {
   children: React.ReactNode;
-  onDeleteTransaction?: (id: string) => Promise<void>;
-  onDeletePaymentSource?: (id: string) => Promise<void>;
-  onDeleteGroup?: (group: Group) => Promise<void>;
-  onArchiveGroup?: (group: Group) => Promise<void>;
-  onLeaveGroup?: (group: Group, saveData: Omit<Group, 'id'>) => Promise<void>;
+  onDeleteTransaction?: UseModalsParams[0];
+  onDeletePaymentSource?: UseModalsParams[1];
+  onDeleteGroup?: UseModalsParams[2];
+  onArchiveGroup?: UseModalsParams[3];
+  onLeaveGroup?: UseModalsParams[4];
 }
 
 export function ModalProvider({
