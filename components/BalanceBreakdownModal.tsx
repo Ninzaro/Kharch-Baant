@@ -137,10 +137,6 @@ const BalanceBreakdownModal: React.FC<BalanceBreakdownModalProps> = ({
       }
     >
       <div className="space-y-3 max-h-96 overflow-y-auto">
-        <div className="text-slate-300 text-sm mb-4">
-          Debug: Type = {type}, Data count = {balanceData.length}, Total = {totalAmount}
-        </div>
-        
         {balanceData.length === 0 ? (
           <div className="text-center py-8 text-slate-400">
             <p>No outstanding {type === 'owed' ? 'amounts owed to you' : 'amounts you owe'}</p>

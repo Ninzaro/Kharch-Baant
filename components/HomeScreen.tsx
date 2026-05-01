@@ -1,8 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Group, Transaction, Person } from '../types';
 import GroupSummaryCard from './GroupSummaryCard';
 import { PlusIcon } from './icons/Icons';
 import { calculateGroupBalances } from '../utils/calculations';
+import BalanceBreakdownModal from './BalanceBreakdownModal';
 
 interface HomeScreenProps {
     groups: Group[];
@@ -14,7 +15,8 @@ interface HomeScreenProps {
 }
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ groups, transactions, people, currentUserId, onSelectGroup, onAddGroup }) => {
-    
+    const [breakdownType, setBreakdownType] = useState<'owed' | 'owing' | null>(null);
+
     const { totalOwedToUser, totalUserOwes, netBalance } = useMemo(() => {
         const balances = calculateGroupBalances(transactions);
         const net = balances.get(currentUserId) ?? 0;
@@ -57,22 +59,28 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ groups, transactions, people, c
                 <section>
                     <h2 className="text-xl font-semibold mb-4 text-slate-300">Overall Summary</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                        <div className="bg-white/5 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-white/10">
-                            <h3 className="text-sm font-medium text-slate-400">Total you are owed</h3>
+                        <button
+                            onClick={() => setBreakdownType('owed')}
+                            className="bg-white/5 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-white/10 text-left hover:bg-white/10 hover:border-emerald-500/30 transition-colors group"
+                        >
+                            <h3 className="text-sm font-medium text-slate-400 group-hover:text-slate-300">Total you are owed</h3>
                             <p className="text-3xl font-bold text-emerald-400 mt-2">{formatNumber(totalOwedToUser)}</p>
-                            <p className="text-xs text-slate-500">(across all currencies)</p>
-                        </div>
-                        <div className="bg-white/5 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-white/10">
-                            <h3 className="text-sm font-medium text-slate-400">Total you owe</h3>
+                            <p className="text-xs text-slate-500">(tap to see breakdown)</p>
+                        </button>
+                        <button
+                            onClick={() => setBreakdownType('owing')}
+                            className="bg-white/5 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-white/10 text-left hover:bg-white/10 hover:border-rose-500/30 transition-colors group"
+                        >
+                            <h3 className="text-sm font-medium text-slate-400 group-hover:text-slate-300">Total you owe</h3>
                             <p className="text-3xl font-bold text-rose-400 mt-2">{formatNumber(totalUserOwes)}</p>
-                             <p className="text-xs text-slate-500">(across all currencies)</p>
-                        </div>
+                            <p className="text-xs text-slate-500">(tap to see breakdown)</p>
+                        </button>
                         <div className="bg-white/5 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-white/10">
                             <h3 className="text-sm font-medium text-slate-400">Total Net Balance</h3>
                             <p className={`text-3xl font-bold mt-2 ${netBalance >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                                 {formatNumber(netBalance)}
                             </p>
-                             <p className="text-xs text-slate-500">(across all currencies)</p>
+                            <p className="text-xs text-slate-500">(across all currencies)</p>
                         </div>
                     </div>
                 </section>
@@ -93,6 +101,22 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ groups, transactions, people, c
                     </div>
                 </section>
             </main>
+
+        {breakdownType && (
+            <BalanceBreakdownModal
+                isOpen={true}
+                onClose={() => setBreakdownType(null)}
+                type={breakdownType}
+                groups={groups}
+                transactions={transactions}
+                people={people}
+                currentUserId={currentUserId}
+                onSelectGroup={(groupId) => {
+                    setBreakdownType(null);
+                    onSelectGroup(groupId);
+                }}
+            />
+        )}
         </div>
     );
 };
