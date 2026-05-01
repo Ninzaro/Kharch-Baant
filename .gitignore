@@ -56,3 +56,4 @@ android/.idea/
 .worktrees/
 
 .vercel
+coverage/
