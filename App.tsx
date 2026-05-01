@@ -15,7 +15,6 @@ import { assertSupabaseEnvironment } from './services/apiService';
 import { SettingsIcon } from './components/icons/Icons';
 import { useAuth } from './contexts/SupabaseAuthContext';
 import { UserMenu } from './components/auth/UserMenu';
-import * as emailService from './services/emailService';
 import InvitePage from './components/invite/InvitePage';
 import { RealtimeStatus } from './components/RealtimeStatus';
 
@@ -36,8 +35,7 @@ const preloadTransactionForm = () => preloadComponent(() => import('./components
 const preloadGroupForm = () => preloadComponent(() => import('./components/GroupFormModal'));
 const preloadSettleUp = () => preloadComponent(() => import('./components/SettleUpModal'));
 const preloadSettings = () => preloadComponent(() => import('./components/SettingsModal'));
-const preloadTransactionDetail = () => preloadComponent(() => import('./components/TransactionDetailModal'));
-import { useGroupsQuery, useTransactionsQuery, usePaymentSourcesQuery, usePeopleQuery, useRealtimeGroupsBridge, useRealtimeTransactionsBridge, useRealtimePaymentSourcesBridge, useRealtimePeopleBridge, useRealtimeGroupMembersBridge, useRealtimeConnection, qk } from './services/queries';
+import { useGroupsQuery, useTransactionsQuery, usePaymentSourcesQuery, usePeopleQuery, useRealtimeGroupsBridge, useRealtimeTransactionsBridge, useRealtimePaymentSourcesBridge, useRealtimePeopleBridge, useRealtimeGroupMembersBridge, qk } from './services/queries';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from './store/appStore';
 import { useBackButton } from './hooks/useBackButton';
@@ -52,9 +50,9 @@ const App: React.FC = () => {
 
     const qc = useQueryClient();
     const { data: groups = [], isLoading: groupsLoading } = useGroupsQuery(person?.id);
-    const { data: transactions = [], isLoading: txLoading } = useTransactionsQuery(person?.id);
-    const { data: paymentSources = [], isLoading: psLoading } = usePaymentSourcesQuery(person?.id);
-    const { data: people = [], isLoading: peopleLoading } = usePeopleQuery(person?.id);
+    const { data: transactions = [] } = useTransactionsQuery(person?.id);
+    const { data: paymentSources = [] } = usePaymentSourcesQuery(person?.id);
+    const { data: people = [] } = usePeopleQuery(person?.id);
 
     // Identify the user in Sentry so error reports show who was affected
     useEffect(() => {
@@ -533,6 +531,44 @@ const App: React.FC = () => {
         setIsTransactionDetailOpen(true);
     };
 
+    const handleConfirmDeleteGroup = async () => {
+        if (!editingGroup) return;
+        setIsProcessingGroupAction(true);
+        try {
+            const isAdmin = editingGroup.createdBy === currentUserId;
+            if (isAdmin) {
+                await deleteGroup(editingGroup.id, currentUserId, true, allSettled);
+                qc.setQueryData<Group[]>(qk.groups(currentUserId), (prev = []) => prev.filter(g => g.id !== editingGroup.id));
+                setIsConfirmDeleteModalOpen(false);
+                setIsGroupModalOpen(false);
+                setSelectedGroupId(null);
+            } else {
+                const res = await requestGroupDeletion(editingGroup.id, currentUserId);
+                toast.success(res.message || 'Deletion request sent to the group admin.');
+                setIsConfirmDeleteModalOpen(false);
+            }
+        } catch (e) {
+            toast.error(e.message || 'Failed to delete group.');
+        } finally {
+            setIsProcessingGroupAction(false);
+        }
+    };
+
+    const handleConfirmArchiveGroup = async () => {
+        if (!editingGroup) return;
+        setIsProcessingGroupAction(true);
+        try {
+            await archiveGroup(editingGroup.id, currentUserId, editingGroup.createdBy === currentUserId, userSettled, allSettled);
+            qc.setQueryData<Group[]>(qk.groups(currentUserId), (prev = []) => prev.map(g => g.id === editingGroup.id ? { ...g, isArchived: true } : g));
+            setIsConfirmArchiveModalOpen(false);
+            setIsGroupModalOpen(false);
+        } catch (e) {
+            toast.error(e.message || 'Failed to archive group.');
+        } finally {
+            setIsProcessingGroupAction(false);
+        }
+    };
+
     const loading = isLoading || groupsLoading;
     if (loading) {
         return (
@@ -798,8 +834,6 @@ const App: React.FC = () => {
                 />
             </Suspense>
 
-            {/* <ApiStatusIndicator /> removed per user request */}
-            {/* <DebugPanel groups={groups} transactions={transactions} /> removed per user request */}
             <RealtimeStatus />
 
             <Toaster position="top-center" reverseOrder={false} />
@@ -900,44 +934,6 @@ const AppWithAuth: React.FC = () => {
     if (!user && inviteInfo?.token) {
         return <InvitePage />;
     }
-
-    const handleConfirmDeleteGroup = async () => {
-        if (!editingGroup) return;
-        setIsProcessingGroupAction(true);
-        try {
-            const isAdmin = editingGroup.createdBy === currentUserId;
-            if (isAdmin) {
-                await deleteGroup(editingGroup.id, currentUserId, true, allSettled);
-                qc.setQueryData<Group[]>(qk.groups(currentUserId), (prev = []) => prev.filter(g => g.id !== editingGroup.id));
-                setIsConfirmDeleteModalOpen(false);
-                setIsGroupModalOpen(false);
-                setSelectedGroupId(null);
-            } else {
-                const res = await requestGroupDeletion(editingGroup.id, currentUserId);
-                toast.success(res.message || 'Deletion request sent to the group admin.');
-                setIsConfirmDeleteModalOpen(false);
-            }
-        } catch (e) {
-            toast.error(e.message || 'Failed to delete group.');
-        } finally {
-            setIsProcessingGroupAction(false);
-        }
-    };
-
-    const handleConfirmArchiveGroup = async () => {
-        if (!editingGroup) return;
-        setIsProcessingGroupAction(true);
-        try {
-            await archiveGroup(editingGroup.id, currentUserId, editingGroup.createdBy === currentUserId, userSettled, allSettled);
-            qc.setQueryData<Group[]>(qk.groups(currentUserId), (prev = []) => prev.map(g => g.id === editingGroup.id ? { ...g, isArchived: true } : g));
-            setIsConfirmArchiveModalOpen(false);
-            setIsGroupModalOpen(false);
-        } catch (e) {
-            toast.error(e.message || 'Failed to archive group.');
-        } finally {
-            setIsProcessingGroupAction(false);
-        }
-    };
 
     if (!user) {
         return (

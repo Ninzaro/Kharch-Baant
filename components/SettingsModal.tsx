@@ -25,8 +25,6 @@ interface SettingsModalProps {
   onThemeChange: (theme: Theme) => void;
 }
 
-const LANGUAGES = ['English', 'Hindi'];
-const CURRENCIES = ['INR', 'USD', 'EUR', 'GBP'];
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ 
   isOpen, 
@@ -41,7 +39,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
 
-  // Placeholder state for demo
   const [currency, setCurrency] = useState('INR');
   const [language, setLanguage] = useState('English');
 
@@ -195,8 +192,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* Theme toggle */}
           <ThemeToggle theme={theme} onChange={onThemeChange} />
 
-          {/* Currency selector */}
-          <CurrencySelector value={currency} onChange={setCurrency} options={CURRENCIES} />
+          {/* Currency selector — UI placeholder, not yet persisted */}
+          <CurrencySelector value={currency} onChange={setCurrency} options={['INR', 'USD', 'EUR', 'GBP']} />
 
           {/* Notifications (placeholder) */}
           <div className="flex flex-col gap-2">
@@ -207,8 +204,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* Data management */}
           <DataExport onExport={handleExport} onImport={handleImport} />
 
-          {/* Language selector */}
-          <LanguageSelector value={language} onChange={setLanguage} options={LANGUAGES} />
+          {/* Language selector — UI placeholder, not yet persisted */}
+          <LanguageSelector value={language} onChange={setLanguage} options={['English', 'Hindi']} />
 
           {/* Manage Payment Sources */}
           <button

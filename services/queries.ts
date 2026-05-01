@@ -12,13 +12,6 @@ export const qk = {
   people: (personId?: string) => ['people', personId] as const,
 }
 
-// Hook to prime the Realtime connection with the Clerk JWT before any bridges subscribe.
-// Supabase Realtime authenticates at WS connect time, so we must set the token first.
-// DEPRECATED: Auth is now handled in SupabaseAuthProvider.tsx
-export const useRealtimeConnection = (_personId?: string) => {
-  // Logic moved to AuthProvider
-};
-
 // Groups
 export const useGroupsQuery = (personId?: string) =>
   useQuery({

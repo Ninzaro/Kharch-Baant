@@ -3,7 +3,6 @@ import { supabase } from '../lib/supabase';
 
 export const RealtimeStatus: React.FC = () => {
   const [status, setStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
-  const [lastEvent, setLastEvent] = useState<string>('');
 
   useEffect(() => {
     console.log('🔌 Initializing Realtime connection monitor...');
