@@ -81,7 +81,20 @@ export default defineConfig(({ mode }) => {
         chunkSizeWarningLimit: 600, // Increase slightly from default 500kb
         rollupOptions: {
           output: {
-            // Native chunking preferred to prevent bundle undefined errors
+            manualChunks(id) {
+              if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/'))
+                return 'vendor-react';
+              if (id.includes('@clerk/clerk-react') || id.includes('@clerk/shared') || id.includes('@clerk/types'))
+                return 'vendor-clerk';
+              if (id.includes('@supabase/supabase-js') || id.includes('@supabase/'))
+                return 'vendor-supabase';
+              if (id.includes('@google/genai'))
+                return 'vendor-gemini';
+              if (id.includes('@sentry/'))
+                return 'vendor-sentry';
+              if (id.includes('html2canvas'))
+                return 'vendor-html2canvas';
+            },
           }
         }
       },

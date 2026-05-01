@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import * as Sentry from '@sentry/react';
 import toast, { Toaster } from 'react-hot-toast';
 import { Group, Transaction, Person, PaymentSource } from './types';
@@ -6,28 +6,37 @@ import * as api from './services/apiService';
 import { calculateGroupBalances } from './utils/calculations';
 import GroupList from './components/GroupList';
 import GroupView from './components/GroupView';
-import TransactionFormModal from './components/TransactionFormModal';
-import GroupFormModal from './components/GroupFormModal';
-import { deleteGroup, archiveGroup, validateInvite, acceptInvite, requestGroupDeletion } from './services/supabaseApiService';
-import ConfirmDeleteModal from './components/ConfirmDeleteModal';
 import HomeScreen from './components/HomeScreen';
-import PaymentSourceFormModal from './components/PaymentSourceFormModal';
-import PaymentSourceManageModal from './components/PaymentSourceManageModal';
-import SettleUpModal from './components/SettleUpModal';
-import ArchivePromptModal from './components/ArchivePromptModal';
-import ApiStatusIndicator from './components/ApiStatusIndicator';
-import DebugPanel from './components/DebugPanel';
-import AddActionModal from './components/AddActionModal';
+import ModalShell from './components/ModalShell';
+import BaseModal from './components/BaseModal';
+import { preloadComponent } from './utils/preload';
+import { deleteGroup, archiveGroup, validateInvite, acceptInvite, requestGroupDeletion } from './services/supabaseApiService';
 import { assertSupabaseEnvironment } from './services/apiService';
-import SettingsModal from './components/SettingsModal';
-import TransactionDetailModal from './components/TransactionDetailModal';
 import { SettingsIcon } from './components/icons/Icons';
 import { useAuth } from './contexts/SupabaseAuthContext';
 import { UserMenu } from './components/auth/UserMenu';
-// imports removed
 import * as emailService from './services/emailService';
 import InvitePage from './components/invite/InvitePage';
 import { RealtimeStatus } from './components/RealtimeStatus';
+
+// Lazy-loaded modals — never needed at startup
+const TransactionFormModal = React.lazy(() => import('./components/TransactionFormModal'));
+const GroupFormModal = React.lazy(() => import('./components/GroupFormModal'));
+const ConfirmDeleteModal = React.lazy(() => import('./components/ConfirmDeleteModal'));
+const PaymentSourceFormModal = React.lazy(() => import('./components/PaymentSourceFormModal'));
+const PaymentSourceManageModal = React.lazy(() => import('./components/PaymentSourceManageModal'));
+const SettleUpModal = React.lazy(() => import('./components/SettleUpModal'));
+const ArchivePromptModal = React.lazy(() => import('./components/ArchivePromptModal'));
+const AddActionModal = React.lazy(() => import('./components/AddActionModal'));
+const SettingsModal = React.lazy(() => import('./components/SettingsModal'));
+const TransactionDetailModal = React.lazy(() => import('./components/TransactionDetailModal'));
+
+// Preload factories (stable references — defined once at module scope)
+const preloadTransactionForm = () => preloadComponent(() => import('./components/TransactionFormModal'));
+const preloadGroupForm = () => preloadComponent(() => import('./components/GroupFormModal'));
+const preloadSettleUp = () => preloadComponent(() => import('./components/SettleUpModal'));
+const preloadSettings = () => preloadComponent(() => import('./components/SettingsModal'));
+const preloadTransactionDetail = () => preloadComponent(() => import('./components/TransactionDetailModal'));
 import { useGroupsQuery, useTransactionsQuery, usePaymentSourcesQuery, usePeopleQuery, useRealtimeGroupsBridge, useRealtimeTransactionsBridge, useRealtimePaymentSourcesBridge, useRealtimePeopleBridge, useRealtimeGroupMembersBridge, useRealtimeConnection, qk } from './services/queries';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from './store/appStore';
@@ -55,6 +64,17 @@ const App: React.FC = () => {
         Sentry.setUser(null);
       }
     }, [person?.id]);
+
+    // Preload the three most-used modals when the browser is idle
+    useEffect(() => {
+        if (!('requestIdleCallback' in window)) return;
+        const id = requestIdleCallback(() => {
+            preloadTransactionForm();
+            preloadGroupForm();
+            preloadSettleUp();
+        });
+        return () => cancelIdleCallback(id);
+    }, []);
 
     // Realtime bridges
     useRealtimeGroupsBridge(person?.id);
@@ -562,6 +582,7 @@ const App: React.FC = () => {
                             <UserMenu />
                             <button
                                 onClick={() => setIsSettingsModalOpen(true)}
+                                onPointerEnter={preloadSettings}
                                 className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-colors"
                                 aria-label="Open App Settings"
                             >
@@ -582,112 +603,126 @@ const App: React.FC = () => {
                 </div>
             )}
             {isSettingsModalOpen && (
-                <SettingsModal
-                    isOpen={isSettingsModalOpen}
-                    onClose={() => setIsSettingsModalOpen(false)}
-                    onManagePaymentSources={() => setIsPaymentSourceManageOpen(true)}
-                    currentUserId={currentUserId}
-                    currentUserPerson={person}
-                    theme={theme}
-                    onThemeChange={setTheme}
-                />
-
+                <Suspense fallback={<ModalShell />}>
+                    <SettingsModal
+                        isOpen={isSettingsModalOpen}
+                        onClose={() => setIsSettingsModalOpen(false)}
+                        onManagePaymentSources={() => setIsPaymentSourceManageOpen(true)}
+                        currentUserId={currentUserId}
+                        currentUserPerson={person}
+                        theme={theme}
+                        onThemeChange={setTheme}
+                    />
+                </Suspense>
             )}
 
             {isTransactionModalOpen && selectedGroup && (
-                <TransactionFormModal
-                    isOpen={isTransactionModalOpen}
-                    onClose={() => { setIsTransactionModalOpen(false); setEditingTransaction(null); }}
-                    onSave={handleSaveTransaction}
-                    transaction={editingTransaction}
-                    people={groupMembers}
-                    currentUserId={currentUserId}
-                    paymentSources={paymentSources}
-                    onAddNewPaymentSource={() => setIsPaymentSourceModalOpen(true)}
-                    enableCuteIcons={selectedGroup.enableCuteIcons ?? true}
-                />
+                <Suspense fallback={<ModalShell />}>
+                    <TransactionFormModal
+                        isOpen={isTransactionModalOpen}
+                        onClose={() => { setIsTransactionModalOpen(false); setEditingTransaction(null); }}
+                        onSave={handleSaveTransaction}
+                        transaction={editingTransaction}
+                        people={groupMembers}
+                        currentUserId={currentUserId}
+                        paymentSources={paymentSources}
+                        onAddNewPaymentSource={() => setIsPaymentSourceModalOpen(true)}
+                        enableCuteIcons={selectedGroup.enableCuteIcons ?? true}
+                    />
+                </Suspense>
             )}
 
             {isGroupModalOpen && (
-                <GroupFormModal
-                    isOpen={isGroupModalOpen}
-                    onClose={() => setIsGroupModalOpen(false)}
-                    onSave={handleSaveGroup}
-                    group={editingGroup}
-                    allPeople={people}
-                    currentUserId={currentUserId}
-                    currentUserName={person?.name || user?.fullName || ''}
-                    groupBalances={groupBalances}
-                    allSettled={allSettled}
-                    userSettled={userSettled}
-                    isProcessingGroupAction={isProcessingGroupAction}
-                    onDeleteGroup={() => {
-                        if (!editingGroup) return;
-                        setIsConfirmDeleteModalOpen(true);
-                    }}
-                    onArchiveGroup={() => {
-                        if (!editingGroup) return;
-                        setIsConfirmArchiveModalOpen(true);
-                    }}
-                    onOpenPaymentSources={() => {
-                        setIsGroupModalOpen(false);
-                        setIsPaymentSourceManageOpen(true);
-                    }}
-                />
+                <Suspense fallback={<ModalShell />}>
+                    <GroupFormModal
+                        isOpen={isGroupModalOpen}
+                        onClose={() => setIsGroupModalOpen(false)}
+                        onSave={handleSaveGroup}
+                        group={editingGroup}
+                        allPeople={people}
+                        currentUserId={currentUserId}
+                        currentUserName={person?.name || user?.fullName || ''}
+                        groupBalances={groupBalances}
+                        allSettled={allSettled}
+                        userSettled={userSettled}
+                        isProcessingGroupAction={isProcessingGroupAction}
+                        onDeleteGroup={() => {
+                            if (!editingGroup) return;
+                            setIsConfirmDeleteModalOpen(true);
+                        }}
+                        onArchiveGroup={() => {
+                            if (!editingGroup) return;
+                            setIsConfirmArchiveModalOpen(true);
+                        }}
+                        onOpenPaymentSources={() => {
+                            setIsGroupModalOpen(false);
+                            setIsPaymentSourceManageOpen(true);
+                        }}
+                    />
+                </Suspense>
             )}
 
             {isPaymentSourceModalOpen && (
-                <PaymentSourceFormModal
-                    isOpen={isPaymentSourceModalOpen}
-                    onClose={() => setIsPaymentSourceModalOpen(false)}
-                    onSave={handleSavePaymentSource}
-                />
+                <Suspense fallback={<ModalShell />}>
+                    <PaymentSourceFormModal
+                        isOpen={isPaymentSourceModalOpen}
+                        onClose={() => setIsPaymentSourceModalOpen(false)}
+                        onSave={handleSavePaymentSource}
+                    />
+                </Suspense>
             )}
 
             {/* Confirm Delete Transaction Modal */}
             {pendingDeleteTransaction && (
-                <ConfirmDeleteModal
-                    open={!!pendingDeleteTransaction}
-                    entityType="transaction"
-                    entityName={pendingDeleteTransaction.description}
-                    impactDescription="Balances will recalculate after deletion. This cannot be undone."
-                    onCancel={() => setPendingDeleteTransaction(null)}
-                    onConfirm={async () => {
-                        await handleConfirmDeleteTransaction();
-                    }}
-                />
+                <Suspense fallback={<ModalShell />}>
+                    <ConfirmDeleteModal
+                        open={!!pendingDeleteTransaction}
+                        entityType="transaction"
+                        entityName={pendingDeleteTransaction.description}
+                        impactDescription="Balances will recalculate after deletion. This cannot be undone."
+                        onCancel={() => setPendingDeleteTransaction(null)}
+                        onConfirm={async () => {
+                            await handleConfirmDeleteTransaction();
+                        }}
+                    />
+                </Suspense>
             )}
 
             {pendingDeletePaymentSource && (
-                <ConfirmDeleteModal
-                    open={!!pendingDeletePaymentSource}
-                    entityType="paymentSource"
-                    entityName={pendingDeletePaymentSource.name}
-                    impactDescription={`This source is referenced in ${paymentSourceUsageCounts[pendingDeletePaymentSource.id] || 0} transaction(s). ${paymentSourceLastUsed[pendingDeletePaymentSource.id] ? `Last used on ${paymentSourceLastUsed[pendingDeletePaymentSource.id]}. ` : ''}After deletion those transactions will display no payment source. This cannot be undone.`}
-                    loading={isDeletingPaymentSource}
-                    onCancel={() => setPendingDeletePaymentSource(null)}
-                    onConfirm={async () => { await handleConfirmDeletePaymentSource(); }}
-                />
+                <Suspense fallback={<ModalShell />}>
+                    <ConfirmDeleteModal
+                        open={!!pendingDeletePaymentSource}
+                        entityType="paymentSource"
+                        entityName={pendingDeletePaymentSource.name}
+                        impactDescription={`This source is referenced in ${paymentSourceUsageCounts[pendingDeletePaymentSource.id] || 0} transaction(s). ${paymentSourceLastUsed[pendingDeletePaymentSource.id] ? `Last used on ${paymentSourceLastUsed[pendingDeletePaymentSource.id]}. ` : ''}After deletion those transactions will display no payment source. This cannot be undone.`}
+                        loading={isDeletingPaymentSource}
+                        onCancel={() => setPendingDeletePaymentSource(null)}
+                        onConfirm={async () => { await handleConfirmDeletePaymentSource(); }}
+                    />
+                </Suspense>
             )}
 
 
             {isPaymentSourceManageOpen && (
-                <PaymentSourceManageModal
-                    isOpen={isPaymentSourceManageOpen}
-                    onClose={() => setIsPaymentSourceManageOpen(false)}
-                    paymentSources={paymentSources}
-                    usageCounts={paymentSourceUsageCounts}
-                    lastUsedMap={paymentSourceLastUsed}
-                    onAddNew={() => {
-                        setIsPaymentSourceManageOpen(false);
-                        setIsPaymentSourceModalOpen(true);
-                    }}
-                    onRequestDelete={(id) => requestDeletePaymentSource(id)}
-                    onArchive={(id) => handleArchivePaymentSource(id)}
-                />
+                <Suspense fallback={<ModalShell />}>
+                    <PaymentSourceManageModal
+                        isOpen={isPaymentSourceManageOpen}
+                        onClose={() => setIsPaymentSourceManageOpen(false)}
+                        paymentSources={paymentSources}
+                        usageCounts={paymentSourceUsageCounts}
+                        lastUsedMap={paymentSourceLastUsed}
+                        onAddNew={() => {
+                            setIsPaymentSourceManageOpen(false);
+                            setIsPaymentSourceModalOpen(true);
+                        }}
+                        onRequestDelete={(id) => requestDeletePaymentSource(id)}
+                        onArchive={(id) => handleArchivePaymentSource(id)}
+                    />
+                </Suspense>
             )}
 
             {isSettleUpOpen && selectedGroup && (
+                <Suspense fallback={<ModalShell />}>
                 <SettleUpModal
                     open={isSettleUpOpen}
                     onClose={() => {
@@ -723,42 +758,45 @@ const App: React.FC = () => {
                         setEditingTransaction(null);
                     }}
                 />
+                </Suspense>
             )}
 
             {isTransactionDetailOpen && selectedTransactionForDetail && (
-                <TransactionDetailModal
-                    transaction={selectedTransactionForDetail}
-                    onClose={() => {
-                        setIsTransactionDetailOpen(false);
-                        setSelectedTransactionForDetail(null);
-                    }}
-                    groupMembers={groupMembers}
-                    paymentSources={paymentSources}
-                    onEdit={(transaction) => {
-                        setEditingTransaction(transaction);
-                        setIsTransactionModalOpen(true);
-                        setIsTransactionDetailOpen(false);
-                        setSelectedTransactionForDetail(null);
-                    }}
-                    onDelete={(transaction) => {
-                        setPendingDeleteTransaction(transaction);
-                        setIsTransactionDetailOpen(false);
-                        setSelectedTransactionForDetail(null);
-                    }}
-                />
+                <Suspense fallback={<ModalShell />}>
+                    <TransactionDetailModal
+                        transaction={selectedTransactionForDetail}
+                        onClose={() => {
+                            setIsTransactionDetailOpen(false);
+                            setSelectedTransactionForDetail(null);
+                        }}
+                        groupMembers={groupMembers}
+                        paymentSources={paymentSources}
+                        onEdit={(transaction) => {
+                            setEditingTransaction(transaction);
+                            setIsTransactionModalOpen(true);
+                            setIsTransactionDetailOpen(false);
+                            setSelectedTransactionForDetail(null);
+                        }}
+                        onDelete={(transaction) => {
+                            setPendingDeleteTransaction(transaction);
+                            setIsTransactionDetailOpen(false);
+                            setSelectedTransactionForDetail(null);
+                        }}
+                    />
+                </Suspense>
             )}
 
-            <AddActionModal
-                open={isAddActionModalOpen}
-                onClose={() => setIsAddActionModalOpen(false)}
-                groups={activeGroups}
-                people={people}
-                onCreateGroup={handleCreateGroupFromAddAction}
-                onSelectGroupForExpense={handleSelectGroupForExpense}
-                currentGroupId={selectedGroupId}
-            />
-
-
+            <Suspense fallback={null}>
+                <AddActionModal
+                    open={isAddActionModalOpen}
+                    onClose={() => setIsAddActionModalOpen(false)}
+                    groups={activeGroups}
+                    people={people}
+                    onCreateGroup={handleCreateGroupFromAddAction}
+                    onSelectGroupForExpense={handleSelectGroupForExpense}
+                    currentGroupId={selectedGroupId}
+                />
+            </Suspense>
 
             {/* <ApiStatusIndicator /> removed per user request */}
             {/* <DebugPanel groups={groups} transactions={transactions} /> removed per user request */}
@@ -768,22 +806,26 @@ const App: React.FC = () => {
 
             {/* Global destructive action confirmations */}
             {isConfirmDeleteModalOpen && editingGroup && (
-                <ConfirmDeleteModal
-                    open={isConfirmDeleteModalOpen}
-                    entityType="group"
-                    entityName={editingGroup.name}
-                    loading={isProcessingGroupAction}
-                    onConfirm={handleConfirmDeleteGroup}
-                    onCancel={() => setIsConfirmDeleteModalOpen(false)}
-                />
+                <Suspense fallback={<ModalShell />}>
+                    <ConfirmDeleteModal
+                        open={isConfirmDeleteModalOpen}
+                        entityType="group"
+                        entityName={editingGroup.name}
+                        loading={isProcessingGroupAction}
+                        onConfirm={handleConfirmDeleteGroup}
+                        onCancel={() => setIsConfirmDeleteModalOpen(false)}
+                    />
+                </Suspense>
             )}
 
             {isConfirmArchiveModalOpen && editingGroup && (
-                <ArchivePromptModal
-                    isOpen={isConfirmArchiveModalOpen}
-                    onClose={() => setIsConfirmArchiveModalOpen(false)}
-                    onArchive={handleConfirmArchiveGroup}
-                />
+                <Suspense fallback={<ModalShell />}>
+                    <ArchivePromptModal
+                        isOpen={isConfirmArchiveModalOpen}
+                        onClose={() => setIsConfirmArchiveModalOpen(false)}
+                        onArchive={handleConfirmArchiveGroup}
+                    />
+                </Suspense>
             )}
 
             {isConfirmLeaveModalOpen && pendingGroupSaveData && editingGroup && (
