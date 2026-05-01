@@ -7,6 +7,79 @@ html, body, #root {
   height: 100%;
 }
 
+/* ─────────────────────────────────────────────────────────────
+   THEME SYSTEM
+   The app is built dark-first.  When `.dark` is on <html> (or
+   when nothing overrides), dark styles apply via the hardcoded
+   Tailwind classes in the JSX.  When `.dark` is absent (light /
+   system-light), the overrides below flip the palette.
+───────────────────────────────────────────────────────────────*/
+
+/* Page background layer */
+#app-bg {
+  background-color: #020617;
+  background-image: radial-gradient(circle farthest-side at 50% 0, #1e293b 0%, #020617 80%);
+}
+html:not(.dark) #app-bg {
+  background-color: #f1f5f9;
+  background-image: radial-gradient(circle farthest-side at 50% 0, #e2e8f0 0%, #f8fafc 80%);
+}
+
+/* colour-scheme hint so browser chrome (scrollbars, inputs) follows */
+html.dark  { color-scheme: dark;  }
+html:not(.dark) { color-scheme: light; }
+
+/* ── Backgrounds ──────────────────────────────────────────── */
+html:not(.dark) .bg-slate-900  { background-color: #f1f5f9; }
+html:not(.dark) .bg-slate-800  { background-color: #ffffff; }
+html:not(.dark) .bg-slate-800\/50 { background-color: rgba(255,255,255,0.85); }
+html:not(.dark) .bg-slate-700  { background-color: #f1f5f9; }
+html:not(.dark) .bg-slate-600  { background-color: #e2e8f0; }
+
+/* Semi-transparent overlays built on white → flip to slate base */
+html:not(.dark) .bg-white\/5   { background-color: rgba(15,23,42,0.04); }
+html:not(.dark) .bg-white\/10  { background-color: rgba(15,23,42,0.07); }
+html:not(.dark) .bg-white\/20  { background-color: rgba(15,23,42,0.12); }
+html:not(.dark) .hover\:bg-white\/10:hover { background-color: rgba(15,23,42,0.07); }
+html:not(.dark) .hover\:bg-white\/20:hover { background-color: rgba(15,23,42,0.12); }
+
+/* Sticky header / backdrop */
+html:not(.dark) .bg-black\/30  { background-color: rgba(248,250,252,0.85); }
+html:not(.dark) .hover\:bg-black\/30:hover { background-color: rgba(248,250,252,0.9); }
+
+/* Modal overlay backdrop */
+html:not(.dark) .bg-black\/50  { background-color: rgba(15,23,42,0.4); }
+html:not(.dark) .bg-black\/60  { background-color: rgba(15,23,42,0.5); }
+
+/* ── Text ─────────────────────────────────────────────────── */
+html:not(.dark) .text-white    { color: #0f172a; }
+html:not(.dark) .text-slate-100 { color: #1e293b; }
+html:not(.dark) .text-slate-200 { color: #1e293b; }
+html:not(.dark) .text-slate-300 { color: #334155; }
+html:not(.dark) .text-slate-400 { color: #64748b; }
+html:not(.dark) .text-slate-500 { color: #94a3b8; }
+
+html:not(.dark) .hover\:text-white:hover { color: #0f172a; }
+
+/* ── Borders ──────────────────────────────────────────────── */
+html:not(.dark) .border-white\/5  { border-color: rgba(15,23,42,0.05); }
+html:not(.dark) .border-white\/10 { border-color: rgba(15,23,42,0.12); }
+html:not(.dark) .border-white\/20 { border-color: rgba(15,23,42,0.18); }
+html:not(.dark) .border-slate-700 { border-color: #cbd5e1; }
+
+/* ── Inputs & form controls ───────────────────────────────── */
+html:not(.dark) input,
+html:not(.dark) textarea,
+html:not(.dark) select {
+  background-color: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+html:not(.dark) input::placeholder,
+html:not(.dark) textarea::placeholder { color: #94a3b8; }
+
+/* ── Accent colours stay vivid in both modes (no override needed) ── */
+
 /* Mobile Safe Area Support - For Android & iOS */
 /* Safe area insets for status bar and notch areas */
 .safe-area-top {

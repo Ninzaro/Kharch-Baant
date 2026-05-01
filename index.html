@@ -34,9 +34,22 @@
     
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Inline blocking script: apply theme class before first paint to prevent FOUC -->
+    <script>
+      (function() {
+        try {
+          var stored = JSON.parse(localStorage.getItem('app-ui') || '{}');
+          var theme = (stored.state && stored.state.theme) || 'system';
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (theme === 'dark' || (theme === 'system' && prefersDark)) {
+            document.documentElement.classList.add('dark');
+          }
+        } catch(e) {}
+      })();
+    </script>
   </head>
   <body class="text-slate-100">
-    <div class="fixed inset-0 -z-10 h-full w-full bg-slate-900 bg-[radial-gradient(circle_farthest-side_at_50%_0,_#1e293b_0%,_#020617_80%)]"></div>
+    <div id="app-bg" class="fixed inset-0 -z-10 h-full w-full"></div>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
