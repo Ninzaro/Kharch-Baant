@@ -123,15 +123,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         <div className="flex flex-col gap-4 py-2">
           {/* Profile Section */}
           {currentUserId && currentUserPerson && (
-            <div className="flex flex-col gap-3 bg-slate-800/50 p-4 rounded-xl border border-white/5">
-              <label className="text-violet-300 text-sm font-medium uppercase tracking-wider">Profile</label>
+            <div className="flex flex-col gap-3 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-white/5">
+              <label className="text-violet-600 dark:text-violet-300 text-sm font-medium uppercase tracking-wider">Profile</label>
               <div className="flex items-center gap-4">
                 <Avatar
                   person={{ ...currentUserPerson, avatarUrl: avatarUrl }}
                   size="lg"
                 />
                 <div className="flex flex-col gap-2">
-                  <h3 className="text-white font-medium">{currentUserPerson.name}</h3>
+                  <h3 className="text-slate-900 dark:text-white font-medium">{currentUserPerson.name}</h3>
                   <div className="flex gap-2">
                     <input
                       type="file"
