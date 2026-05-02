@@ -11,9 +11,14 @@ const normalize = (description: string): string =>
 
 // ─── Supabase helpers ────────────────────────────────────────────────────────
 
+// Cast to any: ai_item_cache is not in the generated database.types.ts yet.
+// Run `supabase gen types` after applying the schema migration to remove these casts.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = supabase as any;
+
 async function lookupCache(key: string): Promise<Tag | null> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('ai_item_cache')
       .select('category')
       .eq('normalized_name', key)
@@ -28,10 +33,10 @@ async function lookupCache(key: string): Promise<Tag | null> {
 
 /** Fire-and-forget — never blocks the response. */
 function writeCache(key: string, tag: Tag): void {
-  supabase
+  db
     .from('ai_item_cache')
     .insert({ normalized_name: key, category: tag, source: 'gemini' })
-    .then(({ error }) => {
+    .then(({ error }: { error: { code: string; message: string } | null }) => {
       if (error && error.code !== '23505') {
         // 23505 = unique_violation (another tab already wrote it — harmless)
         console.warn('[tagClassifier] cache write failed:', error.message);
