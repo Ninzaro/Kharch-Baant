@@ -73,6 +73,30 @@ CREATE INDEX idx_transactions_paid_by_id ON transactions(paid_by_id);
 CREATE INDEX idx_transactions_date ON transactions(date);
 CREATE INDEX idx_transactions_tag ON transactions(tag);
 
+-- AI item classification cache (global, shared across all users)
+CREATE TABLE ai_item_cache (
+  normalized_name  TEXT        PRIMARY KEY,
+  category         TEXT        NOT NULL
+                   CHECK (category IN ('Food','Groceries','Transport','Travel',
+                                       'Housing','Utilities','Entertainment',
+                                       'Shopping','Health','Other')),
+  source           TEXT        NOT NULL DEFAULT 'gemini'
+                   CHECK (source IN ('keyword','gemini')),
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE ai_item_cache ENABLE ROW LEVEL SECURITY;
+
+-- Any authenticated user can read the shared cache
+CREATE POLICY "cache_read"
+  ON ai_item_cache FOR SELECT
+  USING (auth.role() = 'authenticated');
+
+-- Any authenticated user can add new entries (no UPDATE/DELETE — entries are immutable)
+CREATE POLICY "cache_insert"
+  ON ai_item_cache FOR INSERT
+  WITH CHECK (auth.role() = 'authenticated');
+
 -- Create updated_at trigger function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$

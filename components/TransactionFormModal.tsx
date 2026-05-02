@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Transaction, Person, TAGS, Tag, PaymentSource, SplitMode, Split, SplitParticipant, Payer } from '../types';
-import { suggestTagForDescription, getIconForCategory } from '../services/geminiService';
+import { classifyDescription } from '../services/tagClassifier';
+import { getIconForCategory } from '../services/geminiService';
 import CalendarModal from './CalendarModal';
 import Avatar from './Avatar';
 import { CalendarIcon, ChevronRightIcon, DeleteIcon, CheckIcon } from './icons/Icons'; // Assuming CheckIcon exists or I'll implement it
@@ -243,7 +244,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
     const handleDescriptionBlur = async () => {
         if (description.trim().length > 3 && !transaction && !tag) {
             setIsSuggestingTag(true);
-            const suggestedTag = await suggestTagForDescription(description);
+            const suggestedTag = await classifyDescription(description);
             if (suggestedTag) setTag(suggestedTag as Tag);
             setIsSuggestingTag(false);
         }
