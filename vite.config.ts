@@ -82,10 +82,18 @@ export default defineConfig(({ mode }) => {
         rollupOptions: {
           output: {
             manualChunks(id) {
-              if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/'))
-                return 'vendor-react';
-              if (id.includes('@clerk/clerk-react') || id.includes('@clerk/shared') || id.includes('@clerk/types'))
-                return 'vendor-clerk';
+              // React and Clerk must share the same chunk — Clerk accesses React
+              // internals at module initialisation time, so splitting them causes
+              // "Cannot set properties of undefined (setting 'Activity')" when the
+              // browser loads vendor-clerk before vendor-react is fully executed.
+              if (
+                id.includes('node_modules/react/') ||
+                id.includes('node_modules/react-dom/') ||
+                id.includes('@clerk/clerk-react') ||
+                id.includes('@clerk/shared') ||
+                id.includes('@clerk/types')
+              )
+                return 'vendor-react-clerk';
               if (id.includes('@supabase/supabase-js') || id.includes('@supabase/'))
                 return 'vendor-supabase';
               if (id.includes('@google/genai'))
