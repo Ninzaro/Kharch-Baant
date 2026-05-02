@@ -27,7 +27,18 @@ export const useAppStore = create<UIState>()(
           selectedGroupId: s.selectedGroupId,
           theme: s.theme,
         }),
-        version: 2, // bump version to clear persisted openModals from localStorage
+        version: 2,
+        // Called when persisted version < current version.
+        // v0→v1→v2: openModals was removed; just carry forward the fields we still use.
+        migrate: (old: unknown) => {
+          const s = (old ?? {}) as Record<string, unknown>
+          return {
+            selectedGroupId: typeof s.selectedGroupId === 'string' ? s.selectedGroupId : null,
+            theme: ['light', 'dark', 'system'].includes(s.theme as string)
+              ? (s.theme as Theme)
+              : 'system',
+          }
+        },
       }
     ),
     { name: 'app-ui' }
