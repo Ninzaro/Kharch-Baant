@@ -8,9 +8,9 @@ import { createPortal } from 'react-dom';
  */
 const ModalShell: React.FC = () =>
     createPortal(
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-slate-800 rounded-xl p-8 flex items-center justify-center">
-                <div className="animate-spin h-6 w-6 border-2 border-indigo-500 border-t-transparent rounded-full" />
+        <div className="fixed inset-0 bg-overlay/50 flex items-center justify-center z-50">
+            <div className="bg-card rounded-xl p-8 flex items-center justify-center">
+                <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
             </div>
         </div>,
         document.body

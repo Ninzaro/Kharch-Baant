@@ -95,7 +95,7 @@ const MemberInviteModal: React.FC<MemberInviteModalProps> = ({ open, groupId, ex
       <button
         type="button"
         onClick={onClose}
-        className="px-4 py-2 rounded-md bg-white/10 text-slate-200 hover:bg-white/20 disabled:opacity-50"
+        className="px-4 py-2 rounded-md bg-foreground/10 text-foreground hover:bg-foreground/20 disabled:opacity-50"
         disabled={submitting}
       >
         Cancel
@@ -103,10 +103,10 @@ const MemberInviteModal: React.FC<MemberInviteModalProps> = ({ open, groupId, ex
       <button
         type="submit"
         form="member-invite-form"
-        className="px-4 py-2 rounded-md bg-gradient-to-br from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 disabled:opacity-50 flex items-center gap-2"
+        className="px-4 py-2 rounded-md bg-gradient-to-br from-primary to-accent text-foreground hover:from-primary/90 hover:to-accent/90 disabled:opacity-50 flex items-center gap-2"
         disabled={submitting || (!matchedPerson && !name.trim())}
       >
-        {submitting && <span className="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full" />}
+        {submitting && <span className="animate-spin h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full" />}
         Add Member
       </button>
     </>
@@ -119,58 +119,58 @@ const MemberInviteModal: React.FC<MemberInviteModalProps> = ({ open, groupId, ex
       title="Add Member"
       size="sm"
       initialFocusRef={inputRef}
-      description={<span className="text-sm text-slate-300">Add a person to this group.</span>}
+      description={<span className="text-sm text-muted-foreground">Add a person to this group.</span>}
       footer={footer}
     >
       <form id="member-invite-form" onSubmit={handleSubmit} className="space-y-5" autoComplete="off">
         {/* Email first — drives the lookup */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-1">Email (optional)</label>
+          <label className="block text-sm font-medium text-muted-foreground mb-1">Email (optional)</label>
           <input
             type="email"
             value={email}
             onChange={e => handleEmailChange(e.target.value)}
             placeholder="rahul@example.com"
-            className="w-full bg-black/30 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-500 focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full bg-overlay/30 border border-border rounded-md px-3 py-2 text-foreground placeholder-slate-500 focus:ring-ring focus:border-ring"
           />
           {lookingUp && (
-            <p className="mt-1 text-xs text-slate-400">Checking...</p>
+            <p className="mt-1 text-xs text-muted-foreground">Checking...</p>
           )}
           {matchedPerson?.isClaimed && (
             <div className="mt-2 flex items-center gap-2 bg-emerald-900/30 border border-emerald-700/40 rounded-md px-3 py-2">
-              <span className="text-emerald-400 text-xs font-medium">✓ Already on Kharch Baant</span>
-              <span className="text-slate-300 text-xs">{matchedPerson.name} will be added directly.</span>
+              <span className="text-success text-xs font-medium">✓ Already on Kharch Baant</span>
+              <span className="text-muted-foreground text-xs">{matchedPerson.name} will be added directly.</span>
             </div>
           )}
           {matchedPerson && !matchedPerson.isClaimed && (
             <div className="mt-2 flex items-center gap-2 bg-amber-900/30 border border-amber-700/40 rounded-md px-3 py-2">
               <span className="text-amber-400 text-xs font-medium">Already a contact</span>
-              <span className="text-slate-300 text-xs">{matchedPerson.name} — they'll be invited to this group.</span>
+              <span className="text-muted-foreground text-xs">{matchedPerson.name} — they'll be invited to this group.</span>
             </div>
           )}
           {!matchedPerson && email && !lookingUp && email.includes('@') && (
-            <p className="mt-1 text-xs text-slate-500">Not found — a new contact will be created.</p>
+            <p className="mt-1 text-xs text-muted-foreground">Not found — a new contact will be created.</p>
           )}
         </div>
 
         {/* Name field: hidden when a matched person exists */}
         {!matchedPerson && (
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Name</label>
+            <label className="block text-sm font-medium text-muted-foreground mb-1">Name</label>
             <input
               ref={inputRef}
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="e.g. Priya"
-              className="w-full bg-black/30 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-500 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full bg-overlay/30 border border-border rounded-md px-3 py-2 text-foreground placeholder-slate-500 focus:ring-ring focus:border-ring"
               required={!matchedPerson}
             />
           </div>
         )}
 
         {error && (
-          <div className="text-sm text-rose-400 bg-rose-900/30 border border-rose-700/40 rounded-md px-3 py-2">
+          <div className="text-sm text-destructive bg-rose-900/30 border border-rose-700/40 rounded-md px-3 py-2">
             {error}
           </div>
         )}

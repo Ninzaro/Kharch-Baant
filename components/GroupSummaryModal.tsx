@@ -12,7 +12,27 @@ interface GroupSummaryModalProps {
     currency: Currency;
 }
 
-const COLORS = ['#F43F5E', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899', '#6366F1'];
+/** Chart series from design tokens (resolved at use time for light/dark). */
+const chartTokenVars = [
+  '--chart-1', '--chart-2', '--chart-3', '--chart-4', '--chart-5', '--chart-6', '--chart-7',
+] as const;
+
+function resolveChartColors(): string[] {
+  if (typeof document === 'undefined') {
+    return chartTokenVars.map(() => 'hsl(239 84% 67%)');
+  }
+  const styles = getComputedStyle(document.documentElement);
+  return chartTokenVars.map((v) => {
+    const raw = styles.getPropertyValue(v).trim();
+    return raw ? `hsl(${raw})` : 'hsl(239 84% 67%)';
+  });
+}
+
+function resolveCssColor(token: string, fallback: string): string {
+  if (typeof document === 'undefined') return fallback;
+  const raw = getComputedStyle(document.documentElement).getPropertyValue(token).trim();
+  return raw ? `hsl(${raw})` : fallback;
+}
 
 const GroupSummaryModal: React.FC<GroupSummaryModalProps> = ({ isOpen, onClose, groupName, transactions, people, currency }) => {
     const summaryRef = useRef<HTMLDivElement>(null);
@@ -68,7 +88,7 @@ const GroupSummaryModal: React.FC<GroupSummaryModalProps> = ({ isOpen, onClose, 
         setIsSharing(true);
         try {
             const canvas = await html2canvas(summaryRef.current, {
-                backgroundColor: '#1E293B', // Match slate-800 usually used
+                backgroundColor: resolveCssColor('--card', 'hsl(217 33% 14%)'),
                 scale: 2 // High res
             });
 
@@ -109,16 +129,18 @@ const GroupSummaryModal: React.FC<GroupSummaryModalProps> = ({ isOpen, onClose, 
 
     const maxPayerAmount = byPayer.length > 0 ? byPayer[0].amount : 0;
 
-    // Helper for donut (simple CSS conic gradient)
+    // Helper for donut (simple CSS conic gradient from design tokens)
     const donutGradient = useMemo(() => {
-        if (totalSpent === 0) return 'conic-gradient(#334155 0% 100%)';
+        const muted = resolveCssColor('--muted', 'hsl(217 33% 17%)');
+        if (totalSpent === 0) return `conic-gradient(${muted} 0% 100%)`;
 
+        const colors = resolveChartColors();
         let gradientStr = 'conic-gradient(';
         let currentDeg = 0;
 
         byCategory.forEach((cat, index) => {
             const deg = (cat.amount / totalSpent) * 360;
-            const color = COLORS[index % COLORS.length];
+            const color = colors[index % colors.length];
             gradientStr += `${color} ${currentDeg}deg ${currentDeg + deg}deg, `;
             currentDeg += deg;
         });
@@ -131,17 +153,17 @@ const GroupSummaryModal: React.FC<GroupSummaryModalProps> = ({ isOpen, onClose, 
             open={isOpen}
             onClose={onClose}
             title={`${groupName} Summary`}
-            description={<span className="text-slate-400">Expense analysis and breakdown</span>}
+            description={<span className="text-muted-foreground">Expense analysis and breakdown</span>}
             size="lg"
             footer={
                 <div className="flex justify-between w-full">
-                    <button onClick={onClose} className="px-4 py-2 text-slate-300 hover:bg-white/5 rounded-lg transition-colors">
+                    <button onClick={onClose} className="px-4 py-2 text-muted-foreground hover:bg-foreground/5 rounded-lg transition-colors">
                         Close
                     </button>
                     <button
                         onClick={handleShare}
                         disabled={isSharing}
-                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors font-medium shadow-lg shadow-indigo-500/20"
+                        className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors font-medium shadow-lg shadow-primary/20"
                     >
                         {isSharing ? 'Generating...' : (
                             <>
@@ -155,19 +177,19 @@ const GroupSummaryModal: React.FC<GroupSummaryModalProps> = ({ isOpen, onClose, 
                 </div>
             }
         >
-            <div ref={summaryRef} className="p-6 bg-slate-900 rounded-xl space-y-8">
+            <div ref={summaryRef} className="p-6 bg-background rounded-xl space-y-8">
                 {/* Header for Image Capture */}
                 <div className="text-center space-y-1 mb-6">
-                    <p className="text-slate-400 uppercase tracking-widest text-xs font-bold">Total Group Spending</p>
-                    <h2 className="text-4xl font-bold text-white tracking-tight">{formatCurrency(totalSpent)}</h2>
-                    <p className="text-slate-500 text-sm">across {transactions.filter(t => t.type !== 'settlement').length} transactions</p>
+                    <p className="text-muted-foreground uppercase tracking-widest text-xs font-bold">Total Group Spending</p>
+                    <h2 className="text-4xl font-bold text-foreground tracking-tight">{formatCurrency(totalSpent)}</h2>
+                    <p className="text-muted-foreground text-sm">across {transactions.filter(t => t.type !== 'settlement').length} transactions</p>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-8">
                     {/* Visual 1: Who Paid (Bar) */}
                     <div className="space-y-4">
-                        <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                            <span className="p-1.5 bg-indigo-500/20 rounded-md text-indigo-400">
+                        <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                            <span className="p-1.5 bg-primary/20 rounded-md text-primary">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                             </span>
                             Who Paid What
@@ -176,12 +198,12 @@ const GroupSummaryModal: React.FC<GroupSummaryModalProps> = ({ isOpen, onClose, 
                             {byPayer.map((payer, idx) => (
                                 <div key={payer.id} className="group">
                                     <div className="flex justify-between text-sm mb-1">
-                                        <span className="text-slate-300 font-medium">{payer.name}</span>
-                                        <span className="text-slate-400">{formatCurrency(payer.amount)}</span>
+                                        <span className="text-muted-foreground font-medium">{payer.name}</span>
+                                        <span className="text-muted-foreground">{formatCurrency(payer.amount)}</span>
                                     </div>
-                                    <div className="h-2.5 bg-slate-800 rounded-full overflow-hidden">
+                                    <div className="h-2.5 bg-card rounded-full overflow-hidden">
                                         <div
-                                            className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-500"
+                                            className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-500"
                                             style={{ width: `${maxPayerAmount > 0 ? (payer.amount / maxPayerAmount) * 100 : 0}%` }}
                                         ></div>
                                     </div>
@@ -192,8 +214,8 @@ const GroupSummaryModal: React.FC<GroupSummaryModalProps> = ({ isOpen, onClose, 
 
                     {/* Visual 2: Categories (Donut & List) */}
                     <div className="space-y-4">
-                        <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                            <span className="p-1.5 bg-emerald-500/20 rounded-md text-emerald-400">
+                        <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                            <span className="p-1.5 bg-success/20 rounded-md text-success">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
                             </span>
                             Category Breakdown
@@ -206,8 +228,8 @@ const GroupSummaryModal: React.FC<GroupSummaryModalProps> = ({ isOpen, onClose, 
                                         className="w-full h-full rounded-full"
                                         style={{ background: donutGradient }}
                                     ></div>
-                                    <div className="absolute inset-4 bg-slate-900 rounded-full flex items-center justify-center">
-                                        <span className="text-xs text-slate-500 font-medium">Top categories</span>
+                                    <div className="absolute inset-4 bg-background rounded-full flex items-center justify-center">
+                                        <span className="text-xs text-muted-foreground font-medium">Top categories</span>
                                     </div>
                                 </div>
 
@@ -216,27 +238,27 @@ const GroupSummaryModal: React.FC<GroupSummaryModalProps> = ({ isOpen, onClose, 
                                     {byCategory.slice(0, 5).map((cat, idx) => (
                                         <div key={cat.tag} className="flex items-center justify-between text-sm">
                                             <div className="flex items-center gap-2 min-w-0">
-                                                <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></div>
-                                                <span className="text-slate-300 capitalize truncate">{cat.tag}</span>
+                                                <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: resolveChartColors()[idx % chartTokenVars.length] }}></div>
+                                                <span className="text-muted-foreground capitalize truncate">{cat.tag}</span>
                                             </div>
-                                            <span className="text-slate-400 ml-2">{getPercentage(cat.amount, totalSpent)}</span>
+                                            <span className="text-muted-foreground ml-2">{getPercentage(cat.amount, totalSpent)}</span>
                                         </div>
                                     ))}
                                     {byCategory.length > 5 && (
-                                        <p className="text-xs text-slate-500 pl-4.5 pt-1 italic">
+                                        <p className="text-xs text-muted-foreground pl-4.5 pt-1 italic">
                                             + {byCategory.length - 5} more...
                                         </p>
                                     )}
                                 </div>
                             </div>
                         ) : (
-                            <p className="text-slate-500 text-sm italic py-8 text-center">No expenses yet.</p>
+                            <p className="text-muted-foreground text-sm italic py-8 text-center">No expenses yet.</p>
                         )}
                     </div>
                 </div>
 
-                <div className="pt-6 border-t border-white/5 flex justify-center">
-                    <p className="text-xs text-slate-600 font-mono">Generated by Kharch Baant</p>
+                <div className="pt-6 border-t border-border flex justify-center">
+                    <p className="text-xs text-muted-foreground font-mono">Generated by Kharch Baant</p>
                 </div>
             </div>
         </BaseModal>

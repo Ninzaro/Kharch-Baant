@@ -71,19 +71,19 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, imageDataUrl, 
             onClose={onClose}
             title="Share Summary"
             size="md"
-            description={<span className="text-slate-300 text-sm">Download or share the generated expense summary image.</span>}
+            description={<span className="text-muted-foreground text-sm">Download or share the generated expense summary image.</span>}
             footer={
                 <div className="flex flex-col sm:flex-row justify-end gap-3 w-full">
-                    <button onClick={handleDownload} className="px-4 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-500 order-2 sm:order-1">Download Image</button>
+                    <button onClick={handleDownload} className="px-4 py-2 bg-sky-600 text-foreground rounded-md hover:bg-sky-500 order-2 sm:order-1">Download Image</button>
                     {canShare && (
-                        <button onClick={handleShare} className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-500 order-3 sm:order-2">Share via...</button>
+                        <button onClick={handleShare} className="px-4 py-2 bg-success text-success-foreground rounded-md hover:bg-success order-3 sm:order-2">Share via...</button>
                     )}
-                    <button onClick={onClose} className="px-4 py-2 bg-white/10 text-white rounded-md hover:bg-white/20 order-1 sm:order-3">Close</button>
+                    <button onClick={onClose} className="px-4 py-2 bg-foreground/10 text-foreground rounded-md hover:bg-foreground/20 order-1 sm:order-3">Close</button>
                 </div>
             }
         >
             <div className="text-center">
-                <div className="bg-black/20 p-2 rounded-lg mb-6">
+                <div className="bg-overlay/20 p-2 rounded-lg mb-6">
                     <img src={imageDataUrl} alt="Expense Summary" className="max-w-full h-auto rounded-md mx-auto" />
                 </div>
             </div>

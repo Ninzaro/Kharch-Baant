@@ -21,15 +21,15 @@ export interface ConfirmDeleteModalProps {
  * - Blocks closing via ESC/backdrop while submitting.
  */
 const ENTITY_LABEL: Record<EntityType, { title: string; color: string; noun: string }> = {
-  transaction: { title: 'Delete Transaction', color: 'text-rose-400', noun: 'transaction' },
-  group: { title: 'Delete Group', color: 'text-rose-400', noun: 'group' },
-  paymentSource: { title: 'Delete Payment Source', color: 'text-rose-400', noun: 'payment source' },
+  transaction: { title: 'Delete Transaction', color: 'text-destructive', noun: 'transaction' },
+  group: { title: 'Delete Group', color: 'text-destructive', noun: 'group' },
+  paymentSource: { title: 'Delete Payment Source', color: 'text-destructive', noun: 'payment source' },
   member: { title: 'Remove Member', color: 'text-amber-400', noun: 'member' },
 };
 
-const destructiveButtonClasses = 'px-4 py-2 bg-gradient-to-br from-rose-600 to-red-600 text-white rounded-md hover:from-rose-500 hover:to-red-500 disabled:opacity-50 disabled:cursor-not-allowed';
+const destructiveButtonClasses = 'px-4 py-2 bg-gradient-to-br from-destructive to-destructive text-foreground rounded-md hover:from-destructive/90 hover:to-destructive/90 disabled:opacity-50 disabled:cursor-not-allowed';
 
-const secondaryButtonClasses = 'px-4 py-2 bg-white/10 text-white rounded-md hover:bg-white/20';
+const secondaryButtonClasses = 'px-4 py-2 bg-foreground/10 text-foreground rounded-md hover:bg-foreground/20';
 
 const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
   open,
@@ -104,11 +104,11 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
       beforeClose={beforeClose}
       title={meta.title}
       size="sm"
-      description={<span className="text-slate-300 text-sm">This action cannot be undone.</span>}
+      description={<span className="text-muted-foreground text-sm">This action cannot be undone.</span>}
       footer={footer}
     >
       <div className="space-y-4 text-sm">
-        <p className="text-slate-300">
+        <p className="text-muted-foreground">
           Are you sure you want to permanently delete
           {' '}<span className={`${meta.color} font-semibold`}>{entityName ? `“${entityName}”` : `this ${meta.noun}`}</span>?<br />
           This {meta.noun} will be removed and related views will update.
@@ -120,8 +120,8 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
         )}
         {requiresTyping && (
           <div className="space-y-2">
-            <label htmlFor="confirm-name" className="block text-xs font-medium text-slate-400">
-              Type the group name (<span className="text-slate-300 font-semibold">{entityName}</span>) to confirm
+            <label htmlFor="confirm-name" className="block text-xs font-medium text-muted-foreground">
+              Type the group name (<span className="text-muted-foreground font-semibold">{entityName}</span>) to confirm
             </label>
             <input
               id="confirm-name"
@@ -129,16 +129,16 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
               type="text"
               value={confirmText}
               onChange={e => setConfirmText(e.target.value)}
-              className="w-full bg-black/30 text-white rounded-md p-2 border border-slate-600 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full bg-overlay/30 text-foreground rounded-md p-2 border border-border focus:ring-ring focus:border-ring"
               placeholder={entityName}
               disabled={isSubmitting || loading}
             />
             {!typingSatisfied && confirmText && (
-              <p className="text-xs text-rose-400">Name does not match.</p>
+              <p className="text-xs text-destructive">Name does not match.</p>
             )}
           </div>
         )}
-        <p className="text-xs text-slate-500 leading-relaxed">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           Press ESC or click outside to cancel (disabled while processing). All destructive actions should be audited (future enhancement).
         </p>
       </div>

@@ -47,45 +47,45 @@ const GroupSummaryCard: React.FC<GroupSummaryCardProps> = ({ group, transactions
     }, [group.tripStartDate, group.tripEndDate]);
 
     let balanceText = "You are settled up";
-    let balanceColor = "text-slate-400";
+    let balanceColor = "text-muted-foreground";
 
     if (userBalance > 0.01) {
         balanceText = `You are owed ${formatCurrency(userBalance)}`;
-        balanceColor = "text-emerald-400";
+        balanceColor = "text-success";
     } else if (userBalance < -0.01) {
         balanceText = `You owe ${formatCurrency(Math.abs(userBalance))}`;
-        balanceColor = "text-rose-400";
+        balanceColor = "text-destructive";
     }
 
     return (
         <button 
             onClick={() => onSelectGroup(group.id)}
-            className="bg-white/5 backdrop-blur-md p-6 rounded-2xl shadow-lg text-left w-full h-full flex flex-col justify-between hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="bg-foreground/5 backdrop-blur-md p-6 rounded-2xl shadow-lg text-left w-full h-full flex flex-col justify-between hover:bg-foreground/10 border border-border hover:border-border transition-all focus:outline-none focus:ring-2 focus:ring-ring"
         >
             <div>
                 <div className="flex flex-col gap-1">
                     <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-lg font-bold text-white truncate">{group.name}</h3>
+                        <h3 className="text-lg font-bold text-foreground truncate">{group.name}</h3>
                         {tripRange && (
-                            <span className="text-xs font-medium text-slate-400 bg-white/5 px-2 py-1 rounded-full border border-white/10">
+                            <span className="text-xs font-medium text-muted-foreground bg-foreground/5 px-2 py-1 rounded-full border border-border">
                                 {tripRange}
                             </span>
                         )}
                     </div>
-                    <span className="text-xs uppercase tracking-wide text-slate-400">{groupTypeLabel}</span>
+                    <span className="text-xs uppercase tracking-wide text-muted-foreground">{groupTypeLabel}</span>
                 </div>
                 <div className="flex items-center mt-3 -space-x-2">
                     {members.slice(0, 5).map(member => (
                        <Avatar key={member.id} id={member.id} name={member.name} avatarUrl={member.avatarUrl} size="md" />
                     ))}
                     {members.length > 5 && (
-                        <div className="h-8 w-8 rounded-full bg-slate-600 flex items-center justify-center text-xs font-bold text-slate-300 ring-2 ring-slate-800">
+                        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground ring-2 ring-border">
                             +{members.length - 5}
                         </div>
                     )}
                 </div>
             </div>
-            <div className="mt-4 pt-4 border-t border-slate-700">
+            <div className="mt-4 pt-4 border-t border-border">
                 <p className={`font-semibold ${balanceColor}`}>{balanceText}</p>
             </div>
         </button>

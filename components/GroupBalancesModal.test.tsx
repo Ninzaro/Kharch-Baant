@@ -91,6 +91,6 @@ describe('GroupBalancesModal', () => {
 
     const pawanBalanceElement = screen.getByText(/Total change in balance/i).nextElementSibling;
     expect(pawanBalanceElement).toHaveTextContent(/\+500.00/);
-    expect(pawanBalanceElement).toHaveClass('text-emerald-600');
+    expect(pawanBalanceElement).toHaveClass('text-success');
   });
 });

@@ -589,7 +589,7 @@ const App: React.FC = () => {
     const groupMembers = selectedGroup ? people.filter(p => selectedGroup.members.includes(p.id)) : [];
 
     return (
-        <div className="h-screen w-screen text-slate-200 flex font-sans">
+        <div className="h-screen w-screen text-foreground flex font-sans">
             {selectedGroup ? (
                 <>
                     <GroupList
@@ -618,14 +618,14 @@ const App: React.FC = () => {
                 </>
             ) : (
                 <div className="flex-1 flex flex-col">
-                    <header className="flex items-center justify-between px-4 py-2 border-b border-slate-800 bg-slate-900 safe-area-top">
-                        <h1 className="text-lg font-bold text-white">Kharch Baant</h1>
+                    <header className="flex items-center justify-between px-4 py-2 border-b border-border bg-background safe-area-top">
+                        <h1 className="text-lg font-bold text-foreground">Kharch Baant</h1>
                         <div className="flex items-center gap-2">
                             <UserMenu />
                             <button
                                 onClick={() => setIsSettingsModalOpen(true)}
                                 onPointerEnter={preloadSettings}
-                                className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+                                className="p-2 text-muted-foreground hover:text-foreground hover:bg-foreground/10 rounded-full transition-colors"
                                 aria-label="Open App Settings"
                             >
                                 <SettingsIcon />
@@ -877,7 +877,7 @@ const App: React.FC = () => {
                     }}
                     title="Leave Group?"
                     size="sm"
-                    description={<span className="text-slate-300 text-sm">You are removing yourself from this group.</span>}
+                    description={<span className="text-muted-foreground text-sm">You are removing yourself from this group.</span>}
                     footer={
                         <div className="flex gap-2">
                             <button
@@ -885,20 +885,20 @@ const App: React.FC = () => {
                                     setIsConfirmLeaveModalOpen(false);
                                     setPendingGroupSaveData(null);
                                 }}
-                                className="px-4 py-2 bg-white/10 text-white rounded-md hover:bg-white/20"
+                                className="px-4 py-2 bg-foreground/10 text-foreground rounded-md hover:bg-foreground/20"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={() => executeGroupSave(pendingGroupSaveData, true)}
-                                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-md"
+                                className="px-4 py-2 bg-destructive hover:bg-destructive text-destructive-foreground rounded-md"
                             >
                                 Leave Group
                             </button>
                         </div>
                     }
                 >
-                    <p className="text-sm text-slate-300">You will no longer have access to "{editingGroup.name}" or its transactions. This action cannot be undone unless someone invites you back.</p>
+                    <p className="text-sm text-muted-foreground">You will no longer have access to "{editingGroup.name}" or its transactions. This action cannot be undone unless someone invites you back.</p>
                 </BaseModal>
             )}
         </div>
@@ -927,10 +927,10 @@ const AppWithAuth: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="h-screen w-screen flex items-center justify-center bg-slate-900">
+            <div className="h-screen w-screen flex items-center justify-center bg-background">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                    <p className="text-slate-400">Loading...</p>
+                    <p className="text-muted-foreground">Loading...</p>
                 </div>
             </div>
         );

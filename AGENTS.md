@@ -142,6 +142,26 @@ Core types: `Person`, `Group`, `Transaction`, `Split` / `SplitParticipant`, `Pay
 - **Never** assign `i.pravatar.cc`, `ui-avatars.com`, or other stock face hosts. `Avatar` also treats those hosts as empty for legacy rows.
 - Apply `supabase/migrations/20260726000000_clear_stock_avatar_urls.sql` on existing databases to clear stock URLs.
 
+### Design system (required for all UI)
+
+Tokens live in `index.css` (`:root` light + `.dark` on `<html>`). Tailwind maps them in `tailwind.config.js`.
+
+| Use | Class / token |
+|---|---|
+| Page surface | `bg-background` `text-foreground` |
+| Cards / panels | `bg-card` `text-card-foreground` |
+| Muted chrome | `bg-muted` `text-muted-foreground` |
+| Brand actions | `bg-primary` `text-primary-foreground` |
+| Money in / positive | `text-success` / `bg-success` |
+| Money out / danger | `text-destructive` / `bg-destructive` |
+| Borders | `border-border` |
+| Focus ring | `ring-ring` |
+| Overlay | `bg-overlay/60` |
+| Radius | `rounded-lg` / `rounded-xl` / `rounded-2xl` (from `--radius`) |
+| Font | `font-sans` (default on `body`) |
+
+**Do not** hardcode palette utilities (`bg-slate-*`, `text-indigo-*`, `bg-black/50`, raw `#hex`) or fonts in components. Add new colors as CSS variables first, then expose them in `tailwind.config.js`.
+
 ### Main tables (Supabase)
 
 `people`, `groups`, `group_members`, `transactions`, `payment_sources`, `group_invites`, `email_invites`, `deletion_requests`.

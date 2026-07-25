@@ -63,13 +63,13 @@ const AddActionModal: React.FC<AddActionModalProps> = ({
           <>
             <button 
               onClick={onClose} 
-              className="px-4 py-2 bg-white/10 text-white rounded-md hover:bg-white/20"
+              className="px-4 py-2 bg-foreground/10 text-foreground rounded-md hover:bg-foreground/20"
             >
               Cancel
             </button>
             <button 
               onClick={handleCreateGroup}
-              className="px-4 py-2 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-md hover:from-indigo-600 hover:to-purple-700"
+              className="px-4 py-2 bg-gradient-to-br from-primary to-accent text-foreground rounded-md hover:from-primary/90 hover:to-accent/90"
             >
               Create First Group
             </button>
@@ -77,10 +77,10 @@ const AddActionModal: React.FC<AddActionModalProps> = ({
         }
       >
         <div className="text-center py-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <UsersIcon className="h-8 w-8 text-white" />
+          <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center mx-auto mb-4">
+            <UsersIcon className="h-8 w-8 text-foreground" />
           </div>
-          <p className="text-slate-300 text-sm">
+          <p className="text-muted-foreground text-sm">
             Groups help you organize expenses with family, friends, or colleagues. 
             Create your first group to get started!
           </p>
@@ -102,13 +102,13 @@ const AddActionModal: React.FC<AddActionModalProps> = ({
           <>
             <button 
               onClick={handleBackToMain} 
-              className="px-4 py-2 bg-white/10 text-white rounded-md hover:bg-white/20"
+              className="px-4 py-2 bg-foreground/10 text-foreground rounded-md hover:bg-foreground/20"
             >
               Back
             </button>
             <button 
               onClick={handleCreateGroup}
-              className="px-4 py-2 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-md hover:from-emerald-600 hover:to-teal-700"
+              className="px-4 py-2 bg-gradient-to-br from-success to-success text-foreground rounded-md hover:from-emerald-600 hover:to-teal-700"
             >
               Create New Group
             </button>
@@ -138,7 +138,7 @@ const AddActionModal: React.FC<AddActionModalProps> = ({
       footer={
         <button 
           onClick={onClose} 
-          className="px-4 py-2 bg-white/10 text-white rounded-md hover:bg-white/20"
+          className="px-4 py-2 bg-foreground/10 text-foreground rounded-md hover:bg-foreground/20"
         >
           Cancel
         </button>
@@ -148,15 +148,15 @@ const AddActionModal: React.FC<AddActionModalProps> = ({
         {/* Add Expense Option */}
         <button
           onClick={handleAddExpenseClick}
-          className="w-full p-4 bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 rounded-lg transition-colors text-left"
+          className="w-full p-4 bg-gradient-to-br from-primary to-accent hover:from-primary/90 hover:to-accent/90 rounded-lg transition-colors text-left"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-              <PlusIcon className="h-5 w-5 text-white" />
+            <div className="w-10 h-10 bg-foreground/20 rounded-lg flex items-center justify-center">
+              <PlusIcon className="h-5 w-5 text-foreground" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-white">Add Expense</h3>
-              <p className="text-white/80 text-sm">
+              <h3 className="font-semibold text-foreground">Add Expense</h3>
+              <p className="text-foreground/80 text-sm">
                 {currentGroup 
                   ? `Add to "${currentGroup.name}"`
                   : groups.length === 1 
@@ -171,15 +171,15 @@ const AddActionModal: React.FC<AddActionModalProps> = ({
         {/* Create Group Option */}
         <button
           onClick={handleCreateGroup}
-          className="w-full p-4 bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 rounded-lg transition-colors text-left"
+          className="w-full p-4 bg-gradient-to-br from-success to-success hover:from-emerald-600 hover:to-teal-700 rounded-lg transition-colors text-left"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-              <UsersIcon className="h-5 w-5 text-white" />
+            <div className="w-10 h-10 bg-foreground/20 rounded-lg flex items-center justify-center">
+              <UsersIcon className="h-5 w-5 text-foreground" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-white">Create New Group</h3>
-              <p className="text-white/80 text-sm">
+              <h3 className="font-semibold text-foreground">Create New Group</h3>
+              <p className="text-foreground/80 text-sm">
                 Start tracking expenses with a new group
               </p>
             </div>

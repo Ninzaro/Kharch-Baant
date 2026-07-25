@@ -28,22 +28,22 @@ const ArchivedGroupsModal: React.FC<ArchivedGroupsModalProps> = ({ isOpen, onClo
       onClose={onClose}
       title="Archived Groups"
       size="sm"
-      description={<span className="text-slate-300 text-sm">Groups you have archived after settling up. You can restore or view details here.</span>}
-      footer={<button onClick={onClose} className="px-4 py-2 bg-white/10 text-white rounded-md hover:bg-white/20">Close</button>}
+      description={<span className="text-muted-foreground text-sm">Groups you have archived after settling up. You can restore or view details here.</span>}
+      footer={<button onClick={onClose} className="px-4 py-2 bg-foreground/10 text-foreground rounded-md hover:bg-foreground/20">Close</button>}
     >
       <div className="flex flex-col gap-2 py-2">
         {loading ? (
-          <div className="text-slate-400 text-xs">Loading archived groups...</div>
+          <div className="text-muted-foreground text-xs">Loading archived groups...</div>
         ) : archivedGroups.length === 0 ? (
-          <div className="text-slate-500 text-xs">No archived groups.</div>
+          <div className="text-muted-foreground text-xs">No archived groups.</div>
         ) : (
           <ul className="space-y-2">
             {archivedGroups.map(g => (
-              <li key={g.id} className="bg-white/5 rounded p-2 flex flex-col gap-1">
-                <span className="font-medium text-slate-200">{g.name}</span>
-                <span className="text-xs text-slate-400">Currency: {g.currency}</span>
+              <li key={g.id} className="bg-foreground/5 rounded p-2 flex flex-col gap-1">
+                <span className="font-medium text-foreground">{g.name}</span>
+                <span className="text-xs text-muted-foreground">Currency: {g.currency}</span>
                 <button
-                  className="mt-1 px-3 py-1 bg-emerald-600/90 hover:bg-emerald-500 text-white text-xs rounded disabled:opacity-50 w-max"
+                  className="mt-1 px-3 py-1 bg-success/90 hover:bg-success text-success-foreground text-xs rounded disabled:opacity-50 w-max"
                   disabled={unarchivingId === g.id}
                   onClick={async () => {
                     setUnarchivingId(g.id);

@@ -85,15 +85,15 @@ const BalanceBreakdownModal: React.FC<BalanceBreakdownModalProps> = ({
       }
       footer={
         <div className="flex justify-between items-center w-full">
-          <div className="text-slate-300">
-            <span className="text-lg font-semibold text-[#009f32]">
+          <div className="text-muted-foreground">
+            <span className="text-lg font-semibold text-success">
               Total: {formatAmount(totalAmount)}
             </span>
-            <span className="text-xs text-slate-500 ml-2">(across all currencies)</span>
+            <span className="text-xs text-muted-foreground ml-2">(across all currencies)</span>
           </div>
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-white/10 text-white rounded-md hover:bg-white/20"
+            className="px-4 py-2 bg-foreground/10 text-foreground rounded-md hover:bg-foreground/20"
           >
             Close
           </button>
@@ -102,33 +102,33 @@ const BalanceBreakdownModal: React.FC<BalanceBreakdownModalProps> = ({
     >
       <div className="space-y-3 max-h-96 overflow-y-auto">
         {lines.length === 0 ? (
-          <div className="text-center py-8 text-slate-400">
+          <div className="text-center py-8 text-muted-foreground">
             <p>No outstanding {type === 'owed' ? 'amounts owed to you' : 'amounts you owe'}</p>
           </div>
         ) : (
           lines.map((item) => (
             <div
               key={`${item.personId}-${item.groupId}-${type}`}
-              className="bg-white/5 rounded-lg p-4 hover:bg-white/10 transition-colors"
+              className="bg-foreground/5 rounded-lg p-4 hover:bg-foreground/10 transition-colors"
             >
               <div className="flex items-center justify-between gap-3 min-w-0">
                 <div className="flex items-center gap-3 min-w-0">
                   <Avatar person={item.person} size="sm" />
                   <div className="min-w-0">
-                    <div className="font-medium text-slate-200 truncate">
+                    <div className="font-medium text-foreground truncate">
                       {item.person.name}
                     </div>
                     <button
                       type="button"
                       onClick={() => handleGroupClick(item.groupId)}
-                      className="text-xs text-indigo-400 hover:text-indigo-300 hover:underline"
+                      className="text-xs text-primary hover:text-primary hover:underline"
                     >
                       from {item.groupName}
                     </button>
                   </div>
                 </div>
                 <div className={`shrink-0 font-semibold ${
-                  type === 'owed' ? 'text-emerald-400' : 'text-[#d0021b]'
+                  type === 'owed' ? 'text-success' : 'text-destructive'
                 }`}>
                   {formatAmount(item.amount)}
                 </div>

@@ -61,19 +61,19 @@ const UserProfile: React.FC<UserProfileProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-800 rounded-2xl p-6 w-full max-w-md">
+    <div className="fixed inset-0 bg-overlay/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-card rounded-2xl p-6 w-full max-w-md">
         {/* Avatar + name header */}
         <div className="text-center mb-6">
-          <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center">
-            <span className="text-white text-xl font-bold">
+          <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-full mx-auto mb-4 flex items-center justify-center">
+            <span className="text-foreground text-xl font-bold">
               {displayName.charAt(0).toUpperCase()}
             </span>
           </div>
           {!isEditing && (
             <>
-              <h2 className="text-xl font-bold text-white">{displayName}</h2>
-              {email && <p className="text-slate-300 text-sm mt-0.5">{email}</p>}
+              <h2 className="text-xl font-bold text-foreground">{displayName}</h2>
+              {email && <p className="text-muted-foreground text-sm mt-0.5">{email}</p>}
             </>
           )}
         </div>
@@ -83,29 +83,29 @@ const UserProfile: React.FC<UserProfileProps> = ({ onClose }) => {
           {isEditing ? (
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">Display name</label>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Display name</label>
                 <input
                   type="text"
                   value={editName}
                   onChange={e => setEditName(e.target.value)}
-                  className="w-full bg-black/30 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-500 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                  className="w-full bg-overlay/30 border border-border rounded-md px-3 py-2 text-foreground placeholder-slate-500 focus:ring-ring focus:border-ring text-sm"
                   placeholder="Your name"
                   autoFocus
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">Email</label>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Email</label>
                 <input
                   type="email"
                   value={editEmail}
                   onChange={e => setEditEmail(e.target.value)}
-                  className="w-full bg-black/30 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-500 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                  className="w-full bg-overlay/30 border border-border rounded-md px-3 py-2 text-foreground placeholder-slate-500 focus:ring-ring focus:border-ring text-sm"
                   placeholder="your@email.com"
                 />
-                <p className="mt-1 text-xs text-slate-500">Used to connect with others who add you by email.</p>
+                <p className="mt-1 text-xs text-muted-foreground">Used to connect with others who add you by email.</p>
               </div>
               {saveError && (
-                <p className="text-sm text-rose-400 bg-rose-900/30 border border-rose-700/40 rounded-md px-3 py-2">
+                <p className="text-sm text-destructive bg-rose-900/30 border border-rose-700/40 rounded-md px-3 py-2">
                   {saveError}
                 </p>
               )}
@@ -113,15 +113,15 @@ const UserProfile: React.FC<UserProfileProps> = ({ onClose }) => {
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex-1 bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 disabled:opacity-50 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                  className="flex-1 bg-gradient-to-br from-primary to-accent hover:from-primary/90 hover:to-accent/90 disabled:opacity-50 text-foreground font-medium py-2 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
                 >
-                  {saving && <span className="animate-spin h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full" />}
+                  {saving && <span className="animate-spin h-3.5 w-3.5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full" />}
                   Save
                 </button>
                 <button
                   onClick={cancelEditing}
                   disabled={saving}
-                  className="flex-1 bg-slate-600 hover:bg-slate-700 disabled:opacity-50 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
+                  className="flex-1 bg-muted hover:bg-muted disabled:opacity-50 text-foreground font-medium py-2 px-4 rounded-lg transition-colors text-sm"
                 >
                   Cancel
                 </button>
@@ -130,23 +130,23 @@ const UserProfile: React.FC<UserProfileProps> = ({ onClose }) => {
           ) : (
             <>
               {/* Account info */}
-              <div className="bg-slate-700/50 rounded-lg p-4">
+              <div className="bg-muted/50 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-white font-medium text-sm">Account Info</h3>
+                  <h3 className="text-foreground font-medium text-sm">Account Info</h3>
                   {person && (
                     <button
                       onClick={startEditing}
-                      className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+                      className="text-xs text-primary hover:text-primary transition-colors"
                     >
                       Edit profile
                     </button>
                   )}
                 </div>
-                <div className="text-sm text-slate-300 space-y-1">
+                <div className="text-sm text-muted-foreground space-y-1">
                   {person?.isClaimed && (
-                    <p><span className="text-slate-400">Status:</span> <span className="text-emerald-400">Claimed account</span></p>
+                    <p><span className="text-muted-foreground">Status:</span> <span className="text-success">Claimed account</span></p>
                   )}
-                  <p><span className="text-slate-400">Member since:</span> {new Date(user?.createdAt || '').toLocaleDateString()}</p>
+                  <p><span className="text-muted-foreground">Member since:</span> {new Date(user?.createdAt || '').toLocaleDateString()}</p>
                 </div>
               </div>
 
@@ -155,14 +155,14 @@ const UserProfile: React.FC<UserProfileProps> = ({ onClose }) => {
                 <button
                   onClick={handleSignOut}
                   disabled={isSigningOut}
-                  className="w-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+                  className="w-full bg-destructive hover:bg-rose-700 disabled:opacity-50 text-destructive-foreground font-medium py-3 px-4 rounded-lg transition-colors"
                 >
                   {isSigningOut ? 'Signing out...' : 'Sign Out'}
                 </button>
 
                 <button
                   onClick={onClose}
-                  className="w-full bg-slate-600 hover:bg-slate-700 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+                  className="w-full bg-muted hover:bg-muted text-foreground font-medium py-3 px-4 rounded-lg transition-colors"
                 >
                   Close
                 </button>

@@ -134,15 +134,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         onClose={onClose}
         title="App Settings"
         size="sm"
-        description={<span className="text-slate-300 text-sm">Manage app-wide settings and preferences.</span>}
+        description={<span className="text-muted-foreground text-sm">Manage app-wide settings and preferences.</span>}
         footer={
-          <button type="button" onClick={onClose} className="px-4 py-2 bg-white/10 text-white rounded-md hover:bg-white/20">Close</button>
+          <button type="button" onClick={onClose} className="px-4 py-2 bg-foreground/10 text-foreground rounded-md hover:bg-foreground/20">Close</button>
         }
       >
         <div className="flex flex-col gap-4 py-2">
           {/* Profile Section */}
           {currentUserId && currentUserPerson && (
-            <div className="flex flex-col gap-3 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-white/5">
+            <div className="flex flex-col gap-3 bg-muted bg-card/50 p-4 rounded-xl border border-border">
               <label className="text-violet-600 dark:text-violet-300 text-sm font-medium uppercase tracking-wider">Profile</label>
               <div className="flex items-center gap-4">
                 <Avatar
@@ -150,7 +150,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                   size="lg"
                 />
                 <div className="flex flex-col gap-2">
-                  <h3 className="text-slate-900 dark:text-white font-medium">{currentUserPerson.name}</h3>
+                  <h3 className="text-foreground font-medium">{currentUserPerson.name}</h3>
                   <div className="flex gap-2">
                     <input
                       type="file"
@@ -162,7 +162,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                     <button
                       onClick={triggerFileInput}
                       disabled={isUploading}
-                      className="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs rounded-md transition-colors"
+                      className="px-3 py-1 bg-primary hover:bg-primary/90 text-primary-foreground text-xs rounded-md transition-colors"
                     >
                       {isUploading ? 'Uploading...' : 'Upload Photo'}
                     </button>
@@ -170,7 +170,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                       <button
                         onClick={handleRemovePhoto}
                         disabled={isUploading}
-                        className="px-3 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs rounded-md transition-colors border border-rose-500/30"
+                        className="px-3 py-1 bg-destructive/20 hover:bg-destructive/30 text-destructive text-xs rounded-md transition-colors border border-destructive/30"
                       >
                         Use Initials
                       </button>
@@ -179,13 +179,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                       <button
                         onClick={handleRemovePhoto}
                         disabled={isUploading}
-                        className="px-3 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs rounded-md transition-colors border border-rose-500/30"
+                        className="px-3 py-1 bg-destructive/20 hover:bg-destructive/30 text-destructive text-xs rounded-md transition-colors border border-destructive/30"
                       >
                         Clear stock photo
                       </button>
                     )}
                   </div>
-                  <p className="text-[10px] text-slate-500">
+                  <p className="text-[10px] text-muted-foreground">
                     No photo → initials. Upload optional (max 100KB).
                   </p>
                 </div>
@@ -207,7 +207,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           <button
             type="button"
             onClick={() => setShowArchivedGroups(true)}
-            className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-md text-left border-t border-slate-700 mt-4"
+            className="px-3 py-2 bg-muted hover:bg-muted text-foreground text-sm rounded-md text-left border-t border-border mt-4"
           >
             View Archived Groups
           </button>
@@ -227,8 +227,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {/* Notifications (placeholder) */}
           <div className="flex flex-col gap-2">
-            <label className="text-slate-300 text-sm font-medium">Notifications</label>
-            <div className="text-slate-400 text-xs">(Notification preferences coming soon)</div>
+            <label className="text-muted-foreground text-sm font-medium">Notifications</label>
+            <div className="text-muted-foreground text-xs">(Notification preferences coming soon)</div>
           </div>
 
           {/* Data management */}
@@ -244,7 +244,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               onClose();
               onManagePaymentSources();
             }}
-            className="px-3 py-2 bg-indigo-600/90 hover:bg-indigo-500 text-white text-sm rounded-md text-left"
+            className="px-3 py-2 bg-primary/90 hover:bg-primary/90 text-primary-foreground text-sm rounded-md text-left"
           >
             Manage Payment Sources
           </button>

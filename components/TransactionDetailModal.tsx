@@ -43,17 +43,17 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-slate-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div className="fixed inset-0 bg-overlay/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-card rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-slate-700">
+                <div className="flex items-center justify-between p-6 border-b border-border">
                     <div>
-                        <h1 className="text-xl font-semibold text-white">Transaction Details</h1>
-                        <p className="text-sm text-slate-400">{formatDate(transaction.date)}</p>
+                        <h1 className="text-xl font-semibold text-foreground">Transaction Details</h1>
+                        <p className="text-sm text-muted-foreground">{formatDate(transaction.date)}</p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="text-slate-400 hover:text-white text-2xl"
+                        className="text-muted-foreground hover:text-foreground text-2xl"
                     >
                         ×
                     </button>
@@ -62,25 +62,25 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                 {/* Content */}
                 <div className="p-6 space-y-6">
                     {/* Basic Info */}
-                    <div className="bg-slate-700/50 rounded-lg p-4">
-                        <h2 className="text-lg font-medium text-white mb-4">Transaction Information</h2>
+                    <div className="bg-muted/50 rounded-lg p-4">
+                        <h2 className="text-lg font-medium text-foreground mb-4">Transaction Information</h2>
                         <div className="space-y-3">
                             <div>
-                                <label className="text-sm text-slate-400">Description</label>
-                                <p className="text-white font-medium">{transaction.description}</p>
+                                <label className="text-sm text-muted-foreground">Description</label>
+                                <p className="text-foreground font-medium">{transaction.description}</p>
                             </div>
                             <div>
-                                <label className="text-sm text-slate-400">Amount</label>
-                                <p className="text-2xl font-bold text-emerald-400">
+                                <label className="text-sm text-muted-foreground">Amount</label>
+                                <p className="text-2xl font-bold text-success">
                                     {formatAmount(transaction.amount)}
                                 </p>
                             </div>
                             <div>
-                                <label className="text-sm text-slate-400">Category</label>
-                                <p className="text-white">{transaction.tag}</p>
+                                <label className="text-sm text-muted-foreground">Category</label>
+                                <p className="text-foreground">{transaction.tag}</p>
                             </div>
                             <div>
-                                <label className="text-sm text-slate-400">Type</label>
+                                <label className="text-sm text-muted-foreground">Type</label>
                                 <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${transaction.type === 'expense' ? 'bg-red-500/20 text-red-300' :
                                         transaction.type === 'settlement' ? 'bg-green-500/20 text-green-300' :
                                             'bg-yellow-500/20 text-yellow-300'
@@ -92,8 +92,8 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                     </div>
 
                     {/* Payer Info */}
-                    <div className="bg-slate-700/50 rounded-lg p-4">
-                        <h3 className="text-lg font-medium text-white mb-3">Paid By</h3>
+                    <div className="bg-muted/50 rounded-lg p-4">
+                        <h3 className="text-lg font-medium text-foreground mb-3">Paid By</h3>
 
                         {transaction.payers && transaction.payers.length > 0 ? (
                             <div className="space-y-3">
@@ -103,24 +103,24 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                                         <div key={p.personId} className="flex items-center gap-3">
                                             <Avatar person={person || { id: '', name: 'Unknown', avatarUrl: null }} size="sm" />
                                             <div>
-                                                <p className="text-white font-medium">{person?.name || 'Unknown'}</p>
-                                                <p className="text-sm text-slate-400">
+                                                <p className="text-foreground font-medium">{person?.name || 'Unknown'}</p>
+                                                <p className="text-sm text-muted-foreground">
                                                     Paid {formatAmount(p.amount)}
                                                 </p>
                                             </div>
                                         </div>
                                     );
                                 })}
-                                <div className="border-t border-slate-600 pt-2 mt-2">
-                                    <p className="text-sm text-slate-300">Total: {formatAmount(transaction.amount)}</p>
+                                <div className="border-t border-border pt-2 mt-2">
+                                    <p className="text-sm text-muted-foreground">Total: {formatAmount(transaction.amount)}</p>
                                 </div>
                             </div>
                         ) : (
                             <div className="flex items-center gap-3">
                                 <Avatar person={payer || { id: '', name: 'Unknown', avatarUrl: null }} size="md" />
                                 <div>
-                                    <p className="text-white font-medium">{payer?.name || 'Unknown'}</p>
-                                    <p className="text-sm text-slate-400">
+                                    <p className="text-foreground font-medium">{payer?.name || 'Unknown'}</p>
+                                    <p className="text-sm text-muted-foreground">
                                         Paid {formatAmount(transaction.amount)}
                                     </p>
                                 </div>
@@ -130,31 +130,31 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
 
                     {/* Payment Source */}
                     {paymentSource && (
-                        <div className="bg-slate-700/50 rounded-lg p-4">
-                            <h3 className="text-lg font-medium text-white mb-3">Payment Method</h3>
+                        <div className="bg-muted/50 rounded-lg p-4">
+                            <h3 className="text-lg font-medium text-foreground mb-3">Payment Method</h3>
                             <div className="flex items-center gap-3">
                                 <div className="p-2 rounded-lg bg-blue-500/20">
                                     <span className="text-sm">💳</span>
                                 </div>
                                 <div>
-                                    <p className="text-white font-medium">{paymentSource.name}</p>
-                                    <p className="text-sm text-slate-400">{paymentSource.type}</p>
+                                    <p className="text-foreground font-medium">{paymentSource.name}</p>
+                                    <p className="text-sm text-muted-foreground">{paymentSource.type}</p>
                                 </div>
                             </div>
                         </div>
                     )}
 
                     {/* Split Details */}
-                    <div className="bg-slate-700/50 rounded-lg p-4">
-                        <h3 className="text-lg font-medium text-white mb-3">Split Details</h3>
-                        <p className="text-slate-300">Split method: {transaction.split.mode}</p>
-                        <p className="text-slate-300">Participants: {transaction.split.participants.length}</p>
+                    <div className="bg-muted/50 rounded-lg p-4">
+                        <h3 className="text-lg font-medium text-foreground mb-3">Split Details</h3>
+                        <p className="text-muted-foreground">Split method: {transaction.split.mode}</p>
+                        <p className="text-muted-foreground">Participants: {transaction.split.participants.length}</p>
                     </div>
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between p-6 border-t border-slate-700 bg-slate-800/50">
-                    <div className="text-sm text-slate-400">
+                <div className="flex items-center justify-between p-6 border-t border-border bg-card/50">
+                    <div className="text-sm text-muted-foreground">
                         ID: {transaction.id.slice(0, 8)}...
                     </div>
                     <div className="flex items-center gap-3">
@@ -169,14 +169,14 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                         {onEdit && (
                             <button
                                 onClick={() => onEdit(transaction)}
-                                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+                                className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors"
                             >
                                 Edit
                             </button>
                         )}
                         <button
                             onClick={onClose}
-                            className="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-lg transition-colors"
+                            className="px-4 py-2 bg-muted hover:bg-muted text-foreground rounded-lg transition-colors"
                         >
                             Close
                         </button>

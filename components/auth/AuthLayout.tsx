@@ -16,9 +16,9 @@ const AuthLayout: React.FC = () => {
       <div className="relative z-10 w-full max-w-md">
         {/* App Logo/Title */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">💰</h1>
-          <h2 className="text-2xl font-bold text-white">Kharch-Baant</h2>
-          <p className="text-slate-300 text-sm">Shared Expense Tracker</p>
+          <h1 className="text-4xl font-bold text-foreground mb-2">💰</h1>
+          <h2 className="text-2xl font-bold text-foreground">Kharch-Baant</h2>
+          <p className="text-muted-foreground text-sm">Shared Expense Tracker</p>
         </div>
 
         {/* Auth Form */}
@@ -30,7 +30,7 @@ const AuthLayout: React.FC = () => {
 
         {/* Footer */}
         <div className="text-center mt-8">
-          <p className="text-slate-400 text-xs">
+          <p className="text-muted-foreground text-xs">
             Secure authentication powered by Supabase
           </p>
         </div>

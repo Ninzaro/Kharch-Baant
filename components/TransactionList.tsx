@@ -14,7 +14,7 @@ interface TransactionListProps {
 
 const TransactionList: React.FC<TransactionListProps> = ({ transactions, people, currentUserId, currency, onEdit, onDelete, onViewDetails }) => {
     if (transactions.length === 0) {
-        return <p className="text-center text-slate-400 py-8">No transactions found for the selected filters.</p>;
+        return <p className="text-center text-muted-foreground py-8">No transactions found for the selected filters.</p>;
     }
 
     // Use all people (current user is already included in people array)

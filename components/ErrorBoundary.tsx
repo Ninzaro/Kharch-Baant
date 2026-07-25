@@ -38,23 +38,23 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       }
 
       return (
-        <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-          <div className="bg-slate-800 rounded-lg p-6 max-w-md w-full text-center">
+        <div className="min-h-screen bg-background flex items-center justify-center p-4">
+          <div className="bg-card rounded-lg p-6 max-w-md w-full text-center">
             <div className="text-red-400 text-5xl mb-4">⚠️</div>
-            <h2 className="text-xl font-bold text-white mb-2">Something went wrong</h2>
-            <p className="text-slate-300 mb-4">
+            <h2 className="text-xl font-bold text-foreground mb-2">Something went wrong</h2>
+            <p className="text-muted-foreground mb-4">
               We're sorry, but something unexpected happened. Please try refreshing the page.
             </p>
             <div className="space-y-2">
               <button
                 onClick={this.handleReset}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-foreground font-medium py-2 px-4 rounded-lg transition-colors"
               >
                 Try Again
               </button>
               <button
                 onClick={() => window.location.reload()}
-                className="w-full bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                className="w-full bg-muted hover:bg-muted text-foreground font-medium py-2 px-4 rounded-lg transition-colors"
               >
                 Refresh Page
               </button>

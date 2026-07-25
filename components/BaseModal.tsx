@@ -115,7 +115,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
     document.body.appendChild(root);
   }
 
-  const panelBase = 'relative bg-white/95 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-white/20 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] w-full';
+  const panelBase = 'relative bg-card/95 backdrop-blur-xl border border-border rounded-2xl shadow-2xl flex flex-col max-h-[90vh] w-full';
 
   const content = (
     <div
@@ -127,7 +127,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
       aria-label={!title && ariaLabel ? ariaLabel : undefined}
     >
       <div
-        className="absolute inset-0 bg-slate-900/40 dark:bg-black/70"
+        className="absolute inset-0 bg-overlay/60"
         onClick={() => closeOnBackdrop && requestClose()}
       />
       <div
@@ -136,14 +136,14 @@ export const BaseModal: React.FC<BaseModalProps> = ({
         tabIndex={-1}
       >
         {(title || showCloseButton) && (
-          <div className="flex items-start justify-between px-6 py-4 border-b border-slate-200 dark:border-white/15">
-            {title && <h2 id={titleId.current} className="text-2xl font-bold text-slate-900 dark:text-white">{title}</h2>}
+          <div className="flex items-start justify-between px-6 py-4 border-b border-border">
+            {title && <h2 id={titleId.current} className="text-2xl font-bold text-foreground">{title}</h2>}
             {showCloseButton && (
               <button
                 type="button"
                 onClick={requestClose}
                 aria-label="Close dialog"
-                className="ml-4 inline-flex h-9 w-9 items-center justify-center rounded-md border border-[#bef9b2] text-black hover:bg-slate-100 dark:hover:bg-white/10 focus:outline-none focus-visible:ring focus-visible:ring-indigo-500"
+                className="ml-4 inline-flex h-9 w-9 items-center justify-center rounded-md border border-border text-foreground hover:bg-muted focus:outline-none focus-visible:ring focus-visible:ring-ring"
               >
                 ×
               </button>
@@ -151,13 +151,13 @@ export const BaseModal: React.FC<BaseModalProps> = ({
           </div>
         )}
         {description && (
-          <p id={descId.current} className="px-6 pt-3 text-sm text-slate-600 dark:text-slate-300">{description}</p>
+          <p id={descId.current} className="px-6 pt-3 text-sm text-muted-foreground">{description}</p>
         )}
         <div className="px-6 py-5 overflow-y-auto custom-scrollbar">
           {children}
         </div>
         {footer && (
-          <div className="px-6 py-4 border-t border-slate-200 dark:border-white/10 flex justify-end gap-3">
+          <div className="px-6 py-4 border-t border-border flex justify-end gap-3">
             {footer}
           </div>
         )}

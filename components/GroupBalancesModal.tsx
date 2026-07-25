@@ -83,14 +83,14 @@ const GroupBalancesModal: React.FC<GroupBalancesModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 bg-overlay/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-gradient-to-br from-success/10 to-success/5 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-4 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-success to-success text-foreground p-4 flex items-center justify-between">
           <div>
             <button 
               onClick={onClose}
-              className="text-white/80 hover:text-white text-sm"
+              className="text-foreground/80 hover:text-foreground text-sm"
             >
               Cancel
             </button>
@@ -98,7 +98,7 @@ const GroupBalancesModal: React.FC<GroupBalancesModalProps> = ({
           <h2 className="text-lg font-semibold">Group spending summary</h2>
           <button
             onClick={onClose}
-            className="text-white/80 hover:text-white p-1"
+            className="text-foreground/80 hover:text-foreground p-1"
           >
             <X size={20} />
           </button>
@@ -142,7 +142,7 @@ const GroupBalancesModal: React.FC<GroupBalancesModalProps> = ({
 
             <div className="flex justify-between items-center">
               <span className="text-gray-700 font-medium">Your total share</span>
-              <span className="font-bold text-emerald-600">
+              <span className="font-bold text-success">
                 {balanceData.userTotalShare.toFixed(2)} {group.currency}
               </span>
             </div>
@@ -166,7 +166,7 @@ const GroupBalancesModal: React.FC<GroupBalancesModalProps> = ({
             <div className="flex justify-between items-center">
               <span className="text-gray-700 font-bold">Total change in balance</span>
               <span className={`font-bold text-lg ${
-                balanceData.totalChangeInBalance >= 0 ? 'text-emerald-600' : 'text-red-600'
+                balanceData.totalChangeInBalance >= 0 ? 'text-success' : 'text-red-600'
               }`}>
                 {balanceData.totalChangeInBalance >= 0 ? '+' : ''}
                 {Math.abs(balanceData.totalChangeInBalance).toFixed(2)} {group.currency}

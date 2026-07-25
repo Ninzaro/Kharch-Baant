@@ -159,18 +159,18 @@ const InvitePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
-      <div className="bg-white/10 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-white/20 max-w-3xl w-full">
+      <div className="bg-foreground/10 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-border max-w-3xl w-full">
         {status === 'loading' && (
-          <div className="text-center text-slate-300">Validating invite...</div>
+          <div className="text-center text-muted-foreground">Validating invite...</div>
         )}
 
         {(status === 'invalid' || status === 'error') && (
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-white mb-2">Invite Link Problem</h1>
-            <p className="text-slate-300 mb-4">{errorMsg}</p>
+            <h1 className="text-2xl font-bold text-foreground mb-2">Invite Link Problem</h1>
+            <p className="text-muted-foreground mb-4">{errorMsg}</p>
             <button
               onClick={() => (window.location.href = '/')}
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white"
+              className="px-4 py-2 bg-foreground/10 hover:bg-foreground/20 border border-border rounded-lg text-foreground"
             >
               Go to Home
             </button>
@@ -181,30 +181,30 @@ const InvitePage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Preview */}
             <div>
-              <h2 className="text-xl font-bold text-white mb-1">You're invited</h2>
-              <p className="text-slate-300 mb-4">Join group{group ? ` "${group.name}"` : ''}</p>
+              <h2 className="text-xl font-bold text-foreground mb-1">You're invited</h2>
+              <p className="text-muted-foreground mb-4">Join group{group ? ` "${group.name}"` : ''}</p>
 
-              <div className="bg-black/20 border border-white/10 rounded-xl p-4 mb-4">
+              <div className="bg-overlay/20 border border-border rounded-xl p-4 mb-4">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-slate-400 text-sm">Group</span>
-                  <span className="text-slate-200 font-semibold">{group?.name || '—'}</span>
+                  <span className="text-muted-foreground text-sm">Group</span>
+                  <span className="text-foreground font-semibold">{group?.name || '—'}</span>
                 </div>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-slate-400 text-sm">Currency</span>
-                  <span className="text-slate-200">{group?.currency || '—'}</span>
+                  <span className="text-muted-foreground text-sm">Currency</span>
+                  <span className="text-foreground">{group?.currency || '—'}</span>
                 </div>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-slate-400 text-sm">Type</span>
-                  <span className="text-slate-200">{group?.groupType || '—'}</span>
+                  <span className="text-muted-foreground text-sm">Type</span>
+                  <span className="text-foreground">{group?.groupType || '—'}</span>
                 </div>
                 <div className="mb-3">
-                  <div className="text-slate-400 text-sm mb-2">Members</div>
+                  <div className="text-muted-foreground text-sm mb-2">Members</div>
                   <div className="flex -space-x-2">
                     {members.slice(0, 8).map(m => (
                       <Avatar key={m.id} id={m.id} name={m.name} avatarUrl={m.avatarUrl} size="sm" />
                     ))}
                     {members.length > 8 && (
-                      <div className="h-6 w-6 rounded-full bg-slate-600 flex items-center justify-center text-xs font-bold text-slate-300 ring-2 ring-slate-800">
+                      <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground ring-2 ring-border">
                         +{members.length - 8}
                       </div>
                     )}
@@ -212,19 +212,19 @@ const InvitePage: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-3 text-xs">
                   {expiresText && (
-                    <span className="px-2 py-1 rounded-full bg-white/5 border border-white/10 text-slate-300">{expiresText}</span>
+                    <span className="px-2 py-1 rounded-full bg-foreground/5 border border-border text-muted-foreground">{expiresText}</span>
                   )}
                   {usageText && (
-                    <span className="px-2 py-1 rounded-full bg-white/5 border border-white/10 text-slate-300">{usageText}</span>
+                    <span className="px-2 py-1 rounded-full bg-foreground/5 border border-border text-muted-foreground">{usageText}</span>
                   )}
                 </div>
                 {inviter && (
-                  <div className="mt-3 text-slate-400 text-sm">Invited by <span className="text-slate-200 font-medium">{inviter.name}</span></div>
+                  <div className="mt-3 text-muted-foreground text-sm">Invited by <span className="text-foreground font-medium">{inviter.name}</span></div>
                 )}
               </div>
 
               {status === 'accepted' && (
-                <div className="mt-2 text-emerald-400 text-sm">You have joined this group.</div>
+                <div className="mt-2 text-success text-sm">You have joined this group.</div>
               )}
             </div>
 
@@ -232,15 +232,15 @@ const InvitePage: React.FC = () => {
             <div>
               {!user ? (
                 <div>
-                  <div className="bg-black/20 border border-white/10 rounded-xl p-4 flex justify-center">
+                  <div className="bg-overlay/20 border border-border rounded-xl p-4 flex justify-center">
                     <SignIn forceRedirectUrl={window.location.href} signUpForceRedirectUrl={window.location.href} />
                   </div>
                 </div>
               ) : (
-                <div className="bg-black/20 border border-white/10 rounded-xl p-4">
-                  <div className="text-slate-300 mb-3">Signed in as <span className="text-white font-medium">{user?.email || 'you'}</span></div>
+                <div className="bg-overlay/20 border border-border rounded-xl p-4">
+                  <div className="text-muted-foreground mb-3">Signed in as <span className="text-foreground font-medium">{user?.email || 'you'}</span></div>
                   {emailInvitesLoaded && emailInvites.length > 0 && emailMatch && status !== 'accepted' && (
-                    <div className="text-xs text-emerald-300 mb-3">Your email matches this invite. Joining automatically...</div>
+                    <div className="text-xs text-success mb-3">Your email matches this invite. Joining automatically...</div>
                   )}
                   {emailInvitesLoaded && emailInvites.length > 0 && !emailMatch && status !== 'accepted' && (
                     <div className="text-xs text-amber-300 mb-3">This link was sent to specific emails; your email is not on the list. You can still request to join using the button below.</div>
@@ -266,13 +266,13 @@ const InvitePage: React.FC = () => {
                           toast.error(e?.message || 'Failed to join');
                         }
                       }}
-                      className="w-full px-4 py-2 bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-lg font-medium"
+                      className="w-full px-4 py-2 bg-gradient-to-br from-success to-success hover:from-emerald-600 hover:to-teal-700 text-foreground rounded-lg font-medium"
                     >
                       {status === 'accepted' ? 'Joined' : 'Join Group'}
                     </button>
                   )}
                   {emailMatch && status === 'accepted' && (
-                    <div className="text-xs text-emerald-400">Successfully joined.</div>
+                    <div className="text-xs text-success">Successfully joined.</div>
                   )}
                 </div>
               )}

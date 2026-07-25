@@ -29,7 +29,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
   };
 
   return (
-    <div className="bg-black/20 p-2 rounded-lg mb-4 flex flex-col gap-2">
+    <div className="bg-overlay/20 p-2 rounded-lg mb-4 flex flex-col gap-2">
       <div className="flex items-center gap-2">
         <div className="flex-grow">
           <input
@@ -37,14 +37,14 @@ const FilterBar: React.FC<FilterBarProps> = ({
             placeholder="Search expenses..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full bg-black/30 text-white rounded-md p-2 border border-slate-600 focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full bg-overlay/30 text-foreground rounded-md p-2 border border-border focus:ring-ring focus:border-ring"
           />
         </div>
         <button
           onClick={() => setIsFiltersOpen(!isFiltersOpen)}
           className={`p-2 rounded-md border transition-colors ${isFiltersOpen
-              ? 'bg-indigo-600 border-indigo-500 text-white'
-              : 'bg-black/30 border-slate-600 text-slate-400 hover:text-white'
+              ? 'bg-primary border-primary text-primary-foreground'
+              : 'bg-overlay/30 border-border text-muted-foreground hover:text-foreground'
             }`}
           aria-label="Toggle filters"
         >
@@ -57,7 +57,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
           <select
             value={filters.tag}
             onChange={handleTagChange}
-            className="w-full md:w-auto flex-1 bg-black/30 text-white rounded-md p-2 border border-slate-600 focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full md:w-auto flex-1 bg-overlay/30 text-foreground rounded-md p-2 border border-border focus:ring-ring focus:border-ring"
           >
             <option value="all">All Categories</option>
             {TAGS.map((t) => (
@@ -69,7 +69,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
 
           <button
             onClick={onDateFilterClick}
-            className="w-full md:w-auto flex-1 p-2 bg-black/30 text-white rounded-md border border-slate-600 hover:bg-white/10 flex items-center justify-center gap-2"
+            className="w-full md:w-auto flex-1 p-2 bg-overlay/30 text-foreground rounded-md border border-border hover:bg-foreground/10 flex items-center justify-center gap-2"
           >
             <CalendarIcon className="h-4 w-4" />
             <span>{filters.dateRange ? `${new Date(filters.dateRange.start + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${new Date(filters.dateRange.end + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : 'Any Date'}</span>
@@ -80,14 +80,14 @@ const FilterBar: React.FC<FilterBarProps> = ({
                   const { dateRange, ...rest } = prev;
                   return rest;
                 })
-              }} className="text-xs text-slate-400 hover:text-white">(clear)</span>
+              }} className="text-xs text-muted-foreground hover:text-foreground">(clear)</span>
             )}
           </button>
 
           <select
             value={sortOption}
             onChange={(e) => onSortChange(e.target.value as SortOption)}
-            className="w-full md:w-auto flex-1 bg-black/30 text-white rounded-md p-2 border border-slate-600 focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full md:w-auto flex-1 bg-overlay/30 text-foreground rounded-md p-2 border border-border focus:ring-ring focus:border-ring"
           >
             <option value="date-desc">Date (Newest)</option>
             <option value="date-asc">Date (Oldest)</option>

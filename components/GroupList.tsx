@@ -28,23 +28,23 @@ const GroupListItem: React.FC<{
                 onClick={onSelect}
                 className={`w-full text-left p-3 rounded-lg transition-colors flex flex-col ${
                     isSelected
-                        ? 'bg-white/10'
-                        : 'hover:bg-white/5'
+                        ? 'bg-foreground/10'
+                        : 'hover:bg-foreground/5'
                 }`}
             >
                 <div className="flex items-center gap-2">
-                    <span className={`font-semibold ${isSelected ? 'text-white' : 'text-slate-200'}`}>{group.name}</span>
+                    <span className={`font-semibold ${isSelected ? 'text-foreground' : 'text-foreground'}`}>{group.name}</span>
                     {tripRange && (
-                        <span className="text-[10px] uppercase tracking-wide text-slate-400 bg-white/5 px-2 py-0.5 rounded-full border border-white/10">{tripRange}</span>
+                        <span className="text-[10px] uppercase tracking-wide text-muted-foreground bg-foreground/5 px-2 py-0.5 rounded-full border border-border">{tripRange}</span>
                     )}
                 </div>
-                <span className="text-[11px] uppercase tracking-wide text-slate-500 mt-1">{typeLabel}</span>
+                <span className="text-[11px] uppercase tracking-wide text-muted-foreground mt-1">{typeLabel}</span>
                 <div className="flex items-center mt-2 -space-x-2">
                     {members.slice(0, 4).map(member => (
                        <Avatar key={member.id} id={member.id} name={member.name} avatarUrl={member.avatarUrl} size="sm" />
                     ))}
                     {members.length > 4 && (
-                        <div className="h-6 w-6 rounded-full bg-slate-600 flex items-center justify-center text-xs font-bold text-slate-300">
+                        <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground">
                             +{members.length - 4}
                         </div>
                     )}
@@ -57,12 +57,12 @@ const GroupListItem: React.FC<{
 
 const GroupList: React.FC<GroupListProps> = ({ groups, people, selectedGroupId, onSelectGroup, onGoHome }) => {
     return (
-        <div className="bg-black/20 backdrop-blur-xl border-r border-white/10 text-white w-64 p-4 flex-col hidden md:flex">
-            <h1 className="text-2xl font-bold mb-6 cursor-pointer text-transparent bg-clip-text bg-gradient-to-br from-indigo-400 to-purple-400" onClick={onGoHome}>Kharch Baant</h1>
+        <div className="bg-overlay/20 backdrop-blur-xl border-r border-border text-foreground w-64 p-4 flex-col hidden md:flex">
+            <h1 className="text-2xl font-bold mb-6 cursor-pointer text-transparent bg-clip-text bg-gradient-to-br from-primary to-accent" onClick={onGoHome}>Kharch Baant</h1>
             <nav className="flex-grow">
                  <button 
                     onClick={onGoHome}
-                    className="w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 mb-4 font-semibold bg-white/5 hover:bg-white/10"
+                    className="w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 mb-4 font-semibold bg-foreground/5 hover:bg-foreground/10"
                 >
                     <span>Dashboard</span>
                 </button>
@@ -79,7 +79,7 @@ const GroupList: React.FC<GroupListProps> = ({ groups, people, selectedGroupId, 
                 </ul>
             </nav>
             <button
-                className="w-full bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-2 px-4 rounded-lg transition-colors mt-4"
+                className="w-full bg-gradient-to-br from-success to-success hover:from-emerald-600 hover:to-teal-700 text-foreground font-bold py-2 px-4 rounded-lg transition-colors mt-4"
             >
                 Add New
             </button>

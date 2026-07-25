@@ -13,27 +13,25 @@ const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         containerClassName=""
         containerStyle={{}}
         toastOptions={{
-          // Define default options
-          className: '',
+          className: 'font-sans',
           duration: 5000,
           style: {
-            background: '#363636',
-            color: '#fff',
+            background: 'hsl(var(--card))',
+            color: 'hsl(var(--card-foreground))',
+            border: '1px solid hsl(var(--border))',
           },
-
-          // Default options for specific types
           success: {
             duration: 3000,
-            theme: {
-              primary: 'green',
-              secondary: 'black',
+            iconTheme: {
+              primary: 'hsl(var(--success))',
+              secondary: 'hsl(var(--success-foreground))',
             },
           },
           error: {
             duration: 5000,
-            theme: {
-              primary: 'red',
-              secondary: 'black',
+            iconTheme: {
+              primary: 'hsl(var(--destructive))',
+              secondary: 'hsl(var(--destructive-foreground))',
             },
           },
         }}

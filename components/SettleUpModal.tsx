@@ -132,8 +132,8 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
   };
 
   const getColor = (val: number) => {
-    if (Math.abs(val) < 0.01) return 'text-slate-400';
-    return val > 0 ? 'text-emerald-400' : 'text-rose-400';
+    if (Math.abs(val) < 0.01) return 'text-muted-foreground';
+    return val > 0 ? 'text-success' : 'text-destructive';
   };
 
   const handleSubmit = async () => {
@@ -185,7 +185,7 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
       title={isEditing ? 'Edit Settlement' : 'Record Settlement'}
       size="md"
       description={
-        <span className="text-slate-400">
+        <span className="text-muted-foreground">
           {isEditing
             ? 'Update this settlement. Balances are adjusted by the change only — not booked again.'
             : 'This directly updates balances. No expense will be added.'}
@@ -197,7 +197,7 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
             type="button"
             onClick={onClose}
             disabled={submitting}
-            className="flex-1 px-4 py-3 bg-slate-800 text-slate-300 rounded-xl hover:bg-slate-700 transition-colors font-medium"
+            className="flex-1 px-4 py-3 bg-card text-muted-foreground rounded-xl hover:bg-muted transition-colors font-medium"
           >
             Cancel
           </button>
@@ -205,10 +205,10 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
             type="button"
             onClick={handleSubmit}
             disabled={!isValid}
-            className="flex-[2] px-4 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-500 transition-colors font-bold shadow-lg shadow-emerald-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="flex-[2] px-4 py-3 bg-success text-success-foreground rounded-xl hover:bg-success transition-colors font-bold shadow-lg shadow-success/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {submitting ? (
-              <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
             ) : isEditing ? (
               <>Save changes <ArrowRightIcon width="16" height="16" /></>
             ) : (
@@ -223,7 +223,7 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
         {/* 1. AMOUNT (Hero) */}
         <div className="relative flex justify-center py-2">
           <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-slate-500">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-muted-foreground">
               {currency === 'INR' ? '₹' : (currency === 'USD' ? '$' : currency)}
             </span>
             <input
@@ -233,23 +233,23 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0"
               min="1"
-              className="w-full bg-transparent text-center text-5xl font-bold text-white placeholder-slate-700 focus:outline-none p-2 pl-8"
+              className="w-full bg-transparent text-center text-5xl font-bold text-foreground placeholder-slate-700 focus:outline-none p-2 pl-8"
               aria-label="Settlement Amount"
             />
           </div>
         </div>
 
         {/* 2. PAYER -> RECEIVER FLOW */}
-        <div className="bg-slate-800/50 rounded-xl p-4 flex flex-col sm:flex-row items-center gap-4 relative">
+        <div className="bg-card/50 rounded-xl p-4 flex flex-col sm:flex-row items-center gap-4 relative">
           {/* Payer */}
           <div className="flex-1 w-full space-y-1.5">
-            <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400 pl-1">Who is paying</label>
+            <label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground pl-1">Who is paying</label>
             <div className="relative">
               <select
                 value={payerId}
                 onChange={e => setPayerId(e.target.value)}
                 aria-label="Payer"
-                className="w-full appearance-none bg-slate-700 hover:bg-slate-600 text-white p-3 rounded-lg border border-transparent focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all font-medium"
+                className="w-full appearance-none bg-muted hover:bg-muted text-foreground p-3 rounded-lg border border-transparent focus:border-success focus:ring-1 focus:ring-success transition-all font-medium"
               >
                 <option value="" disabled>Select payer</option>
                 {members.map(m => (
@@ -257,35 +257,35 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
                 ))}
               </select>
               {/* Tiny Chevron for select */}
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
                 <ChevronDownIcon width="14" height="14" />
               </div>
             </div>
           </div>
 
           {/* Arrow visual */}
-          <div className="text-slate-500 flex-shrink-0 pt-4">
-            <div className="p-2 bg-slate-800 rounded-full border border-slate-700">
-              <ArrowRightIcon className="text-emerald-500" />
+          <div className="text-muted-foreground flex-shrink-0 pt-4">
+            <div className="p-2 bg-card rounded-full border border-border">
+              <ArrowRightIcon className="text-success" />
             </div>
           </div>
 
           {/* Receiver */}
           <div className="flex-1 w-full space-y-1.5">
-            <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400 pl-1">Who is receiving</label>
+            <label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground pl-1">Who is receiving</label>
             <div className="relative">
               <select
                 value={receiverId}
                 onChange={e => setReceiverId(e.target.value)}
                 aria-label="Receiver"
-                className="w-full appearance-none bg-slate-700 hover:bg-slate-600 text-white p-3 rounded-lg border border-transparent focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all font-medium"
+                className="w-full appearance-none bg-muted hover:bg-muted text-foreground p-3 rounded-lg border border-transparent focus:border-success focus:ring-1 focus:ring-success transition-all font-medium"
               >
                 <option value="" disabled>Select receiver</option>
                 {members.map(m => (
                   <option key={m.id} value={m.id}>{m.name}</option>
                 ))}
               </select>
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
                 <ChevronDownIcon width="14" height="14" />
               </div>
             </div>
@@ -294,7 +294,7 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
 
         {/* Validation Errors */}
         {isSelfSelect && (
-          <div className="text-center p-2 bg-rose-500/10 border border-rose-500/20 rounded-lg text-rose-300 text-xs font-medium animate-pulse">
+          <div className="text-center p-2 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-xs font-medium animate-pulse">
             Payer and receiver cannot be the same person.
           </div>
         )}
@@ -303,39 +303,39 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
         {payerId && receiverId && amountNumber > 0 && !isSelfSelect && (
           <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
             <div className="flex items-center gap-2">
-              <div className="h-px bg-slate-800 flex-1"></div>
-              <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
+              <div className="h-px bg-card flex-1"></div>
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
                 {isEditing
                   ? (balancesUnchanged ? 'Balances unchanged' : 'After saving changes')
                   : 'After this settlement'}
               </span>
-              <div className="h-px bg-slate-800 flex-1"></div>
+              <div className="h-px bg-card flex-1"></div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               {/* Payer Impact */}
-              <div className="bg-slate-800/30 rounded-lg p-3 border border-dashed border-slate-700 text-center space-y-1">
-                <p className="text-xs text-slate-400 truncate">{members.find(m => m.id === payerId)?.name}'s Balance</p>
+              <div className="bg-card/30 rounded-lg p-3 border border-dashed border-border text-center space-y-1">
+                <p className="text-xs text-muted-foreground truncate">{members.find(m => m.id === payerId)?.name}'s Balance</p>
                 {balancesUnchanged ? (
                   <div className={`text-sm font-bold ${getColor(payerAfter)}`}>{format(payerAfter)}</div>
                 ) : (
                   <div className="flex items-center justify-center gap-2 text-sm flex-wrap">
                     <span className={`${getColor(displayFromPayer)} line-through opacity-50`}>{format(displayFromPayer)}</span>
-                    <ArrowRightIcon width="12" height="12" className="text-slate-600 shrink-0" />
+                    <ArrowRightIcon width="12" height="12" className="text-muted-foreground shrink-0" />
                     <span className={`font-bold ${getColor(payerAfter)}`}>{format(payerAfter)}</span>
                   </div>
                 )}
               </div>
 
               {/* Receiver Impact */}
-              <div className="bg-slate-800/30 rounded-lg p-3 border border-dashed border-slate-700 text-center space-y-1">
-                <p className="text-xs text-slate-400 truncate">{members.find(m => m.id === receiverId)?.name}'s Balance</p>
+              <div className="bg-card/30 rounded-lg p-3 border border-dashed border-border text-center space-y-1">
+                <p className="text-xs text-muted-foreground truncate">{members.find(m => m.id === receiverId)?.name}'s Balance</p>
                 {balancesUnchanged ? (
                   <div className={`text-sm font-bold ${getColor(receiverAfter)}`}>{format(receiverAfter)}</div>
                 ) : (
                   <div className="flex items-center justify-center gap-2 text-sm flex-wrap">
                     <span className={`${getColor(displayFromReceiver)} line-through opacity-50`}>{format(displayFromReceiver)}</span>
-                    <ArrowRightIcon width="12" height="12" className="text-slate-600 shrink-0" />
+                    <ArrowRightIcon width="12" height="12" className="text-muted-foreground shrink-0" />
                     <span className={`font-bold ${getColor(receiverAfter)}`}>{format(receiverAfter)}</span>
                   </div>
                 )}
@@ -349,7 +349,7 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
           <button
             type="button"
             onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
-            className="flex items-center gap-2 text-xs font-medium text-slate-400 hover:text-white transition-colors"
+            className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
             <ChevronDownIcon
               width="14"
@@ -361,29 +361,29 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
 
           {/* Collapsible Content */}
           <div className={`grid transition-all duration-300 ease-in-out overflow-hidden ${isAdvancedOpen ? 'grid-rows-[1fr] opacity-100 mt-3' : 'grid-rows-[0fr] opacity-0'}`}>
-            <div className="min-h-0 space-y-4 bg-slate-800/30 p-4 rounded-xl border border-white/5">
+            <div className="min-h-0 space-y-4 bg-card/30 p-4 rounded-xl border border-border">
               {/* Date */}
               <div>
-                <label className="block mb-1.5 text-slate-300 text-xs font-medium" htmlFor="settle-date">Date</label>
+                <label className="block mb-1.5 text-muted-foreground text-xs font-medium" htmlFor="settle-date">Date</label>
                 <div className="relative">
                   <input
                     id="settle-date"
                     type="date"
                     value={date}
                     onChange={e => setDate(e.target.value)}
-                    className="w-full bg-slate-900 text-white rounded-lg p-2.5 border border-slate-700 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
+                    className="w-full bg-background text-foreground rounded-lg p-2.5 border border-border focus:ring-success focus:border-success text-sm"
                   />
-                  <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" width="16" />
+                  <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" width="16" />
                 </div>
               </div>
               {/* Payment Source */}
               <div>
-                <label className="block mb-1.5 text-slate-300 text-xs font-medium" htmlFor="settle-ps">Payment Source</label>
+                <label className="block mb-1.5 text-muted-foreground text-xs font-medium" htmlFor="settle-ps">Payment Source</label>
                 <select
                   id="settle-ps"
                   value={paymentSourceId || ''}
                   onChange={e => setPaymentSourceId(e.target.value || undefined)}
-                  className="w-full bg-slate-900 text-white rounded-lg p-2.5 border border-slate-700 focus:ring-emerald-500 focus:border-emerald-500 text-sm appearance-none"
+                  className="w-full bg-background text-foreground rounded-lg p-2.5 border border-border focus:ring-success focus:border-success text-sm appearance-none"
                 >
                   <option value="">None (Default)</option>
                   {paymentSources.filter(ps => ps.isActive !== false).map(ps => (
@@ -393,13 +393,13 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
               </div>
               {/* Note */}
               <div>
-                <label className="block mb-1.5 text-slate-300 text-xs font-medium" htmlFor="settle-note">Note</label>
+                <label className="block mb-1.5 text-muted-foreground text-xs font-medium" htmlFor="settle-note">Note</label>
                 <textarea
                   id="settle-note"
                   value={note}
                   onChange={e => setNote(e.target.value)}
                   rows={2}
-                  className="w-full bg-slate-900 text-white rounded-lg p-2.5 border border-slate-700 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
+                  className="w-full bg-background text-foreground rounded-lg p-2.5 border border-border focus:ring-success focus:border-success text-sm"
                   placeholder="Optional info..."
                 />
               </div>

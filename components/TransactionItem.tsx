@@ -51,7 +51,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, peopleMa
     const receiver = receiverId ? peopleMap.get(receiverId) : null;
 
     return (
-        <div className="group relative bg-slate-800/40 hover:bg-slate-800/80 rounded-xl border border-white/5 p-2.5 transition-all duration-200">
+        <div className="group relative bg-card/40 hover:bg-card/80 rounded-xl border border-border p-2.5 transition-all duration-200">
             {/*
               Three fixed columns: date | middle (truncates) | amount (never shrinks).
               Long settlement names must not wrap under the amount.
@@ -59,48 +59,48 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, peopleMa
             <div className="flex items-center gap-3 min-w-0">
 
                 {/* 1. Date Column */}
-                <div className="flex flex-col items-center justify-center w-12 h-12 bg-slate-700/50 rounded-lg border border-white/5 shrink-0">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider leading-none mb-0.5">{month}</span>
-                    <span className="text-lg font-bold text-white leading-none">{day}</span>
+                <div className="flex flex-col items-center justify-center w-12 h-12 bg-muted/50 rounded-lg border border-border shrink-0">
+                    <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider leading-none mb-0.5">{month}</span>
+                    <span className="text-lg font-bold text-foreground leading-none">{day}</span>
                 </div>
 
                 {/* 2. Main Content — min-w-0 so truncate works inside flex */}
                 <div className="flex-1 min-w-0 space-y-0.5">
                     {isSettlement && receiver ? (
                         <div className="min-w-0" title={`${paidBy?.name ?? '?'} → ${receiver.name}`}>
-                            <div className="text-[10px] uppercase font-bold tracking-wider text-emerald-500/80 leading-none mb-1">
+                            <div className="text-[10px] uppercase font-bold tracking-wider text-success/80 leading-none mb-1">
                                 Settlement
                             </div>
                             <div className="flex items-center gap-1.5 min-w-0 text-sm font-bold">
-                                <span className="min-w-0 truncate text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.6)] capitalize">
+                                <span className="min-w-0 truncate text-success drop-shadow-[0_0_8px_hsl(var(--success)/0.6)] capitalize">
                                     {paidBy?.name}
                                 </span>
-                                <span className="shrink-0 text-emerald-500" aria-hidden>
+                                <span className="shrink-0 text-success" aria-hidden>
                                     →
                                 </span>
-                                <span className="min-w-0 truncate text-slate-200 capitalize">
+                                <span className="min-w-0 truncate text-foreground capitalize">
                                     {receiver.name}
                                 </span>
                             </div>
                         </div>
                     ) : (
                         <>
-                            <h3 className="text-sm font-semibold text-white truncate capitalize">
+                            <h3 className="text-sm font-semibold text-foreground truncate capitalize">
                                 {displayDescription}
                             </h3>
-                            <div className="text-xs text-slate-400 leading-snug truncate">
+                            <div className="text-xs text-muted-foreground leading-snug truncate">
                                 {transaction.payers && transaction.payers.length > 0 ? (
                                     <span className="truncate block">
                                         {transaction.payers.map((p, i) => (
                                             <span key={p.personId}>
                                                 {i > 0 && ', '}
-                                                <span className="text-slate-300 font-medium capitalize">{peopleMap.get(p.personId)?.name}</span> paid {formatCurrency(p.amount)}
+                                                <span className="text-muted-foreground font-medium capitalize">{peopleMap.get(p.personId)?.name}</span> paid {formatCurrency(p.amount)}
                                             </span>
                                         ))}
                                     </span>
                                 ) : (
                                     <span>
-                                        Paid by <span className="text-slate-300 font-medium capitalize">{paidBy?.name}</span>
+                                        Paid by <span className="text-muted-foreground font-medium capitalize">{paidBy?.name}</span>
                                     </span>
                                 )}
                             </div>
@@ -109,7 +109,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, peopleMa
 
                     {/* Comment */}
                     {transaction.comment && (
-                        <p className="text-[10px] text-slate-500 italic truncate before:content-['❝'] before:mr-0.5">
+                        <p className="text-[10px] text-muted-foreground italic truncate before:content-['❝'] before:mr-0.5">
                             {transaction.comment}
                         </p>
                     )}
@@ -117,7 +117,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, peopleMa
 
                 {/* 3. Amount & Actions — fixed width side, never pushed down */}
                 <div className="flex flex-col items-end gap-1 shrink-0 self-center pl-1">
-                    <span className={`text-base font-bold tabular-nums whitespace-nowrap ${isSettlement ? 'text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.4)]' : 'text-slate-200'}`}>
+                    <span className={`text-base font-bold tabular-nums whitespace-nowrap ${isSettlement ? 'text-success drop-shadow-[0_0_8px_hsl(var(--success)/0.4)]' : 'text-foreground'}`}>
                         {formatCurrency(transaction.amount)}
                     </span>
 
@@ -126,7 +126,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, peopleMa
                             <button
                                 type="button"
                                 onClick={(e) => { e.stopPropagation(); onViewDetails(transaction); }}
-                                className="p-1 text-slate-400 hover:text-indigo-400 hover:bg-indigo-400/10 rounded transition-colors"
+                                className="p-1 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded transition-colors"
                             >
                                 <EyeIcon />
                             </button>
@@ -134,14 +134,14 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, peopleMa
                         <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); onEdit(transaction); }}
-                            className="p-1 text-slate-400 hover:text-white hover:bg-white/10 rounded transition-colors"
+                            className="p-1 text-muted-foreground hover:text-foreground hover:bg-foreground/10 rounded transition-colors"
                         >
                             <EditIcon width="16" height="16" />
                         </button>
                         <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); onDelete(transaction.id); }}
-                            className="p-1 text-slate-400 hover:text-rose-400 hover:bg-rose-400/10 rounded transition-colors"
+                            className="p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors"
                         >
                             <DeleteIcon width="16" height="16" />
                         </button>

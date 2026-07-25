@@ -47,10 +47,10 @@ const TimelineNode: React.FC<TimelineNodeProps> = ({ state, isLast, onClick }) =
                 onClick={onClick}
                 className={`
                     w-4 h-4 rounded-full border-2 flex items-center justify-center z-10 transition-all duration-500 cursor-pointer
-                    ${state === 'active' ? 'bg-slate-900 border-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.6)] scale-125' : ''}
-                    ${state === 'completed' ? 'bg-indigo-500 border-indigo-500 scale-100' : ''}
-                    ${state === 'error' ? 'bg-slate-900 border-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.6)] scale-125' : ''}
-                    ${state === 'idle' ? 'bg-slate-800 border-slate-600' : ''}
+                    ${state === 'active' ? 'bg-background border-primary shadow-[0_0_15px_hsl(var(--primary)/0.6)] scale-125' : ''}
+                    ${state === 'completed' ? 'bg-primary border-primary scale-100' : ''}
+                    ${state === 'error' ? 'bg-background border-destructive shadow-[0_0_15px_hsl(var(--destructive)/0.6)] scale-125' : ''}
+                    ${state === 'idle' ? 'bg-card border-border' : ''}
                 `}
             >
                 {state === 'completed' && <div className="w-1 h-1 bg-white rounded-full" />}
@@ -58,11 +58,11 @@ const TimelineNode: React.FC<TimelineNodeProps> = ({ state, isLast, onClick }) =
 
             {/* The Line segment below the node */}
             {!isLast && (
-                <div className="flex-1 w-0.5 my-1 relative bg-slate-800/50 rounded-full overflow-hidden">
+                <div className="flex-1 w-0.5 my-1 relative bg-card/50 rounded-full overflow-hidden">
                     <div className={`
-                        absolute top-0 left-0 w-full bg-indigo-500 transition-all duration-700 ease-in-out
+                        absolute top-0 left-0 w-full bg-primary transition-all duration-700 ease-in-out
                         ${state === 'completed' ? 'h-full' : 'h-0'}
-                        ${state === 'active' ? 'h-1/3 bg-gradient-to-b from-indigo-500 to-transparent' : ''}
+                        ${state === 'active' ? 'h-1/3 bg-gradient-to-b from-primary to-transparent' : ''}
                     `} />
                 </div>
             )}
@@ -337,13 +337,13 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
     // --- Render ---
 
     return (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center z-50 p-0 sm:p-4 animate-in fade-in duration-200">
-            <div className="bg-slate-900 border border-white/10 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-lg max-h-[95vh] flex flex-col overflow-hidden">
+        <div className="fixed inset-0 bg-overlay/80 backdrop-blur-md flex items-end sm:items-center justify-center z-50 p-0 sm:p-4 animate-in fade-in duration-200">
+            <div className="bg-background border border-border rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-lg max-h-[95vh] flex flex-col overflow-hidden">
 
                 {/* Header */}
-                <div className="px-6 py-4 border-b border-white/5 bg-white/5 flex justify-between items-center">
-                    <h2 className="text-xl font-bold text-white tracking-tight">{transaction ? 'Edit Expense' : 'Add Expense'}</h2>
-                    <button onClick={onClose} className="p-2 text-slate-400 hover:text-white rounded-full hover:bg-white/10 transition-colors">
+                <div className="px-6 py-4 border-b border-border bg-foreground/5 flex justify-between items-center">
+                    <h2 className="text-xl font-bold text-foreground tracking-tight">{transaction ? 'Edit Expense' : 'Add Expense'}</h2>
+                    <button onClick={onClose} className="p-2 text-muted-foreground hover:text-foreground rounded-full hover:bg-foreground/10 transition-colors">
                         <DeleteIcon className="w-5 h-5" />
                     </button>
                 </div>
@@ -355,9 +355,9 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                     <div className="flex group mb-2" onClick={() => handleStepFocus('amount')}>
                         <TimelineNode state={getStepState('amount')} />
                         <div className="flex-1 pb-8">
-                            <label className={`block text-xs font-bold uppercase tracking-wider mb-1 transition-colors ${activeStep === 'amount' ? 'text-indigo-400' : 'text-slate-500'}`}>Amount</label>
+                            <label className={`block text-xs font-bold uppercase tracking-wider mb-1 transition-colors ${activeStep === 'amount' ? 'text-primary' : 'text-muted-foreground'}`}>Amount</label>
                             <div className="relative">
-                                <span className={`absolute left-0 top-1/2 -translate-y-1/2 text-3xl font-light transition-colors ${activeStep === 'amount' ? 'text-indigo-300' : 'text-slate-600'}`}>₹</span>
+                                <span className={`absolute left-0 top-1/2 -translate-y-1/2 text-3xl font-light transition-colors ${activeStep === 'amount' ? 'text-primary' : 'text-muted-foreground'}`}>₹</span>
                                 <input
                                     ref={amountRef}
                                     type="number"
@@ -365,7 +365,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                     onChange={e => setAmount(e.target.value === '' ? '' : parseFloat(e.target.value))}
                                     onFocus={() => handleStepFocus('amount')}
                                     onKeyDown={handleAmountSubmit}
-                                    className="w-full bg-transparent text-5xl font-bold p-0 pl-10 border-none focus:ring-0 placeholder-slate-800 outline-none text-white transition-all"
+                                    className="w-full bg-transparent text-5xl font-bold p-0 pl-10 border-none focus:ring-0 placeholder-slate-800 outline-none text-foreground transition-all"
                                     placeholder="0"
                                     autoFocus
                                 />
@@ -377,7 +377,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                     <div className="flex group mb-2" onClick={() => handleStepFocus('description')}>
                         <TimelineNode state={getStepState('description')} />
                         <div className="flex-1 pb-8">
-                            <label className={`block text-xs font-bold uppercase tracking-wider mb-1 transition-colors ${activeStep === 'description' ? 'text-indigo-400' : 'text-slate-500'}`}>What's this for?</label>
+                            <label className={`block text-xs font-bold uppercase tracking-wider mb-1 transition-colors ${activeStep === 'description' ? 'text-primary' : 'text-muted-foreground'}`}>What's this for?</label>
                             <input
                                 ref={descRef}
                                 type="text"
@@ -385,7 +385,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                 onChange={e => setDescription(e.target.value)}
                                 onFocus={() => handleStepFocus('description')}
                                 onBlur={handleDescriptionBlur}
-                                className={`w-full bg-black/20 text-lg rounded-xl p-3 border transition-all ${activeStep === 'description' ? 'border-indigo-500 ring-1 ring-indigo-500/50' : 'border-slate-800 text-slate-300'}`}
+                                className={`w-full bg-overlay/20 text-lg rounded-xl p-3 border transition-all ${activeStep === 'description' ? 'border-primary ring-1 ring-primary/50' : 'border-border text-muted-foreground'}`}
                                 placeholder="e.g. Train Tickets, Dinner..."
                             />
                         </div>
@@ -396,17 +396,17 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                         <TimelineNode state={getStepState('paidBy')} />
                         <div className="flex-1 pb-8">
                             <div className="flex justify-between items-center mb-2">
-                                <label className={`block text-xs font-bold uppercase tracking-wider transition-colors ${activeStep === 'paidBy' ? 'text-indigo-400' : 'text-slate-500'}`}>Who Paid?</label>
+                                <label className={`block text-xs font-bold uppercase tracking-wider transition-colors ${activeStep === 'paidBy' ? 'text-primary' : 'text-muted-foreground'}`}>Who Paid?</label>
                                 <button
                                     type="button"
                                     onClick={(e) => { e.stopPropagation(); setPayerMode(m => m === 'single' ? 'multiple' : 'single'); handleStepFocus('paidBy'); }}
-                                    className="text-[10px] px-2 py-0.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full hover:bg-indigo-500/20 transition-colors"
+                                    className="text-[10px] px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded-full hover:bg-primary/20 transition-colors"
                                 >
                                     {payerMode === 'single' ? 'Multiple Payers?' : 'Single Payer'}
                                 </button>
                             </div>
 
-                            <div className={`bg-black/20 rounded-xl p-3 border transition-all overflow-hidden ${activeStep === 'paidBy' ? 'border-indigo-500/50' : 'border-slate-800'}`}>
+                            <div className={`bg-overlay/20 rounded-xl p-3 border transition-all overflow-hidden ${activeStep === 'paidBy' ? 'border-primary/50' : 'border-border'}`}>
                                 {payerMode === 'single' ? (
                                     <div className="grid grid-cols-2 gap-2">
                                         {people.map(p => {
@@ -416,28 +416,28 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                                     key={p.id}
                                                     type="button"
                                                     onClick={() => { setPaidById(p.id); handleStepFocus('split'); }}
-                                                    className={`flex items-center gap-2 p-2 min-h-[2.75rem] max-h-[2.75rem] overflow-hidden rounded-lg border transition-all ${isSelected ? 'bg-indigo-600/20 border-indigo-500 ring-1 ring-indigo-500/50' : 'bg-slate-800/50 border-transparent hover:bg-white/5 text-slate-400'}`}
+                                                    className={`flex items-center gap-2 p-2 min-h-[2.75rem] max-h-[2.75rem] overflow-hidden rounded-lg border transition-all ${isSelected ? 'bg-primary/20 border-primary ring-1 ring-primary/50' : 'bg-card/50 border-transparent hover:bg-foreground/5 text-muted-foreground'}`}
                                                 >
                                                     <Avatar person={p} size="sm" />
-                                                    <span className={`min-w-0 flex-1 text-left text-xs font-medium truncate ${isSelected ? 'text-white' : ''}`}>{p.name}</span>
-                                                    {isSelected && <CheckIcon className="w-3 h-3 shrink-0 text-indigo-400" />}
+                                                    <span className={`min-w-0 flex-1 text-left text-xs font-medium truncate ${isSelected ? 'text-foreground' : ''}`}>{p.name}</span>
+                                                    {isSelected && <CheckIcon className="w-3 h-3 shrink-0 text-primary" />}
                                                 </button>
                                             );
                                         })}
                                     </div>
                                 ) : (
                                     <div className="space-y-2">
-                                        <div className={`text-[10px] font-bold uppercase tracking-tight mb-2 ${isPayerValid ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                        <div className={`text-[10px] font-bold uppercase tracking-tight mb-2 ${isPayerValid ? 'text-success' : 'text-destructive'}`}>
                                             {isPayerValid ? `Total: ₹${payersTotal.toFixed(2)}` : payerValidationReason || 'Total must match amount'}
                                         </div>
                                         {people.map(p => {
                                             const val = customPayerValues.get(p.id) || 0;
                                             return (
-                                                <div key={p.id} className="flex items-center gap-3 p-2 min-h-[2.75rem] overflow-hidden rounded-lg bg-white/5 border border-transparent">
+                                                <div key={p.id} className="flex items-center gap-3 p-2 min-h-[2.75rem] overflow-hidden rounded-lg bg-foreground/5 border border-transparent">
                                                     <Avatar person={p} size="sm" />
-                                                    <span className="min-w-0 flex-1 text-xs text-slate-300 truncate">{p.name}</span>
+                                                    <span className="min-w-0 flex-1 text-xs text-muted-foreground truncate">{p.name}</span>
                                                     <div className="relative w-24 shrink-0">
-                                                        <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-500 pointer-events-none">₹</span>
+                                                        <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground pointer-events-none">₹</span>
                                                         <input
                                                             type="number"
                                                             value={val || ''}
@@ -446,7 +446,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                                                 const v = parseFloat(e.target.value) || 0;
                                                                 setCustomPayerValues(prev => new Map(prev).set(p.id, v));
                                                             }}
-                                                            className="w-full bg-black/40 text-right text-xs text-white rounded p-1 pl-4 border border-slate-700 focus:border-indigo-500 outline-none"
+                                                            className="w-full bg-overlay/40 text-right text-xs text-foreground rounded p-1 pl-4 border border-border focus:border-ring outline-none"
                                                         />
                                                     </div>
                                                 </div>
@@ -463,16 +463,16 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                         <TimelineNode state={getStepState('split')} />
                         <div className="flex-1 pb-8">
                             <div className="flex justify-between items-center mb-2">
-                                <label className={`block text-xs font-bold uppercase tracking-wider transition-colors ${activeStep === 'split' ? 'text-indigo-400' : 'text-slate-500'}`}>Split With</label>
+                                <label className={`block text-xs font-bold uppercase tracking-wider transition-colors ${activeStep === 'split' ? 'text-primary' : 'text-muted-foreground'}`}>Split With</label>
                                 {!isSplitValid && amount && touchedSteps.has('split') && (
-                                    <span className="text-xs font-bold text-rose-500 animate-pulse">{validationReason}</span>
+                                    <span className="text-xs font-bold text-destructive animate-pulse">{validationReason}</span>
                                 )}
                                 {isSplitValid && splitMode === 'unequal' && amount && (
-                                    <span className="text-xs font-medium text-emerald-400">All allocated</span>
+                                    <span className="text-xs font-medium text-success">All allocated</span>
                                 )}
                             </div>
 
-                            <div className={`bg-black/20 rounded-xl p-3 border transition-all overflow-hidden ${activeStep === 'split' ? 'border-indigo-500/50' : 'border-slate-800'}`}>
+                            <div className={`bg-overlay/20 rounded-xl p-3 border transition-all overflow-hidden ${activeStep === 'split' ? 'border-primary/50' : 'border-border'}`}>
                                 {/* Mode Selector */}
                                 <div className="flex flex-wrap gap-2 mb-4">
                                     {splitModes.map(mode => (
@@ -488,7 +488,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                                 handleStepFocus('split');
                                             }}
                                             type="button"
-                                            className={`px-3 py-1.5 text-[10px] uppercase font-bold tracking-wider rounded-lg transition-all ${splitMode === mode.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
+                                            className={`px-3 py-1.5 text-[10px] uppercase font-bold tracking-wider rounded-lg transition-all ${splitMode === mode.id ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25' : 'bg-card text-muted-foreground hover:bg-muted'}`}
                                         >
                                             {mode.label}
                                         </button>
@@ -507,16 +507,16 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                         return (
                                             <div
                                                 key={p.id}
-                                                className={`flex items-center gap-2 p-2 min-h-[2.75rem] max-h-[2.75rem] overflow-hidden rounded-lg transition-colors cursor-pointer ${isSelected ? 'bg-indigo-900/20' : 'hover:bg-white/5'}`}
+                                                className={`flex items-center gap-2 p-2 min-h-[2.75rem] max-h-[2.75rem] overflow-hidden rounded-lg transition-colors cursor-pointer ${isSelected ? 'bg-primary/20' : 'hover:bg-foreground/5'}`}
                                                 onClick={() => handleParticipantToggle(p.id)}
                                             >
                                                 {/* Checkbox (Visual) */}
-                                                <div className={`w-4 h-4 shrink-0 rounded flex items-center justify-center border transition-colors ${isSelected ? 'bg-indigo-500 border-indigo-500' : 'border-slate-600'}`}>
-                                                    {isSelected && <CheckIcon className="w-2.5 h-2.5 text-white" />}
+                                                <div className={`w-4 h-4 shrink-0 rounded flex items-center justify-center border transition-colors ${isSelected ? 'bg-primary border-primary' : 'border-border'}`}>
+                                                    {isSelected && <CheckIcon className="w-2.5 h-2.5 text-foreground" />}
                                                 </div>
 
                                                 <Avatar person={p} size="sm" />
-                                                <span className={`min-w-0 flex-1 text-xs font-medium truncate ${isSelected ? 'text-white' : 'text-slate-500'}`}>{p.name}</span>
+                                                <span className={`min-w-0 flex-1 text-xs font-medium truncate ${isSelected ? 'text-foreground' : 'text-muted-foreground'}`}>{p.name}</span>
 
                                                 {/* Inline Input for Advanced Splits */}
                                                 {showInput && isSelected && (
@@ -527,11 +527,11 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                                             value={displayValue}
                                                             onChange={e => handleCustomSplitChange(p.id, e.target.value)}
                                                             onClick={e => e.stopPropagation()}
-                                                            className={`w-full bg-black/40 text-right text-xs text-white rounded p-1 border border-slate-700 focus:border-indigo-500 outline-none ${splitMode === 'percentage' ? 'pr-5' : ''}`}
+                                                            className={`w-full bg-overlay/40 text-right text-xs text-foreground rounded p-1 border border-border focus:border-ring outline-none ${splitMode === 'percentage' ? 'pr-5' : ''}`}
                                                             placeholder={splitMode === 'shares' ? '1' : '0'}
                                                         />
                                                         {splitMode === 'percentage' && (
-                                                            <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-500 pointer-events-none">
+                                                            <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground pointer-events-none">
                                                                 %
                                                             </span>
                                                         )}
@@ -557,28 +557,28 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                             {/* Category */}
                             <div onClick={() => handleStepFocus('category')}>
                                 <div className="flex justify-between mb-1">
-                                    <label className={`block text-[10px] font-bold uppercase tracking-wider ${activeStep === 'category' ? 'text-indigo-400' : 'text-slate-500'}`}>Category</label>
-                                    {isSuggestingTag && <span className="text-[10px] text-indigo-400 animate-pulse">AI suggestion...</span>}
+                                    <label className={`block text-[10px] font-bold uppercase tracking-wider ${activeStep === 'category' ? 'text-primary' : 'text-muted-foreground'}`}>Category</label>
+                                    {isSuggestingTag && <span className="text-[10px] text-primary animate-pulse">AI suggestion...</span>}
                                 </div>
                                 <select
                                     value={tag}
                                     onChange={e => { setTag(e.target.value as Tag); handleStepFocus('category'); }}
-                                    className={`w-full bg-black/20 text-xs rounded-xl p-2.5 border transition-all appearance-none ${activeStep === 'category' ? 'border-indigo-500' : 'border-slate-800'}`}
+                                    className={`w-full bg-overlay/20 text-xs rounded-xl p-2.5 border transition-all appearance-none ${activeStep === 'category' ? 'border-primary' : 'border-border'}`}
                                 >
-                                    {TAGS.map(t => <option key={t} value={t} className="bg-slate-900 text-white">{t}</option>)}
+                                    {TAGS.map(t => <option key={t} value={t} className="bg-background text-foreground">{t}</option>)}
                                 </select>
                             </div>
 
                             {/* Date */}
                             <div onClick={() => handleStepFocus('date')}>
-                                <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${activeStep === 'date' ? 'text-indigo-400' : 'text-slate-500'}`}>Date</label>
+                                <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${activeStep === 'date' ? 'text-primary' : 'text-muted-foreground'}`}>Date</label>
                                 <button
                                     type="button"
                                     onClick={() => { setIsCalendarOpen(true); handleStepFocus('date'); }}
-                                    className={`w-full text-left bg-black/20 text-xs rounded-xl p-2.5 border transition-all flex justify-between items-center ${activeStep === 'date' ? 'border-indigo-500' : 'border-slate-800 text-slate-300'}`}
+                                    className={`w-full text-left bg-overlay/20 text-xs rounded-xl p-2.5 border transition-all flex justify-between items-center ${activeStep === 'date' ? 'border-primary' : 'border-border text-muted-foreground'}`}
                                 >
                                     <span className="truncate">{new Date(date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                                    <CalendarIcon className="w-3.5 h-3.5 text-slate-500 shrink-0 ml-1" />
+                                    <CalendarIcon className="w-3.5 h-3.5 text-muted-foreground shrink-0 ml-1" />
                                 </button>
                             </div>
                         </div>
@@ -592,32 +592,32 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                 className="flex items-center gap-2 cursor-pointer mb-4"
                                 onClick={() => handleStepFocus('advanced')}
                             >
-                                <label className={`cursor-pointer text-xs font-bold uppercase tracking-wider transition-colors ${activeStep === 'advanced' ? 'text-indigo-400' : 'text-slate-500'}`}>Advanced Options</label>
-                                <ChevronRightIcon className={`w-4 h-4 text-slate-500 transition-transform ${activeStep === 'advanced' ? 'rotate-90' : ''}`} />
+                                <label className={`cursor-pointer text-xs font-bold uppercase tracking-wider transition-colors ${activeStep === 'advanced' ? 'text-primary' : 'text-muted-foreground'}`}>Advanced Options</label>
+                                <ChevronRightIcon className={`w-4 h-4 text-muted-foreground transition-transform ${activeStep === 'advanced' ? 'rotate-90' : ''}`} />
                             </div>
 
                             {activeStep === 'advanced' && (
                                 <div className="space-y-4 animate-in slide-in-from-top-2">
                                     <div>
-                                        <label className="block text-xs text-slate-500 mb-1">Note / Comment</label>
+                                        <label className="block text-xs text-muted-foreground mb-1">Note / Comment</label>
                                         <textarea
                                             value={comment}
                                             onChange={e => setComment(e.target.value)}
-                                            className="w-full bg-black/20 text-sm rounded-xl p-3 border border-slate-800 focus:border-indigo-500 outline-none"
+                                            className="w-full bg-overlay/20 text-sm rounded-xl p-3 border border-border focus:border-ring outline-none"
                                             rows={2}
                                             placeholder="Details..."
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-slate-500 mb-1">Payment Method</label>
+                                        <label className="block text-xs text-muted-foreground mb-1">Payment Method</label>
                                         <select
                                             value={paymentSourceId || ''}
                                             onChange={e => e.target.value === 'add_new' ? onAddNewPaymentSource() : setPaymentSourceId(e.target.value || undefined)}
-                                            className="w-full bg-black/20 text-sm rounded-xl p-3 border border-slate-800 focus:border-indigo-500 outline-none"
+                                            className="w-full bg-overlay/20 text-sm rounded-xl p-3 border border-border focus:border-ring outline-none"
                                         >
                                             <option value="">None</option>
                                             {paymentSources.map(ps => <option key={ps.id} value={ps.id}>{ps.name}</option>)}
-                                            <option value="add_new" className="text-indigo-400 font-semibold">+ Add New</option>
+                                            <option value="add_new" className="text-primary font-semibold">+ Add New</option>
                                         </select>
                                     </div>
                                 </div>
@@ -628,20 +628,20 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-white/5 bg-slate-900/80 backdrop-blur-xl flex justify-between items-center z-20">
+                <div className="p-4 border-t border-border bg-background/80 backdrop-blur-xl flex justify-between items-center z-20">
                     <div className="text-sm">
                         {amount && paidById === currentUserId ? (
-                            <span className="text-slate-400">You paid <span className="text-white font-bold">₹{Number(amount).toFixed(0)}</span></span>
+                            <span className="text-muted-foreground">You paid <span className="text-foreground font-bold">₹{Number(amount).toFixed(0)}</span></span>
                         ) : (
-                            <span className="text-slate-500 italic">Draft Expense</span>
+                            <span className="text-muted-foreground italic">Draft Expense</span>
                         )}
                     </div>
                     <div className="flex gap-3">
-                        <button onClick={onClose} className="px-5 py-2.5 text-sm font-medium text-slate-400 hover:text-white transition-colors">Cancel</button>
+                        <button onClick={onClose} className="px-5 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
                         <button
                             onClick={() => handleSubmit()}
                             disabled={!isSplitValid || !description || !amount}
-                            className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 disabled:shadow-none"
+                            className="px-6 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-bold rounded-xl shadow-lg shadow-indigo-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 disabled:shadow-none"
                         >
                             Save
                         </button>

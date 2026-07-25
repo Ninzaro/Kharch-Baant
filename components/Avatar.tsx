@@ -9,8 +9,13 @@ interface AvatarProps {
 }
 
 const colors = [
-    'bg-rose-500', 'bg-amber-500', 'bg-emerald-500',
-    'bg-sky-500', 'bg-indigo-500', 'bg-purple-500', 'bg-pink-500'
+    'bg-[hsl(var(--avatar-1))]',
+    'bg-[hsl(var(--avatar-2))]',
+    'bg-[hsl(var(--avatar-3))]',
+    'bg-[hsl(var(--avatar-4))]',
+    'bg-[hsl(var(--avatar-5))]',
+    'bg-[hsl(var(--avatar-6))]',
+    'bg-[hsl(var(--avatar-7))]',
 ];
 
 /** Stock / generated face hosts we never display — treat as empty (initials). */
@@ -100,7 +105,7 @@ const Avatar: React.FC<AvatarProps> = ({ person, id, name, avatarUrl, size = 'md
                 ${boxClasses}
                 shrink-0 grow-0 overflow-hidden rounded-full
                 flex items-center justify-center
-                ${showImage ? 'bg-slate-700' : `${color} font-bold text-white`}
+                ${showImage ? 'bg-muted' : `${color} font-bold text-foreground`}
             `}
             title={finalName}
             aria-label={finalName}

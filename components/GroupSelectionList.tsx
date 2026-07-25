@@ -56,7 +56,7 @@ const GroupSelectionList: React.FC<GroupSelectionListProps> = ({
             placeholder="Search groups..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-black/30 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-500 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+            className="w-full bg-overlay/30 border border-border rounded-md px-3 py-2 text-foreground placeholder-slate-500 focus:ring-ring focus:border-ring text-sm"
           />
         </div>
       )}
@@ -64,7 +64,7 @@ const GroupSelectionList: React.FC<GroupSelectionListProps> = ({
       {/* Groups List */}
       <div className="space-y-2 max-h-80 overflow-y-auto">
         {sortedGroups.length === 0 ? (
-          <div className="text-center py-8 text-slate-400">
+          <div className="text-center py-8 text-muted-foreground">
             <p>No groups found matching "{searchQuery}"</p>
           </div>
         ) : (
@@ -75,18 +75,18 @@ const GroupSelectionList: React.FC<GroupSelectionListProps> = ({
               <button
                 key={group.id}
                 onClick={() => onSelectGroup(group.id)}
-                className={`w-full p-3 rounded-lg transition-colors text-left border 'bg-slate-800/50 border-slate-700 hover:bg-slate-700/50'}`}
+                className={`w-full p-3 rounded-lg transition-colors text-left border 'bg-card/50 border-border hover:bg-muted/50'}`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className={`font-medium truncate text-white`}>
+                      <h3 className={`font-medium truncate text-foreground`}>
                         {group.name}
                       </h3>
                       
                     </div>
                     
-                    <div className="flex items-center gap-3 text-sm text-slate-400">
+                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
                       <span>{getGroupTypeLabel(group.groupType)}</span>
                       <span>•</span>
                       <span>{group.currency}</span>
@@ -97,7 +97,7 @@ const GroupSelectionList: React.FC<GroupSelectionListProps> = ({
                     
                   </div>
                   
-                  <ChevronRightIcon className="h-5 w-5 text-slate-400 flex-shrink-0" />
+                  <ChevronRightIcon className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                 </div>
               </button>
             );
@@ -106,7 +106,7 @@ const GroupSelectionList: React.FC<GroupSelectionListProps> = ({
       </div>
 
       {/* Help Text */}
-      <div className="text-center text-sm text-slate-400">
+      <div className="text-center text-sm text-muted-foreground">
         Select a group to add your expense to
       </div>
     </div>
