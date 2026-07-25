@@ -34,23 +34,30 @@
     
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <!-- Inline blocking script: apply theme class before first paint to prevent FOUC -->
+    <!-- Inline blocking script: apply theme class + theme-color before first paint (FOUC) -->
     <script>
       (function() {
         try {
           var stored = JSON.parse(localStorage.getItem('app-ui') || '{}');
           var theme = (stored.state && stored.state.theme) || 'system';
           var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          if (theme === 'dark' || (theme === 'system' && prefersDark)) {
-            document.documentElement.classList.add('dark');
-          }
+          var isDark = theme === 'dark' || (theme === 'system' && prefersDark);
+          if (isDark) document.documentElement.classList.add('dark');
+          // Match meta theme-color to primary token (light/dark use same brand hue)
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute('content', 'hsl(239 84% 67%)');
         } catch(e) {}
       })();
     </script>
   </head>
-  <body class="font-sans text-foreground">
-    <div id="app-bg" class="fixed inset-0 -z-10 h-full w-full"></div>
-    <div id="root"></div>
+  <!--
+    Shell surfaces are token-driven:
+    - body: bg-background + text-foreground (see index.css :root / .dark)
+    - #app-bg: fixed gradient layer using --app-bg-from / --app-bg-to
+  -->
+  <body class="font-sans bg-background text-foreground antialiased min-h-full">
+    <div id="app-bg" class="fixed inset-0 -z-10 h-full w-full pointer-events-none" aria-hidden="true"></div>
+    <div id="root" class="min-h-full"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>

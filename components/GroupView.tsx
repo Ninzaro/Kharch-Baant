@@ -52,7 +52,7 @@ const GroupView: React.FC<GroupViewProps> = ({
 
   if (!group) {
     return (
-      <div className="flex-1 w-full h-full flex items-center justify-center bg-background">
+      <div className="flex-1 w-full h-full flex items-center justify-center bg-background text-foreground">
         <p className="text-muted-foreground">Loading...</p>
       </div>
     );
@@ -151,21 +151,23 @@ const GroupView: React.FC<GroupViewProps> = ({
   };
 
   return (
-    <div className="flex-1 w-full h-full flex flex-col bg-background">
-      <header className="bg-overlay/30 backdrop-blur-lg border-b border-border sticky top-0 z-10 p-4 flex justify-between items-center flex-shrink-0 safe-area-top">
-        <div className="flex items-center gap-4">
+    <div className="flex-1 w-full h-full flex flex-col bg-background text-foreground">
+      <header className="bg-card/80 backdrop-blur-lg border-b border-border sticky top-0 z-10 p-page flex justify-between items-center flex-shrink-0 safe-area-top">
+        <div className="flex items-center gap-4 min-w-0">
           <button
+            type="button"
             onClick={onGoHome}
-            className="p-2 text-muted-foreground hover:text-foreground hover:bg-foreground/10 rounded-full transition-colors md:hidden"
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors md:hidden shrink-0"
+            aria-label="Back to dashboard"
           >
             <HomeIcon />
           </button>
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold">{group.name}</h1>
+          <div className="min-w-0">
+            <h1 className="text-xl md:text-2xl font-bold text-foreground truncate">{group.name}</h1>
             <div className="flex flex-wrap items-center gap-2 mt-1 text-xs uppercase tracking-wide text-muted-foreground">
               <span>{groupTypeLabel}</span>
               {tripRange && (
-                <span className="px-2 py-0.5 rounded-full bg-foreground/5 border border-border">{tripRange}</span>
+                <span className="px-2 py-0.5 rounded-full bg-muted border border-border text-muted-foreground">{tripRange}</span>
               )}
             </div>
             <div className="flex items-center -space-x-2 mt-1">
@@ -173,55 +175,63 @@ const GroupView: React.FC<GroupViewProps> = ({
                 <Avatar key={member.id} id={member.id} name={member.name} avatarUrl={member.avatarUrl} size="sm" />
               ))}
               {groupMembers.length > 5 && (
-                <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground ring-2 ring-border">
+                <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground ring-2 ring-background">
                   +{groupMembers.length - 5}
                 </div>
               )}
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 shrink-0">
           <button
+            type="button"
             onClick={() => setIsSummaryModalOpen(true)}
-            className="p-2 text-muted-foreground hover:text-foreground hover:bg-foreground/10 rounded-full transition-colors"
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors"
             title="Group Summary"
+            aria-label="Group summary"
           >
             <ChartIcon />
           </button>
           <button
-            onClick={() => {
-              onEditGroup();
-            }}
-            className="p-2 text-muted-foreground hover:text-foreground hover:bg-foreground/10 rounded-full transition-colors"
-          >            <SettingsIcon />
+            type="button"
+            onClick={() => { onEditGroup(); }}
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors"
+            aria-label="Group settings"
+          >
+            <SettingsIcon />
           </button>
           <button
+            type="button"
             onClick={handleShare}
-            className="p-2 text-muted-foreground hover:text-foreground hover:bg-foreground/10 rounded-full transition-colors"
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors"
+            aria-label="Share group summary"
           >
             <ShareIcon />
           </button>
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto p-4 md:p-6">
+      <main className="flex-1 overflow-y-auto p-page md:p-section">
         {/* Actions container just below group information */}
         <div className="mb-4 flex flex-wrap gap-3">
           <button
+            type="button"
             onClick={onAddExpense}
-            className="px-4 py-2 rounded-md bg-gradient-to-br from-primary to-accent text-foreground hover:from-primary/90 hover:to-accent/90 text-sm font-medium shadow"
+            className="px-4 py-2 rounded-lg bg-gradient-to-br from-primary to-accent text-primary-foreground hover:from-primary/90 hover:to-accent/90 text-sm font-medium shadow-sm"
           >
             Add Expense
           </button>
           <button
+            type="button"
             onClick={() => setIsBalancesModalOpen(true)}
-            className="px-4 py-2 rounded-md bg-gradient-to-br from-success to-success text-success-foreground hover:from-success/90 hover:to-success/80 text-sm font-medium shadow"
+            className="px-4 py-2 rounded-lg bg-success text-success-foreground hover:bg-success/90 text-sm font-medium shadow-sm"
           >
             Balances
           </button>
           <button
+            type="button"
             onClick={onSettleUp}
-            className="px-4 py-2 rounded-md bg-success hover:bg-success text-success-foreground text-sm font-medium shadow"
+            className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border text-sm font-medium shadow-sm"
           >
             Settle Up
           </button>
@@ -242,7 +252,7 @@ const GroupView: React.FC<GroupViewProps> = ({
               <div className="absolute -top-1 -left-[3px] w-2 h-2 rounded-full bg-primary shadow-[0_0_10px_hsl(var(--primary))] animate-pulse"></div>
             </div>
 
-            <h2 className="text-xl font-semibold mb-4 text-muted-foreground">Transactions</h2>
+            <h2 className="text-xl font-semibold mb-4 text-foreground">Transactions</h2>
             <FilterBar
               filters={filters}
               onFilterChange={setFilters}
@@ -264,7 +274,7 @@ const GroupView: React.FC<GroupViewProps> = ({
           </div>
 
           <div>
-            <h2 className="text-xl font-semibold mb-4 text-muted-foreground">Balances</h2>
+            <h2 className="text-xl font-semibold mb-4 text-foreground">Balances</h2>
             <MemberBalances
               transactions={transactions}
               people={groupMembers}

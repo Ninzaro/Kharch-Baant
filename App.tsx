@@ -578,8 +578,11 @@ const App: React.FC = () => {
     const loading = isLoading || groupsLoading;
     if (loading) {
         return (
-            <div className="h-screen w-screen flex items-center justify-center">
-                <p className="text-xl">Loading your expenses...</p>
+            <div className="h-screen w-screen flex items-center justify-center bg-background text-foreground font-sans">
+                <div className="text-center space-y-3">
+                    <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary border-t-transparent mx-auto" />
+                    <p className="text-xl text-muted-foreground">Loading your expenses...</p>
+                </div>
             </div>
         );
     }
@@ -589,7 +592,7 @@ const App: React.FC = () => {
     const groupMembers = selectedGroup ? people.filter(p => selectedGroup.members.includes(p.id)) : [];
 
     return (
-        <div className="h-screen w-screen text-foreground flex font-sans">
+        <div className="h-screen w-screen bg-background text-foreground flex font-sans">
             {selectedGroup ? (
                 <>
                     <GroupList
@@ -618,14 +621,15 @@ const App: React.FC = () => {
                 </>
             ) : (
                 <div className="flex-1 flex flex-col">
-                    <header className="flex items-center justify-between px-4 py-2 border-b border-border bg-background safe-area-top">
-                        <h1 className="text-lg font-bold text-foreground">Kharch Baant</h1>
+                    <header className="flex items-center justify-between px-page py-2 border-b border-border bg-card/80 backdrop-blur-lg safe-area-top">
+                        <h1 className="text-lg font-bold text-foreground tracking-tight">Kharch Baant</h1>
                         <div className="flex items-center gap-2">
                             <UserMenu />
                             <button
+                                type="button"
                                 onClick={() => setIsSettingsModalOpen(true)}
                                 onPointerEnter={preloadSettings}
-                                className="p-2 text-muted-foreground hover:text-foreground hover:bg-foreground/10 rounded-full transition-colors"
+                                className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors"
                                 aria-label="Open App Settings"
                             >
                                 <SettingsIcon />
@@ -885,13 +889,13 @@ const App: React.FC = () => {
                                     setIsConfirmLeaveModalOpen(false);
                                     setPendingGroupSaveData(null);
                                 }}
-                                className="px-4 py-2 bg-foreground/10 text-foreground rounded-md hover:bg-foreground/20"
+                                className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={() => executeGroupSave(pendingGroupSaveData, true)}
-                                className="px-4 py-2 bg-destructive hover:bg-destructive text-destructive-foreground rounded-md"
+                                className="px-4 py-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-md"
                             >
                                 Leave Group
                             </button>
@@ -927,9 +931,9 @@ const AppWithAuth: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="h-screen w-screen flex items-center justify-center bg-background">
+            <div className="h-screen w-screen flex items-center justify-center bg-background text-foreground font-sans">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-2 border-primary border-t-transparent mx-auto mb-4" />
                     <p className="text-muted-foreground">Loading...</p>
                 </div>
             </div>

@@ -10,8 +10,7 @@ import { createPortal } from 'react-dom';
  * - Focus capture & restoration
  * - Standard header/body/footer layout
  *
- * Keep this intentionally dependency-light. Incremental enhancements (focus trap loop,
- * animations, stacking) can be layered later without changing consumer APIs.
+ * Styling uses design-system tokens only (bg-card, border-border, text-foreground, …).
  */
 export interface BaseModalProps {
   open: boolean;
@@ -36,7 +35,7 @@ const SIZE_CLASS: Record<NonNullable<BaseModalProps['size']>, string> = {
   md: 'max-w-md',
   lg: 'max-w-lg',
   xl: 'max-w-2xl',
-  full: 'w-full h-full m-0 rounded-none'
+  full: 'w-full h-full m-0 rounded-none',
 };
 
 export const BaseModal: React.FC<BaseModalProps> = ({
@@ -54,7 +53,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
   className = '',
   children,
   afterOpen,
-  beforeClose
+  beforeClose,
 }) => {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const lastFocusedRef = useRef<HTMLElement | null>(null);
@@ -88,14 +87,17 @@ export const BaseModal: React.FC<BaseModalProps> = ({
     if (!open) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = prev; };
+    return () => {
+      document.body.style.overflow = prev;
+    };
   }, [open]);
 
   // Focus management (capture & restore)
   useEffect(() => {
     if (open) {
       lastFocusedRef.current = document.activeElement as HTMLElement | null;
-      const focusTarget = initialFocusRef?.current || panelRef.current?.querySelector<HTMLElement>('[data-autofocus]');
+      const focusTarget =
+        initialFocusRef?.current || panelRef.current?.querySelector<HTMLElement>('[data-autofocus]');
       requestAnimationFrame(() => {
         focusTarget?.focus();
         afterOpen?.();
@@ -115,11 +117,12 @@ export const BaseModal: React.FC<BaseModalProps> = ({
     document.body.appendChild(root);
   }
 
-  const panelBase = 'relative bg-card/95 backdrop-blur-xl border border-border rounded-2xl shadow-2xl flex flex-col max-h-[90vh] w-full';
+  const panelBase =
+    'relative bg-card text-card-foreground backdrop-blur-xl border border-border rounded-2xl shadow-2xl flex flex-col max-h-[90vh] w-full ring-1 ring-border/50';
 
   const content = (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-page animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby={title ? titleId.current : undefined}
@@ -129,6 +132,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
       <div
         className="absolute inset-0 bg-overlay/60"
         onClick={() => closeOnBackdrop && requestClose()}
+        aria-hidden
       />
       <div
         ref={panelRef}
@@ -136,14 +140,18 @@ export const BaseModal: React.FC<BaseModalProps> = ({
         tabIndex={-1}
       >
         {(title || showCloseButton) && (
-          <div className="flex items-start justify-between px-6 py-4 border-b border-border">
-            {title && <h2 id={titleId.current} className="text-2xl font-bold text-foreground">{title}</h2>}
+          <div className="flex items-start justify-between px-6 py-4 border-b border-border shrink-0">
+            {title && (
+              <h2 id={titleId.current} className="text-2xl font-bold text-foreground tracking-tight">
+                {title}
+              </h2>
+            )}
             {showCloseButton && (
               <button
                 type="button"
                 onClick={requestClose}
                 aria-label="Close dialog"
-                className="ml-4 inline-flex h-9 w-9 items-center justify-center rounded-md border border-border text-foreground hover:bg-muted focus:outline-none focus-visible:ring focus-visible:ring-ring"
+                className="ml-4 inline-flex h-9 w-9 items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 ×
               </button>
@@ -151,13 +159,13 @@ export const BaseModal: React.FC<BaseModalProps> = ({
           </div>
         )}
         {description && (
-          <p id={descId.current} className="px-6 pt-3 text-sm text-muted-foreground">{description}</p>
+          <p id={descId.current} className="px-6 pt-3 text-sm text-muted-foreground shrink-0">
+            {description}
+          </p>
         )}
-        <div className="px-6 py-5 overflow-y-auto custom-scrollbar">
-          {children}
-        </div>
+        <div className="px-6 py-5 overflow-y-auto custom-scrollbar min-h-0">{children}</div>
         {footer && (
-          <div className="px-6 py-4 border-t border-border flex justify-end gap-3">
+          <div className="px-6 py-4 border-t border-border flex justify-end gap-3 shrink-0 bg-card">
             {footer}
           </div>
         )}
