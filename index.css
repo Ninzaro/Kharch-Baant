@@ -156,15 +156,19 @@
   html {
     @apply antialiased;
     font-family: var(--font-sans);
+    /* Browser chrome (scrollbars, form controls). Not a utility-class rewrite. */
+    color-scheme: light;
   }
 
   html.dark {
     color-scheme: dark;
   }
 
-  html:not(.dark) {
-    color-scheme: light;
-  }
+  /*
+   * Light mode is :root tokens only. Dark mode swaps variables under .dark.
+   * Do NOT reintroduce html:not(.dark) .bg-slate-* / .text-white rewrites —
+   * components use semantic Tailwind tokens (bg-background, text-foreground, …).
+   */
 
   body {
     @apply bg-background text-foreground;
