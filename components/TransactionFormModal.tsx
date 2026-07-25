@@ -53,7 +53,7 @@ const TimelineNode: React.FC<TimelineNodeProps> = ({ state, isLast, onClick }) =
                     ${state === 'idle' ? 'bg-card border-border' : ''}
                 `}
             >
-                {state === 'completed' && <div className="w-1 h-1 bg-white rounded-full" />}
+                {state === 'completed' && <div className="w-1 h-1 bg-primary-foreground rounded-full" />}
             </div>
 
             {/* The Line segment below the node */}
@@ -641,7 +641,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                         <button
                             onClick={() => handleSubmit()}
                             disabled={!isSplitValid || !description || !amount}
-                            className="px-6 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-bold rounded-xl shadow-lg shadow-indigo-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 disabled:shadow-none"
+                            className="px-6 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-bold rounded-xl shadow-lg shadow-primary/20 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 disabled:shadow-none"
                         >
                             Save
                         </button>

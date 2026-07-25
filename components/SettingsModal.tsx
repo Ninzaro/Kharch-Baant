@@ -136,14 +136,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         size="sm"
         description={<span className="text-muted-foreground text-sm">Manage app-wide settings and preferences.</span>}
         footer={
-          <button type="button" onClick={onClose} className="px-4 py-2 bg-foreground/10 text-foreground rounded-md hover:bg-foreground/20">Close</button>
+          <button type="button" onClick={onClose} className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80">Close</button>
         }
       >
         <div className="flex flex-col gap-4 py-2">
           {/* Profile Section */}
           {currentUserId && currentUserPerson && (
-            <div className="flex flex-col gap-3 bg-muted bg-card/50 p-4 rounded-xl border border-border">
-              <label className="text-violet-600 dark:text-violet-300 text-sm font-medium uppercase tracking-wider">Profile</label>
+            <div className="flex flex-col gap-3 bg-card p-4 rounded-xl border border-border">
+              <label className="text-primary text-sm font-medium uppercase tracking-wider">Profile</label>
               <div className="flex items-center gap-4">
                 <Avatar
                   person={{ ...currentUserPerson, avatarUrl: avatarUrl }}
@@ -207,7 +207,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           <button
             type="button"
             onClick={() => setShowArchivedGroups(true)}
-            className="px-3 py-2 bg-muted hover:bg-muted text-foreground text-sm rounded-md text-left border-t border-border mt-4"
+            className="px-3 py-2 bg-muted hover:bg-muted/80 text-foreground text-sm rounded-md text-left border border-border mt-4"
           >
             View Archived Groups
           </button>

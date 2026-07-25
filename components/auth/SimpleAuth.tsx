@@ -12,7 +12,7 @@ const SimpleAuth: React.FC<SimpleAuthProps> = ({ children }) => {
   if (!isSignedIn) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-primary/40 to-background flex items-center justify-center p-4">
-        <div className="bg-foreground/10 backdrop-blur-md rounded-2xl p-8 shadow-lg border border-border max-w-md w-full">
+        <div className="bg-card backdrop-blur-md rounded-2xl p-8 shadow-lg border border-border max-w-md w-full">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-foreground mb-2">💰</h1>
             <h2 className="text-2xl font-bold text-foreground">Kharch-Baant</h2>
@@ -28,7 +28,7 @@ const SimpleAuth: React.FC<SimpleAuthProps> = ({ children }) => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-foreground/10 border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full px-4 py-3 bg-muted border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 placeholder="your@email.com"
               />
             </div>
@@ -39,7 +39,7 @@ const SimpleAuth: React.FC<SimpleAuthProps> = ({ children }) => {
                   setIsSignedIn(true);
                 }
               }}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-foreground font-medium py-3 px-4 rounded-lg transition-colors"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 px-4 rounded-lg transition-colors"
             >
               Enter App (Demo Mode)
             </button>

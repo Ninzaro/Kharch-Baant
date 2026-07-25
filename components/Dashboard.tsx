@@ -38,13 +38,14 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, currentUserId, peop
     return (
         <div className="flex flex-col gap-4">
             {/* Hero Card: Total Balance */}
-            <div className="bg-foreground/5 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-border text-center">
+            <div className="bg-card backdrop-blur-md p-6 rounded-2xl shadow-sm border border-border text-center">
                 <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Balance</h3>
                 <p className={`text-4xl sm:text-5xl font-extrabold mt-2 break-words truncate ${netBalance >= 0 ? 'text-success' : 'text-destructive'}`} title={formatCurrency(netBalance)}>
                     {formatCurrency(netBalance)}
                 </p>
 
                 <button
+                    type="button"
                     onClick={() => setIsBreakdownOpen(!isBreakdownOpen)}
                     className="mt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mx-auto"
                 >
@@ -56,13 +57,13 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, currentUserId, peop
             {/* Collapsible Breakdown */}
             {isBreakdownOpen && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-4 duration-200">
-                    <div className="bg-foreground/5 backdrop-blur-md p-4 rounded-xl shadow border border-border">
+                    <div className="bg-card backdrop-blur-md p-4 rounded-xl shadow-sm border border-border">
                         <h3 className="text-xs font-medium text-muted-foreground uppercase">You are owed</h3>
                         <p className="text-xl font-bold text-success mt-1 break-words truncate" title={formatCurrency(totalOwedToUser)}>
                             {formatCurrency(totalOwedToUser)}
                         </p>
                     </div>
-                    <div className="bg-foreground/5 backdrop-blur-md p-4 rounded-xl shadow border border-border">
+                    <div className="bg-card backdrop-blur-md p-4 rounded-xl shadow-sm border border-border">
                         <h3 className="text-xs font-medium text-muted-foreground uppercase">You owe</h3>
                         <p className="text-xl font-bold text-destructive mt-1 break-words truncate" title={formatCurrency(totalUserOwes)}>
                             {formatCurrency(totalUserOwes)}

@@ -81,9 +81,9 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                             </div>
                             <div>
                                 <label className="text-sm text-muted-foreground">Type</label>
-                                <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${transaction.type === 'expense' ? 'bg-red-500/20 text-red-300' :
-                                        transaction.type === 'settlement' ? 'bg-green-500/20 text-green-300' :
-                                            'bg-yellow-500/20 text-yellow-300'
+                                <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${transaction.type === 'expense' ? 'bg-destructive/20 text-destructive' :
+                                        transaction.type === 'settlement' ? 'bg-success/20 text-success' :
+                                            'bg-warning/20 text-warning'
                                     }`}>
                                     {transaction.type}
                                 </span>
@@ -133,7 +133,7 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                         <div className="bg-muted/50 rounded-lg p-4">
                             <h3 className="text-lg font-medium text-foreground mb-3">Payment Method</h3>
                             <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-lg bg-blue-500/20">
+                                <div className="p-2 rounded-lg bg-primary/20">
                                     <span className="text-sm">💳</span>
                                 </div>
                                 <div>
@@ -161,7 +161,7 @@ const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                         {onDelete && (
                             <button
                                 onClick={() => onDelete(transaction)}
-                                className="px-4 py-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors"
+                                className="px-4 py-2 text-destructive hover:bg-destructive/20 rounded-lg transition-colors"
                             >
                                 Delete
                             </button>

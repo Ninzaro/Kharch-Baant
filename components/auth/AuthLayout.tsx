@@ -9,8 +9,8 @@ const AuthLayout: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/40 to-background flex items-center justify-center p-4">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-1/2 -left-1/2 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-1/2 -right-1/2 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"></div>
+        <div className="absolute -top-1/2 -left-1/2 w-96 h-96 bg-accent/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-1/2 -right-1/2 w-96 h-96 bg-primary/20 rounded-full blur-3xl"></div>
       </div>
       
       <div className="relative z-10 w-full max-w-md">

@@ -83,90 +83,90 @@ const GroupBalancesModal: React.FC<GroupBalancesModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-overlay/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gradient-to-br from-success/10 to-success/5 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 bg-overlay/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-card text-card-foreground border border-border rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-success to-success text-success-foreground p-4 flex items-center justify-between">
+        <div className="bg-success text-success-foreground p-4 flex items-center justify-between">
           <div>
-            <button 
+            <button
+              type="button"
               onClick={onClose}
-              className="text-foreground/80 hover:text-foreground text-sm"
+              className="text-success-foreground/80 hover:text-success-foreground text-sm"
             >
               Cancel
             </button>
           </div>
           <h2 className="text-lg font-semibold">Group spending summary</h2>
           <button
+            type="button"
             onClick={onClose}
-            className="text-foreground/80 hover:text-foreground p-1"
+            className="text-success-foreground/80 hover:text-success-foreground p-1"
+            aria-label="Close"
           >
             <X size={20} />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-4">
-          {/* Group Name */}
+        <div className="p-6 space-y-4 bg-card">
           <div className="text-center">
-            <h3 className="text-xl font-bold text-gray-800">{group.name}</h3>
+            <h3 className="text-xl font-bold text-foreground">{group.name}</h3>
           </div>
 
-          {/* Time Period Tabs */}
-          <div className="flex bg-gray-200 rounded-lg p-1">
-            <button className="flex-1 py-2 px-4 text-sm font-medium text-gray-600 bg-white rounded-md shadow-sm">
+          <div className="flex bg-muted rounded-lg p-1">
+            <button type="button" className="flex-1 py-2 px-4 text-sm font-medium text-foreground bg-card rounded-md shadow-sm border border-border">
               This month
             </button>
-            <button className="flex-1 py-2 px-4 text-sm font-medium text-gray-500">
+            <button type="button" className="flex-1 py-2 px-4 text-sm font-medium text-muted-foreground hover:text-foreground">
               Last month
             </button>
-            <button className="flex-1 py-2 px-4 text-sm font-medium text-gray-500">
+            <button type="button" className="flex-1 py-2 px-4 text-sm font-medium text-muted-foreground hover:text-foreground">
               All time
             </button>
           </div>
 
-          {/* Balance Items */}
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-gray-700 font-medium">Total group spending</span>
-              <span className="font-bold text-gray-800">
+              <span className="text-muted-foreground font-medium">Total group spending</span>
+              <span className="font-bold text-foreground">
                 {balanceData.totalGroupSpending.toFixed(2)} {group.currency}
               </span>
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-gray-700 font-medium">Total you paid for</span>
-              <span className="font-bold text-gray-800">
+              <span className="text-muted-foreground font-medium">Total you paid for</span>
+              <span className="font-bold text-foreground">
                 {balanceData.totalUserPaidFor.toFixed(2)} {group.currency}
               </span>
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-gray-700 font-medium">Your total share</span>
+              <span className="text-muted-foreground font-medium">Your total share</span>
               <span className="font-bold text-success">
                 {balanceData.userTotalShare.toFixed(2)} {group.currency}
               </span>
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-gray-700 font-medium">Payments made</span>
-              <span className="font-bold text-gray-800">
+              <span className="text-muted-foreground font-medium">Payments made</span>
+              <span className="font-bold text-foreground">
                 {balanceData.paymentsMade.toFixed(2)} {group.currency}
               </span>
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-gray-700 font-medium">Payments received</span>
-              <span className="font-bold text-gray-800">
+              <span className="text-muted-foreground font-medium">Payments received</span>
+              <span className="font-bold text-foreground">
                 {balanceData.paymentsReceived.toFixed(2)} {group.currency}
               </span>
             </div>
 
-            <hr className="border-gray-300" />
+            <hr className="border-border" />
 
             <div className="flex justify-between items-center">
-              <span className="text-gray-700 font-bold">Total change in balance</span>
+              <span className="text-foreground font-bold">Total change in balance</span>
               <span className={`font-bold text-lg ${
-                balanceData.totalChangeInBalance >= 0 ? 'text-success' : 'text-red-600'
+                balanceData.totalChangeInBalance >= 0 ? 'text-success' : 'text-destructive'
               }`}>
                 {balanceData.totalChangeInBalance >= 0 ? '+' : ''}
                 {Math.abs(balanceData.totalChangeInBalance).toFixed(2)} {group.currency}

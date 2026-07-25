@@ -47,11 +47,11 @@ const PaymentSourceFormModal: React.FC<PaymentSourceFormModalProps> = ({ isOpen,
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true" aria-labelledby="payment-source-modal-title">
-            <div className="bg-card/60 backdrop-blur-xl border border-border rounded-2xl shadow-2xl p-8 w-full max-w-lg">
+        <div className="fixed inset-0 bg-overlay/70 flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true" aria-labelledby="payment-source-modal-title">
+            <div className="bg-card text-card-foreground backdrop-blur-xl border border-border rounded-2xl shadow-2xl p-8 w-full max-w-lg">
                 <h2 id="payment-source-modal-title" className="text-2xl font-bold text-foreground mb-2">Add New Payment Source</h2>
-                <p className="text-sm text-muted-foreground mb-6 bg-blue-900/30 p-3 rounded-md border border-blue-500/30">
-                    🔒 <strong>Privacy Notice:</strong> Only non-sensitive information like payment method names and last 4 digits are stored. Never enter full card numbers, CVV, or other sensitive data.
+                <p className="text-sm text-muted-foreground mb-6 bg-primary/10 p-3 rounded-md border border-primary/30">
+                    🔒 <strong className="text-foreground">Privacy Notice:</strong> Only non-sensitive information like payment method names and last 4 digits are stored. Never enter full card numbers, CVV, or other sensitive data.
                 </p>
                 <form onSubmit={handleSave} className="space-y-4">
                     <div>

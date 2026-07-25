@@ -76,7 +76,7 @@ const BalanceBreakdownModal: React.FC<BalanceBreakdownModalProps> = ({
       title={type === 'owed' ? 'Amount You Are Owed' : 'Amount You Owe'}
       size="md"
       description={
-        <span className="text-black text-sm">
+        <span className="text-foreground text-sm">
           {type === 'owed'
             ? 'Net amounts people owe you (per group, after settlements)'
             : 'Net amounts you owe people (per group, after settlements)'

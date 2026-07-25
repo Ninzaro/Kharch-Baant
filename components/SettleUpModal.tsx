@@ -240,7 +240,7 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
         </div>
 
         {/* 2. PAYER -> RECEIVER FLOW */}
-        <div className="bg-card/50 rounded-xl p-4 flex flex-col sm:flex-row items-center gap-4 relative">
+        <div className="bg-muted/40 rounded-xl p-4 flex flex-col sm:flex-row items-center gap-4 relative border border-border">
           {/* Payer */}
           <div className="flex-1 w-full space-y-1.5">
             <label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground pl-1">Who is paying</label>
@@ -249,7 +249,7 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
                 value={payerId}
                 onChange={e => setPayerId(e.target.value)}
                 aria-label="Payer"
-                className="w-full appearance-none bg-muted hover:bg-muted text-foreground p-3 rounded-lg border border-transparent focus:border-success focus:ring-1 focus:ring-success transition-all font-medium"
+                className="w-full appearance-none bg-muted hover:bg-muted/80 text-foreground p-3 rounded-lg border border-border focus:border-success focus:ring-1 focus:ring-success transition-all font-medium"
               >
                 <option value="" disabled>Select payer</option>
                 {members.map(m => (
@@ -278,7 +278,7 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
                 value={receiverId}
                 onChange={e => setReceiverId(e.target.value)}
                 aria-label="Receiver"
-                className="w-full appearance-none bg-muted hover:bg-muted text-foreground p-3 rounded-lg border border-transparent focus:border-success focus:ring-1 focus:ring-success transition-all font-medium"
+                className="w-full appearance-none bg-muted hover:bg-muted/80 text-foreground p-3 rounded-lg border border-border focus:border-success focus:ring-1 focus:ring-success transition-all font-medium"
               >
                 <option value="" disabled>Select receiver</option>
                 {members.map(m => (

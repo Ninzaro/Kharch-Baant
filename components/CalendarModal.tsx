@@ -51,7 +51,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, onDateSe
     const selDate = new Date(selectedDate + 'T00:00:00');
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[60] p-4">
+        <div className="fixed inset-0 bg-overlay/70 flex items-center justify-center z-[60] p-4">
             <div className="bg-card/60 backdrop-blur-xl border border-border rounded-2xl shadow-2xl p-6 w-full max-w-sm">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-lg font-bold text-foreground">

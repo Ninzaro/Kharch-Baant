@@ -10,12 +10,13 @@ const DataExport: React.FC<DataExportProps> = ({ onExport, onImport }) => (
     <label className="text-muted-foreground text-sm font-medium">Data Management</label>
     <div className="flex gap-2">
       <button
-        className="px-3 py-2 bg-primary/90 hover:bg-primary/90 text-primary-foreground text-sm rounded-md"
+        type="button"
+        className="px-3 py-2 bg-primary hover:bg-primary/90 text-primary-foreground text-sm rounded-md"
         onClick={onExport}
       >
         Export Data
       </button>
-      <label className="px-3 py-2 bg-card text-foreground text-sm rounded-md cursor-pointer">
+      <label className="px-3 py-2 bg-secondary text-secondary-foreground border border-border text-sm rounded-md cursor-pointer hover:bg-secondary/80">
         Import Data
         <input
           type="file"

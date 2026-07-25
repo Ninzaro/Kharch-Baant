@@ -25,7 +25,7 @@ const MemberBalances: React.FC<MemberBalancesProps> = ({ transactions, people, c
     };
 
     return (
-        <div className="bg-foreground/5 backdrop-blur-md p-4 md:p-6 rounded-2xl shadow-lg border border-border">
+        <div className="bg-card backdrop-blur-md p-4 md:p-6 rounded-2xl shadow-sm border border-border">
             <h3 className="text-lg font-semibold text-foreground mb-4">Member Balances</h3>
             <ul className="space-y-3">
                 {Array.from(balances.entries())

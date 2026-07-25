@@ -10,7 +10,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ value, onChange, op
   <div className="flex flex-col gap-2">
     <label className="text-muted-foreground text-sm font-medium">Language</label>
     <select
-      className="bg-card text-foreground rounded px-3 py-2"
+      className="bg-muted text-foreground border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
       value={value}
       onChange={e => onChange(e.target.value)}
     >

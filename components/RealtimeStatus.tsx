@@ -35,9 +35,9 @@ export const RealtimeStatus: React.FC = () => {
     return (
       <div 
         title="Realtime connected"
-        className="fixed top-3.5 right-32 md:right-36 bg-green-500/20 text-green-400 border border-green-500/30 px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider z-[60] opacity-80 hover:opacity-100 transition-opacity cursor-default select-none pointer-events-none"
+        className="fixed top-3.5 right-32 md:right-36 bg-success/20 text-success border border-success/30 px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider z-[60] opacity-80 hover:opacity-100 transition-opacity cursor-default select-none pointer-events-none"
       >
-        <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
+        <div className="w-1.5 h-1.5 bg-success rounded-full animate-pulse"></div>
         Live
       </div>
     );
@@ -47,9 +47,9 @@ export const RealtimeStatus: React.FC = () => {
     return (
       <div 
         title="Realtime disconnected. Changes will require refresh."
-        className="fixed top-3.5 right-32 md:right-36 bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider z-[60] pointer-events-none"
+        className="fixed top-3.5 right-32 md:right-36 bg-destructive/20 text-destructive border border-destructive/30 px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider z-[60] pointer-events-none"
       >
-        <div className="w-1.5 h-1.5 bg-red-400 rounded-full"></div>
+        <div className="w-1.5 h-1.5 bg-destructive rounded-full"></div>
         Offline
       </div>
     );
@@ -58,9 +58,9 @@ export const RealtimeStatus: React.FC = () => {
   return (
     <div 
       title="Connecting to Realtime..."
-      className="fixed top-3.5 right-32 md:right-36 bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider z-[60] pointer-events-none"
+      className="fixed top-3.5 right-32 md:right-36 bg-warning/20 text-warning border border-warning/30 px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider z-[60] pointer-events-none"
     >
-      <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-spin"></div>
+      <div className="w-1.5 h-1.5 bg-warning rounded-full animate-spin"></div>
       Syncing
     </div>
   );

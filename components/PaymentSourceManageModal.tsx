@@ -109,7 +109,7 @@ const PaymentSourceManageModal: React.FC<PaymentSourceManageModalProps> = ({
                     {count === 0 && (
                       <button
                         onClick={() => onRequestDelete(ps.id)}
-                        className="text-destructive hover:text-destructive text-xs px-2 py-1 rounded-md border border-destructive/30 hover:border-rose-400/50"
+                        className="text-destructive hover:text-destructive text-xs px-2 py-1 rounded-md border border-destructive/30 hover:border-destructive/50"
                         aria-label={`Delete ${ps.name}`}
                       >Delete</button>
                     )}

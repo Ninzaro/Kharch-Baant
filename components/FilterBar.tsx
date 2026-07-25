@@ -29,7 +29,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
   };
 
   return (
-    <div className="bg-overlay/20 p-2 rounded-lg mb-4 flex flex-col gap-2">
+    <div className="bg-card/60 border border-border p-2 rounded-lg mb-4 flex flex-col gap-2">
       <div className="flex items-center gap-2">
         <div className="flex-grow">
           <input
@@ -37,14 +37,15 @@ const FilterBar: React.FC<FilterBarProps> = ({
             placeholder="Search expenses..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full bg-overlay/30 text-foreground rounded-md p-2 border border-border focus:ring-ring focus:border-ring"
+            className="w-full bg-muted text-foreground rounded-md p-2 border border-border placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:border-ring"
           />
         </div>
         <button
+          type="button"
           onClick={() => setIsFiltersOpen(!isFiltersOpen)}
           className={`p-2 rounded-md border transition-colors ${isFiltersOpen
               ? 'bg-primary border-primary text-primary-foreground'
-              : 'bg-overlay/30 border-border text-muted-foreground hover:text-foreground'
+              : 'bg-muted border-border text-muted-foreground hover:text-foreground hover:bg-muted/80'
             }`}
           aria-label="Toggle filters"
         >
@@ -57,7 +58,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
           <select
             value={filters.tag}
             onChange={handleTagChange}
-            className="w-full md:w-auto flex-1 bg-overlay/30 text-foreground rounded-md p-2 border border-border focus:ring-ring focus:border-ring"
+            className="w-full md:w-auto flex-1 bg-muted text-foreground rounded-md p-2 border border-border focus:ring-2 focus:ring-ring focus:border-ring"
           >
             <option value="all">All Categories</option>
             {TAGS.map((t) => (
@@ -68,8 +69,9 @@ const FilterBar: React.FC<FilterBarProps> = ({
           </select>
 
           <button
+            type="button"
             onClick={onDateFilterClick}
-            className="w-full md:w-auto flex-1 p-2 bg-overlay/30 text-foreground rounded-md border border-border hover:bg-foreground/10 flex items-center justify-center gap-2"
+            className="w-full md:w-auto flex-1 p-2 bg-muted text-foreground rounded-md border border-border hover:bg-muted/80 flex items-center justify-center gap-2"
           >
             <CalendarIcon className="h-4 w-4" />
             <span>{filters.dateRange ? `${new Date(filters.dateRange.start + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${new Date(filters.dateRange.end + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : 'Any Date'}</span>

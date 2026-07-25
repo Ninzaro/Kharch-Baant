@@ -75,7 +75,7 @@ describe('GroupBalancesModal', () => {
 
     const ninadBalanceElement = screen.getByText(/Total change in balance/i).nextElementSibling;
     expect(ninadBalanceElement).toHaveTextContent(/500.00/);
-    expect(ninadBalanceElement).toHaveClass('text-red-600');
+    expect(ninadBalanceElement).toHaveClass('text-destructive');
 
     // Test for Pawan's view
     rerender(
