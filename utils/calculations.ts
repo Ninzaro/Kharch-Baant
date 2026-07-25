@@ -154,3 +154,134 @@ export function materializeSplit(mode: SplitMode, amount: number, participants: 
     return map;
 }
 
+const BALANCE_EPS = 0.01;
+
+export type SimplifiedTransfer = {
+    /** Person who should pay (owes money) */
+    from: string;
+    /** Person who should receive (is owed) */
+    to: string;
+    amount: number;
+};
+
+/**
+ * Greedy min-cash-flow: turn net balances into a minimal set of transfers.
+ * Positive balance = is owed money; negative = owes money.
+ */
+export function simplifyGroupDebts(balances: Map<string, number>): SimplifiedTransfer[] {
+    const debtors: { id: string; amount: number }[] = [];
+    const creditors: { id: string; amount: number }[] = [];
+
+    balances.forEach((bal, id) => {
+        if (bal < -BALANCE_EPS) debtors.push({ id, amount: -bal });
+        else if (bal > BALANCE_EPS) creditors.push({ id, amount: bal });
+    });
+
+    debtors.sort((a, b) => b.amount - a.amount);
+    creditors.sort((a, b) => b.amount - a.amount);
+
+    const transfers: SimplifiedTransfer[] = [];
+    let i = 0;
+    let j = 0;
+    while (i < debtors.length && j < creditors.length) {
+        const pay = Math.min(debtors[i].amount, creditors[j].amount);
+        if (pay > BALANCE_EPS) {
+            transfers.push({
+                from: debtors[i].id,
+                to: creditors[j].id,
+                amount: Math.round(pay * 100) / 100,
+            });
+        }
+        debtors[i].amount -= pay;
+        creditors[j].amount -= pay;
+        if (debtors[i].amount <= BALANCE_EPS) i += 1;
+        if (creditors[j].amount <= BALANCE_EPS) j += 1;
+    }
+    return transfers;
+}
+
+export type UserDebtLine = {
+    personId: string;
+    groupId: string;
+    amount: number;
+};
+
+export type UserFacingDebts = {
+    /** People who owe the current user (one line per person per group, netted) */
+    owedToUser: UserDebtLine[];
+    /** People the current user owes (one line per person per group, netted) */
+    userOwes: UserDebtLine[];
+    totalOwedToUser: number;
+    totalUserOwes: number;
+    /** totalOwedToUser - totalUserOwes */
+    netBalance: number;
+};
+
+/**
+ * Per-group net balances → simplified transfers → lines involving `currentUserId`.
+ * Cards and breakdown modals must use this so totals match.
+ */
+export function getUserFacingDebts(
+    currentUserId: string,
+    groups: Array<{ id: string; isArchived?: boolean }>,
+    transactions: Transaction[],
+): UserFacingDebts {
+    const owedToUser: UserDebtLine[] = [];
+    const userOwes: UserDebtLine[] = [];
+
+    if (!currentUserId) {
+        return {
+            owedToUser,
+            userOwes,
+            totalOwedToUser: 0,
+            totalUserOwes: 0,
+            netBalance: 0,
+        };
+    }
+
+    const activeGroups = groups.filter(g => !g.isArchived);
+    const txsByGroup = new Map<string, Transaction[]>();
+    for (const t of transactions) {
+        if (!txsByGroup.has(t.groupId)) txsByGroup.set(t.groupId, []);
+        txsByGroup.get(t.groupId)!.push(t);
+    }
+
+    for (const group of activeGroups) {
+        const groupTxs = txsByGroup.get(group.id) || [];
+        if (groupTxs.length === 0) continue;
+
+        const balances = calculateGroupBalances(groupTxs);
+        const transfers = simplifyGroupDebts(balances);
+
+        for (const transfer of transfers) {
+            if (transfer.to === currentUserId && transfer.amount > BALANCE_EPS) {
+                owedToUser.push({
+                    personId: transfer.from,
+                    groupId: group.id,
+                    amount: transfer.amount,
+                });
+            } else if (transfer.from === currentUserId && transfer.amount > BALANCE_EPS) {
+                userOwes.push({
+                    personId: transfer.to,
+                    groupId: group.id,
+                    amount: transfer.amount,
+                });
+            }
+        }
+    }
+
+    owedToUser.sort((a, b) => b.amount - a.amount);
+    userOwes.sort((a, b) => b.amount - a.amount);
+
+    const totalOwedToUser = owedToUser.reduce((s, x) => s + x.amount, 0);
+    const totalUserOwes = userOwes.reduce((s, x) => s + x.amount, 0);
+
+    return {
+        owedToUser,
+        userOwes,
+        totalOwedToUser: Math.round(totalOwedToUser * 100) / 100,
+        totalUserOwes: Math.round(totalUserOwes * 100) / 100,
+        netBalance: Math.round((totalOwedToUser - totalUserOwes) * 100) / 100,
+    };
+}
+

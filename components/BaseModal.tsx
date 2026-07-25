@@ -143,7 +143,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
                 type="button"
                 onClick={requestClose}
                 aria-label="Close dialog"
-                className="ml-4 inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 focus:outline-none focus-visible:ring focus-visible:ring-indigo-500"
+                className="ml-4 inline-flex h-9 w-9 items-center justify-center rounded-md border border-[#bef9b2] text-black hover:bg-slate-100 dark:hover:bg-white/10 focus:outline-none focus-visible:ring focus-visible:ring-indigo-500"
               >
                 ×
               </button>

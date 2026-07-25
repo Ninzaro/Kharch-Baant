@@ -118,4 +118,94 @@ describe('SettleUpModal', () => {
     expect(onCreated).toHaveBeenCalledTimes(1);
     expect(onClose).toHaveBeenCalled();
   });
+
+  it('edit mode does not double-count an existing settlement in the preview', async () => {
+    // Alice paid 100 equal with Bob → Alice +50, Bob −50
+    const expense: Transaction = {
+      id: 'tx_exp',
+      groupId: 'g1',
+      description: 'Dinner',
+      amount: 100,
+      paidById: 'p1',
+      date: '2024-01-01',
+      tag: 'Food',
+      type: 'expense',
+      split: {
+        mode: 'equal',
+        participants: [
+          { personId: 'p1', value: 1 },
+          { personId: 'p2', value: 1 },
+        ],
+      },
+    };
+    // Bob already settled 50 to Alice → both at 0
+    const settlement: Transaction = {
+      id: 'tx_set',
+      groupId: 'g1',
+      description: 'Settlement: Bob → Alice',
+      amount: 50,
+      paidById: 'p2',
+      date: '2024-01-02',
+      tag: 'Other',
+      type: 'settlement',
+      split: {
+        mode: 'unequal',
+        participants: [
+          { personId: 'p2', value: 0 },
+          { personId: 'p1', value: 50 },
+        ],
+      },
+    };
+
+    const onSubmit = vi.fn(async (data: any) => ({
+      ...settlement,
+      ...data,
+      id: settlement.id,
+      groupId: 'g1',
+    }));
+
+    render(
+      <SettleUpModal
+        open
+        onClose={() => {}}
+        groupId="g1"
+        members={members}
+        paymentSources={paymentSources}
+        transactions={[expense, settlement]}
+        currency="INR"
+        initialTransaction={settlement}
+        onSubmit={onSubmit}
+        onCreated={() => {}}
+      />
+    );
+
+    // Same amount as booked → no further change
+    expect(screen.getByText(/balances unchanged/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /edit settlement/i })).toBeInTheDocument();
+
+    // Change 50 → 40: only the delta should apply (Alice −10, Bob +10 from current 0)
+    const amountInput = screen.getByLabelText(/amount/i) as HTMLInputElement;
+    fireEvent.change(amountInput, { target: { value: '40' } });
+
+    expect(screen.getByText(/after saving changes/i)).toBeInTheDocument();
+    // Alice (receiver p1): base without settlement is +50, after 40 → +10
+    // Bob (payer p2): base −50, after +40 → −10
+    // Current live was 0/0 so we should see struck 0 → new values
+    expect(screen.getByRole('button', { name: /save changes/i })).not.toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'settlement',
+        amount: 40,
+        paidById: 'p2',
+        split: expect.objectContaining({
+          participants: expect.arrayContaining([
+            expect.objectContaining({ personId: 'p1', value: 40 }),
+          ]),
+        }),
+      })
+    );
+  });
 });

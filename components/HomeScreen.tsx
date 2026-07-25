@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Group, Transaction, Person } from '../types';
 import GroupSummaryCard from './GroupSummaryCard';
 import { PlusIcon } from './icons/Icons';
-import { calculateGroupBalances } from '../utils/calculations';
+import { getUserFacingDebts } from '../utils/calculations';
 import BalanceBreakdownModal from './BalanceBreakdownModal';
 
 interface HomeScreenProps {
@@ -17,15 +17,16 @@ interface HomeScreenProps {
 const HomeScreen: React.FC<HomeScreenProps> = ({ groups, transactions, people, currentUserId, onSelectGroup, onAddGroup }) => {
     const [breakdownType, setBreakdownType] = useState<'owed' | 'owing' | null>(null);
 
+    // Same debt simplification as BalanceBreakdownModal so card totals match modal totals.
+    // "Owed" and "owe" can both be non-zero (unlike a single global net).
     const { totalOwedToUser, totalUserOwes, netBalance } = useMemo(() => {
-        const balances = calculateGroupBalances(transactions);
-        const net = balances.get(currentUserId) ?? 0;
+        const debts = getUserFacingDebts(currentUserId, groups, transactions);
         return {
-            totalOwedToUser: net > 0 ? net : 0,
-            totalUserOwes: net < 0 ? Math.abs(net) : 0,
-            netBalance: net,
+            totalOwedToUser: debts.totalOwedToUser,
+            totalUserOwes: debts.totalUserOwes,
+            netBalance: debts.netBalance,
         };
-    }, [transactions, currentUserId]);
+    }, [transactions, currentUserId, groups]);
     
     const formatNumber = (amount: number) => {
         return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
@@ -44,7 +45,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ groups, transactions, people, c
 
 
     return (
-        <div className="flex-1 w-full h-full overflow-y-auto">
+        <div className="flex-1 w-full h-full overflow-y-auto border border-[#4b7ee9]">
             <header className="bg-black/30 backdrop-blur-lg border-b border-white/10 sticky top-0 z-10 p-4 md:p-6 flex justify-between items-center safe-area-top">
                 <h1 className="text-3xl font-bold">Dashboard</h1>
                  <button
@@ -52,7 +53,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ groups, transactions, people, c
                     className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-md hover:from-indigo-600 hover:to-purple-700 transition-colors text-sm font-medium"
                 >
                     <PlusIcon className="h-5 w-5" />
-                    <span className="">Add Group</span>
+                    <span className="text-black">Add Group</span>
                 </button>
             </header>
             <main className="p-4 md:p-6 space-y-8">
@@ -63,8 +64,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ groups, transactions, people, c
                             onClick={() => setBreakdownType('owed')}
                             className="bg-white/5 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-white/10 text-left hover:bg-white/10 hover:border-emerald-500/30 transition-colors group"
                         >
-                            <h3 className="text-sm font-medium text-slate-400 group-hover:text-slate-300">Total you are owed</h3>
-                            <p className="text-3xl font-bold text-emerald-400 mt-2">{formatNumber(totalOwedToUser)}</p>
+                            <h3 className="text-sm font-medium text-black group-hover:text-slate-300">Total you are owed</h3>
+                            <p className="text-3xl font-bold text-[#20a52d] mt-2">{formatNumber(totalOwedToUser)}</p>
                             <p className="text-xs text-slate-500">(tap to see breakdown)</p>
                         </button>
                         <button
@@ -72,12 +73,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ groups, transactions, people, c
                             className="bg-white/5 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-white/10 text-left hover:bg-white/10 hover:border-rose-500/30 transition-colors group"
                         >
                             <h3 className="text-sm font-medium text-slate-400 group-hover:text-slate-300">Total you owe</h3>
-                            <p className="text-3xl font-bold text-rose-400 mt-2">{formatNumber(totalUserOwes)}</p>
+                            <p className="text-3xl font-bold text-[#d0021b] mt-2">{formatNumber(totalUserOwes)}</p>
                             <p className="text-xs text-slate-500">(tap to see breakdown)</p>
                         </button>
                         <div className="bg-white/5 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-white/10">
                             <h3 className="text-sm font-medium text-slate-400">Total Net Balance</h3>
-                            <p className={`text-3xl font-bold mt-2 ${netBalance >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                            <p className={`text-3xl font-bold mt-2 ${netBalance >= 0 ? 'text-[#20a52d]' : 'text-rose-400'}`}>
                                 {formatNumber(netBalance)}
                             </p>
                             <p className="text-xs text-slate-500">(across all currencies)</p>

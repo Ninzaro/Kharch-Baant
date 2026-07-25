@@ -80,33 +80,55 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
   }, [open, initialTransaction, defaultPayerId, defaultReceiverId, defaultAmount, paymentSources]);
 
   const amountNumber = parseFloat(amount) || 0;
+  const isEditing = Boolean(initialTransaction?.id);
   const isSelfSelect = payerId && receiverId && payerId === receiverId;
   const isValid = payerId && receiverId && !isSelfSelect && amountNumber > 0 && !submitting;
 
   // --- CALCULATIONS (Live Preview) ---
-  const groupBalances = useMemo(() => calculateGroupBalances(transactions), [transactions]);
-  const { currentPayerBalance, currentReceiverBalance } = useMemo(() => ({
-    currentPayerBalance: groupBalances.get(payerId) ?? 0,
-    currentReceiverBalance: groupBalances.get(receiverId) ?? 0,
-  }), [groupBalances, payerId, receiverId]);
+  // When editing, exclude the settlement being edited so we don't double-count it.
+  // Projection = balances without this settlement + the (new) amount once.
+  // Changing 5k → 4k only moves balances by the delta (−1k for payer, +1k for receiver).
+  const transactionsForBase = useMemo(() => {
+    if (!initialTransaction?.id) return transactions;
+    return transactions.filter(t => t.id !== initialTransaction.id);
+  }, [transactions, initialTransaction?.id]);
 
-  const projected = useMemo(() => {
+  const baseBalances = useMemo(
+    () => calculateGroupBalances(transactionsForBase),
+    [transactionsForBase],
+  );
+
+  // Live balances still include the existing settlement (edit mode) — used as the "from" side
+  const liveBalances = useMemo(
+    () => calculateGroupBalances(transactions),
+    [transactions],
+  );
+
+  const { displayFromPayer, displayFromReceiver, payerAfter, receiverAfter, balancesUnchanged } = useMemo(() => {
+    // Settlement effect: payer +amount, receiver −amount
+    const afterPayer = (baseBalances.get(payerId) ?? 0) + amountNumber;
+    const afterReceiver = (baseBalances.get(receiverId) ?? 0) - amountNumber;
+
+    // Edit: show current booked balances → projected after save
+    // New: show current (= base) → projected after first booking
+    const fromPayer = isEditing ? (liveBalances.get(payerId) ?? 0) : (baseBalances.get(payerId) ?? 0);
+    const fromReceiver = isEditing ? (liveBalances.get(receiverId) ?? 0) : (baseBalances.get(receiverId) ?? 0);
+
+    const unchanged =
+      Math.abs(fromPayer - afterPayer) < 0.01 &&
+      Math.abs(fromReceiver - afterReceiver) < 0.01;
+
     return {
-      // So: Payer Balance INCREASES (becomes more positive/less negative).
-      // Receiver Balance DECREASES (becomes less positive/more negative).
-
-      payerAfter: currentPayerBalance + amountNumber,
-      receiverAfter: currentReceiverBalance - amountNumber,
+      displayFromPayer: fromPayer,
+      displayFromReceiver: fromReceiver,
+      payerAfter: afterPayer,
+      receiverAfter: afterReceiver,
+      balancesUnchanged: unchanged,
     };
-  }, [currentPayerBalance, currentReceiverBalance, amountNumber]);
+  }, [baseBalances, liveBalances, payerId, receiverId, amountNumber, isEditing]);
 
   const format = (v: number) => {
     return new Intl.NumberFormat('en-IN', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(v);
-  };
-
-  const formatDiff = (v: number) => {
-    const s = format(v);
-    return v > 0 ? `+${s}` : s; // Currency format handles negative sign usually
   };
 
   const getColor = (val: number) => {
@@ -160,9 +182,15 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
     <BaseModal
       open={open}
       onClose={() => !submitting && onClose()}
-      title="Record Settlement"
+      title={isEditing ? 'Edit Settlement' : 'Record Settlement'}
       size="md"
-      description={<span className="text-slate-400">This directly updates balances. No expense will be added.</span>}
+      description={
+        <span className="text-slate-400">
+          {isEditing
+            ? 'Update this settlement. Balances are adjusted by the change only — not booked again.'
+            : 'This directly updates balances. No expense will be added.'}
+        </span>
+      }
       footer={
         <div className="flex w-full gap-3">
           <button
@@ -181,6 +209,8 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
           >
             {submitting ? (
               <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : isEditing ? (
+              <>Save changes <ArrowRightIcon width="16" height="16" /></>
             ) : (
               <>Record settlement <ArrowRightIcon width="16" height="16" /></>
             )}
@@ -274,29 +304,41 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
           <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
             <div className="flex items-center gap-2">
               <div className="h-px bg-slate-800 flex-1"></div>
-              <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">After this settlement</span>
+              <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
+                {isEditing
+                  ? (balancesUnchanged ? 'Balances unchanged' : 'After saving changes')
+                  : 'After this settlement'}
+              </span>
               <div className="h-px bg-slate-800 flex-1"></div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               {/* Payer Impact */}
               <div className="bg-slate-800/30 rounded-lg p-3 border border-dashed border-slate-700 text-center space-y-1">
-                <p className="text-xs text-slate-400">{members.find(m => m.id === payerId)?.name}'s Balance</p>
-                <div className="flex items-center justify-center gap-2 text-sm">
-                  <span className={`${getColor(currentPayerBalance)} line-through opacity-50`}>{format(currentPayerBalance)}</span>
-                  <ArrowRightIcon width="12" height="12" className="text-slate-600" />
-                  <span className={`font-bold ${getColor(projected.payerAfter)}`}>{format(projected.payerAfter)}</span>
-                </div>
+                <p className="text-xs text-slate-400 truncate">{members.find(m => m.id === payerId)?.name}'s Balance</p>
+                {balancesUnchanged ? (
+                  <div className={`text-sm font-bold ${getColor(payerAfter)}`}>{format(payerAfter)}</div>
+                ) : (
+                  <div className="flex items-center justify-center gap-2 text-sm flex-wrap">
+                    <span className={`${getColor(displayFromPayer)} line-through opacity-50`}>{format(displayFromPayer)}</span>
+                    <ArrowRightIcon width="12" height="12" className="text-slate-600 shrink-0" />
+                    <span className={`font-bold ${getColor(payerAfter)}`}>{format(payerAfter)}</span>
+                  </div>
+                )}
               </div>
 
               {/* Receiver Impact */}
               <div className="bg-slate-800/30 rounded-lg p-3 border border-dashed border-slate-700 text-center space-y-1">
-                <p className="text-xs text-slate-400">{members.find(m => m.id === receiverId)?.name}'s Balance</p>
-                <div className="flex items-center justify-center gap-2 text-sm">
-                  <span className={`${getColor(currentReceiverBalance)} line-through opacity-50`}>{format(currentReceiverBalance)}</span>
-                  <ArrowRightIcon width="12" height="12" className="text-slate-600" />
-                  <span className={`font-bold ${getColor(projected.receiverAfter)}`}>{format(projected.receiverAfter)}</span>
-                </div>
+                <p className="text-xs text-slate-400 truncate">{members.find(m => m.id === receiverId)?.name}'s Balance</p>
+                {balancesUnchanged ? (
+                  <div className={`text-sm font-bold ${getColor(receiverAfter)}`}>{format(receiverAfter)}</div>
+                ) : (
+                  <div className="flex items-center justify-center gap-2 text-sm flex-wrap">
+                    <span className={`${getColor(displayFromReceiver)} line-through opacity-50`}>{format(displayFromReceiver)}</span>
+                    <ArrowRightIcon width="12" height="12" className="text-slate-600 shrink-0" />
+                    <span className={`font-bold ${getColor(receiverAfter)}`}>{format(receiverAfter)}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

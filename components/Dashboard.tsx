@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Transaction, Person, Currency } from '../types';
-import { calculateGroupBalances } from '../utils/calculations';
+import { calculateGroupBalances, simplifyGroupDebts } from '../utils/calculations';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface DashboardProps {
@@ -13,14 +13,21 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ transactions, currentUserId, people, currency }) => {
     const [isBreakdownOpen, setIsBreakdownOpen] = useState(false);
 
+    // Single-group context: simplify nets so "you are owed" and "you owe" can both show.
     const { totalOwedToUser, totalUserOwes, netBalance } = useMemo(() => {
         if (!currentUserId) return { totalOwedToUser: 0, totalUserOwes: 0, netBalance: 0 };
         const balances = calculateGroupBalances(transactions);
-        const net = balances.get(currentUserId) ?? 0;
+        const transfers = simplifyGroupDebts(balances);
+        let owed = 0;
+        let owe = 0;
+        for (const t of transfers) {
+            if (t.to === currentUserId) owed += t.amount;
+            else if (t.from === currentUserId) owe += t.amount;
+        }
         return {
-            totalOwedToUser: net > 0 ? net : 0,
-            totalUserOwes: net < 0 ? Math.abs(net) : 0,
-            netBalance: net,
+            totalOwedToUser: Math.round(owed * 100) / 100,
+            totalUserOwes: Math.round(owe * 100) / 100,
+            netBalance: Math.round((owed - owe) * 100) / 100,
         };
     }, [transactions, currentUserId]);
 

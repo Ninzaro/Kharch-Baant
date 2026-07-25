@@ -1,9 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { 
   calculateShares, 
+  calculateGroupBalances,
   distributeRounding, 
   validateSplit, 
-  materializeSplit 
+  materializeSplit,
+  simplifyGroupDebts,
+  getUserFacingDebts,
 } from '../../../utils/calculations'
 import { Transaction, SplitMode, SplitParticipant } from '../../../types'
 
@@ -354,5 +357,117 @@ describe('materializeSplit', () => {
     const result = materializeSplit('shares', 100, participants)
     
     expect(result.size).toBe(0)
+  })
+})
+
+describe('simplifyGroupDebts', () => {
+  it('matches debtors to creditors without per-transaction rows', () => {
+    const balances = new Map([
+      ['you', 100],
+      ['a', -40],
+      ['b', -60],
+    ])
+    const transfers = simplifyGroupDebts(balances)
+    const totalIn = transfers.filter(t => t.to === 'you').reduce((s, t) => s + t.amount, 0)
+    expect(totalIn).toBeCloseTo(100, 2)
+    expect(transfers).toHaveLength(2)
+  })
+})
+
+describe('getUserFacingDebts', () => {
+  const groups = [
+    { id: 'g1', isArchived: false },
+    { id: 'g2', isArchived: false },
+  ]
+
+  const equalExpense = (
+    id: string,
+    groupId: string,
+    amount: number,
+    paidById: string,
+    members: string[],
+  ): Transaction => ({
+    id,
+    groupId,
+    description: id,
+    amount,
+    paidById,
+    date: '2024-01-01',
+    tag: 'Food',
+    type: 'expense',
+    split: {
+      mode: 'equal',
+      participants: members.map(personId => ({ personId, value: 1 })),
+    },
+  })
+
+  it('aggregates multiple expenses into one net line per person per group', () => {
+    // You paid 300 split 3 ways → each other owes you 100
+    // You paid 90 split 3 ways → each other owes you 30
+    // Net: each of a,b owes you 130 (one line each, not two)
+    const txs = [
+      equalExpense('t1', 'g1', 300, 'you', ['you', 'a', 'b']),
+      equalExpense('t2', 'g1', 90, 'you', ['you', 'a', 'b']),
+    ]
+    const debts = getUserFacingDebts('you', groups, txs)
+    expect(debts.owedToUser).toHaveLength(2)
+    expect(debts.owedToUser.find(l => l.personId === 'a')?.amount).toBeCloseTo(130, 2)
+    expect(debts.owedToUser.find(l => l.personId === 'b')?.amount).toBeCloseTo(130, 2)
+    expect(debts.totalOwedToUser).toBeCloseTo(260, 2)
+    expect(debts.totalUserOwes).toBe(0)
+  })
+
+  it('nets both directions within a group', () => {
+    // You paid 100 split with a → a owes you 50
+    // a paid 40 split with you → you owe a 20
+    // Net: a owes you 30
+    const txs = [
+      equalExpense('t1', 'g1', 100, 'you', ['you', 'a']),
+      equalExpense('t2', 'g1', 40, 'a', ['you', 'a']),
+    ]
+    const debts = getUserFacingDebts('you', groups, txs)
+    expect(debts.owedToUser).toHaveLength(1)
+    expect(debts.owedToUser[0].personId).toBe('a')
+    expect(debts.owedToUser[0].amount).toBeCloseTo(30, 2)
+    expect(debts.userOwes).toHaveLength(0)
+    expect(debts.totalOwedToUser).toBeCloseTo(30, 2)
+    expect(debts.totalUserOwes).toBe(0)
+  })
+
+  it('can show both owed and owe at once across people', () => {
+    // g1: you paid 100 with a → a owes 50
+    // g2: b paid 80 with you → you owe b 40
+    const txs = [
+      equalExpense('t1', 'g1', 100, 'you', ['you', 'a']),
+      equalExpense('t2', 'g2', 80, 'b', ['you', 'b']),
+    ]
+    const debts = getUserFacingDebts('you', groups, txs)
+    expect(debts.totalOwedToUser).toBeCloseTo(50, 2)
+    expect(debts.totalUserOwes).toBeCloseTo(40, 2)
+    expect(debts.netBalance).toBeCloseTo(10, 2)
+  })
+
+  it('ignores archived groups', () => {
+    const txs = [equalExpense('t1', 'g1', 100, 'you', ['you', 'a'])]
+    const debts = getUserFacingDebts('you', [{ id: 'g1', isArchived: true }], txs)
+    expect(debts.totalOwedToUser).toBe(0)
+    expect(debts.owedToUser).toHaveLength(0)
+  })
+
+  it('card totals match sum of breakdown lines', () => {
+    const txs = [
+      equalExpense('t1', 'g1', 300, 'you', ['you', 'a', 'b']),
+      equalExpense('t2', 'g1', 90, 'a', ['you', 'a', 'b']),
+      equalExpense('t3', 'g2', 120, 'b', ['you', 'b']),
+    ]
+    const debts = getUserFacingDebts('you', groups, txs)
+    const sumOwed = debts.owedToUser.reduce((s, l) => s + l.amount, 0)
+    const sumOwe = debts.userOwes.reduce((s, l) => s + l.amount, 0)
+    expect(sumOwed).toBeCloseTo(debts.totalOwedToUser, 2)
+    expect(sumOwe).toBeCloseTo(debts.totalUserOwes, 2)
+
+    // Sanity: net equals user balance from calculateGroupBalances across all active txs
+    const allBal = calculateGroupBalances(txs)
+    expect(allBal.get('you') ?? 0).toBeCloseTo(debts.netBalance, 2)
   })
 })
