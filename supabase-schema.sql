@@ -115,11 +115,11 @@ CREATE TRIGGER update_transactions_updated_at BEFORE UPDATE ON transactions FOR 
 -- Insert initial sample data
 -- First, insert people with specific UUIDs for consistency
 INSERT INTO people (id, name, avatar_url) VALUES
-    ('00000000-0000-0000-0000-000000000001', 'You', 'https://i.pravatar.cc/150?u=p1'),
-    ('00000000-0000-0000-0000-000000000002', 'Alice', 'https://i.pravatar.cc/150?u=p2'),
-    ('00000000-0000-0000-0000-000000000003', 'Bob', 'https://i.pravatar.cc/150?u=p3'),
-    ('00000000-0000-0000-0000-000000000004', 'Charlie', 'https://i.pravatar.cc/150?u=p4'),
-    ('00000000-0000-0000-0000-000000000005', 'Diana', 'https://i.pravatar.cc/150?u=p5');
+    ('00000000-0000-0000-0000-000000000001', 'You', ''),
+    ('00000000-0000-0000-0000-000000000002', 'Alice', ''),
+    ('00000000-0000-0000-0000-000000000003', 'Bob', ''),
+    ('00000000-0000-0000-0000-000000000004', 'Charlie', ''),
+    ('00000000-0000-0000-0000-000000000005', 'Diana', '');
 
 -- Insert groups with specific UUIDs
 INSERT INTO groups (id, name, currency, group_type, trip_start_date, trip_end_date) VALUES

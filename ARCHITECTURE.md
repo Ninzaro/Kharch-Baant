@@ -214,7 +214,7 @@ Source of truth for shared types. Always import from here; never redeclare. DB-r
 
 | Type | Purpose | Key fields |
 |---|---|---|
-| `Person` | A user or a placeholder for one | `id`, `name`, `avatarUrl`, `email?`, `authUserId?` (Clerk), `isClaimed?`, `source?` |
+| `Person` | A user or a placeholder for one | `id`, `name`, `avatarUrl` (empty = initials; data URL = uploaded photo; never stock hosts like pravatar), `email?`, `authUserId?` (Clerk), `isClaimed?`, `source?` |
 | `PersonSource` | How a Person entered the system | `'manual' \| 'phonebook' \| 'email_invite' \| 'self'` |
 | `Group` | An expense group | `id`, `name`, `currency`, `members: UUID[]`, `groupType`, `tripStartDate?`, `tripEndDate?`, `isArchived?`, `createdBy?`, `enableCuteIcons?` |
 | `Transaction` | Expense, settlement, or adjustment | `id`, `groupId`, `amount`, `paidById`, `payers?: Payer[]`, `tag`, `paymentSourceId?`, `type`, `split` |

@@ -55,11 +55,11 @@ export const addPersonToGroup = async (
     }
   }
 
-  // Create new person then link
+  // Create new person then link (empty avatar → local initials in Avatar component)
   const person = await supabaseApi.addPerson({
     name: data.name,
     email: data.email,
-    avatarUrl: data.avatarUrl || `https://i.pravatar.cc/150?u=${encodeURIComponent(data.name)}`,
+    avatarUrl: data.avatarUrl ?? '',
     source: 'manual',
   });
 

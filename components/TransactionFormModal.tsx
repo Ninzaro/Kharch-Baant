@@ -406,7 +406,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                 </button>
                             </div>
 
-                            <div className={`bg-black/20 rounded-xl p-3 border transition-all ${activeStep === 'paidBy' ? 'border-indigo-500/50' : 'border-slate-800'}`}>
+                            <div className={`bg-black/20 rounded-xl p-3 border transition-all overflow-hidden ${activeStep === 'paidBy' ? 'border-indigo-500/50' : 'border-slate-800'}`}>
                                 {payerMode === 'single' ? (
                                     <div className="grid grid-cols-2 gap-2">
                                         {people.map(p => {
@@ -416,11 +416,11 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                                     key={p.id}
                                                     type="button"
                                                     onClick={() => { setPaidById(p.id); handleStepFocus('split'); }}
-                                                    className={`flex items-center gap-2 p-2 rounded-lg border transition-all ${isSelected ? 'bg-indigo-600/20 border-indigo-500 ring-1 ring-indigo-500/50' : 'bg-slate-800/50 border-transparent hover:bg-white/5 text-slate-400'}`}
+                                                    className={`flex items-center gap-2 p-2 min-h-[2.75rem] max-h-[2.75rem] overflow-hidden rounded-lg border transition-all ${isSelected ? 'bg-indigo-600/20 border-indigo-500 ring-1 ring-indigo-500/50' : 'bg-slate-800/50 border-transparent hover:bg-white/5 text-slate-400'}`}
                                                 >
-                                                    <Avatar person={p} size="xs" />
-                                                    <span className={`text-xs font-medium truncate ${isSelected ? 'text-white' : ''}`}>{p.name}</span>
-                                                    {isSelected && <CheckIcon className="w-3 h-3 ml-auto text-indigo-400" />}
+                                                    <Avatar person={p} size="sm" />
+                                                    <span className={`min-w-0 flex-1 text-left text-xs font-medium truncate ${isSelected ? 'text-white' : ''}`}>{p.name}</span>
+                                                    {isSelected && <CheckIcon className="w-3 h-3 shrink-0 text-indigo-400" />}
                                                 </button>
                                             );
                                         })}
@@ -433,11 +433,11 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                         {people.map(p => {
                                             const val = customPayerValues.get(p.id) || 0;
                                             return (
-                                                <div key={p.id} className="flex items-center gap-3 p-2 rounded-lg bg-white/5 border border-transparent">
-                                                    <Avatar person={p} size="xs" />
-                                                    <span className="flex-1 text-xs text-slate-300 truncate">{p.name}</span>
-                                                    <div className="relative w-24">
-                                                        <span className="absolute left-1 top-1/2 -translate-y-1/2 text-[10px] text-slate-500">₹</span>
+                                                <div key={p.id} className="flex items-center gap-3 p-2 min-h-[2.75rem] overflow-hidden rounded-lg bg-white/5 border border-transparent">
+                                                    <Avatar person={p} size="sm" />
+                                                    <span className="min-w-0 flex-1 text-xs text-slate-300 truncate">{p.name}</span>
+                                                    <div className="relative w-24 shrink-0">
+                                                        <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-500 pointer-events-none">₹</span>
                                                         <input
                                                             type="number"
                                                             value={val || ''}
@@ -472,13 +472,21 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                 )}
                             </div>
 
-                            <div className={`bg-black/20 rounded-xl p-3 border transition-all ${activeStep === 'split' ? 'border-indigo-500/50' : 'border-slate-800'}`}>
+                            <div className={`bg-black/20 rounded-xl p-3 border transition-all overflow-hidden ${activeStep === 'split' ? 'border-indigo-500/50' : 'border-slate-800'}`}>
                                 {/* Mode Selector */}
                                 <div className="flex flex-wrap gap-2 mb-4">
                                     {splitModes.map(mode => (
                                         <button
                                             key={mode.id}
-                                            onClick={(e) => { e.stopPropagation(); setSplitMode(mode.id); handleStepFocus('split'); }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                // Values are mode-specific (₹ vs % vs shares) — never carry them across modes
+                                                if (mode.id !== splitMode) {
+                                                    setSplitMode(mode.id);
+                                                    setCustomSplitValues(new Map());
+                                                }
+                                                handleStepFocus('split');
+                                            }}
                                             type="button"
                                             className={`px-3 py-1.5 text-[10px] uppercase font-bold tracking-wider rounded-lg transition-all ${splitMode === mode.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
                                         >
@@ -491,35 +499,42 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                 <div className="space-y-1.5">
                                     {people.map(p => {
                                         const isSelected = splitParticipants.includes(p.id);
-                                        const inputType = splitMode === 'unequal' ? 'number' : 'text';
                                         const showInput = splitMode !== 'equal';
+                                        const inputValue = customSplitValues.get(p.id);
+                                        const displayValue =
+                                            inputValue === undefined || inputValue === 0 ? '' : String(inputValue);
 
                                         return (
                                             <div
                                                 key={p.id}
-                                                className={`flex items-center gap-3 p-2 rounded-lg transition-colors cursor-pointer ${isSelected ? 'bg-indigo-900/20' : 'hover:bg-white/5'}`}
+                                                className={`flex items-center gap-2 p-2 min-h-[2.75rem] max-h-[2.75rem] overflow-hidden rounded-lg transition-colors cursor-pointer ${isSelected ? 'bg-indigo-900/20' : 'hover:bg-white/5'}`}
                                                 onClick={() => handleParticipantToggle(p.id)}
                                             >
                                                 {/* Checkbox (Visual) */}
-                                                <div className={`w-4 h-4 rounded flex items-center justify-center border transition-colors ${isSelected ? 'bg-indigo-500 border-indigo-500' : 'border-slate-600'}`}>
+                                                <div className={`w-4 h-4 shrink-0 rounded flex items-center justify-center border transition-colors ${isSelected ? 'bg-indigo-500 border-indigo-500' : 'border-slate-600'}`}>
                                                     {isSelected && <CheckIcon className="w-2.5 h-2.5 text-white" />}
                                                 </div>
 
-                                                <Avatar person={p} size="xs" />
-                                                <span className={`flex-1 text-xs font-medium ${isSelected ? 'text-white' : 'text-slate-500'}`}>{p.name}</span>
+                                                <Avatar person={p} size="sm" />
+                                                <span className={`min-w-0 flex-1 text-xs font-medium truncate ${isSelected ? 'text-white' : 'text-slate-500'}`}>{p.name}</span>
 
                                                 {/* Inline Input for Advanced Splits */}
                                                 {showInput && isSelected && (
-                                                    <div className="relative w-24">
+                                                    <div className="relative w-24 shrink-0">
                                                         <input
-                                                            type={inputType}
-                                                            value={customSplitValues.get(p.id) || ''}
+                                                            type="number"
+                                                            inputMode="decimal"
+                                                            value={displayValue}
                                                             onChange={e => handleCustomSplitChange(p.id, e.target.value)}
                                                             onClick={e => e.stopPropagation()}
-                                                            className="w-full bg-black/40 text-right text-xs text-white rounded p-1 border border-slate-700 focus:border-indigo-500 outline-none"
-                                                            placeholder={splitMode === 'shares' ? "1" : "0"}
+                                                            className={`w-full bg-black/40 text-right text-xs text-white rounded p-1 border border-slate-700 focus:border-indigo-500 outline-none ${splitMode === 'percentage' ? 'pr-5' : ''}`}
+                                                            placeholder={splitMode === 'shares' ? '1' : '0'}
                                                         />
-                                                        {splitMode === 'percentage' && <span className="absolute right-7 top-1/2 -translate-y-1/2 text-[10px] text-slate-500">%</span>}
+                                                        {splitMode === 'percentage' && (
+                                                            <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-500 pointer-events-none">
+                                                                %
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>

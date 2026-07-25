@@ -815,11 +815,13 @@ export const getPeople = async (personId?: string): Promise<Person[]> => {
 };
 
 export const addPerson = async (personData: Omit<Person, 'id'>): Promise<Person> => {
+  // Empty avatar_url → Avatar shows local initials (never default to stock photo hosts)
+  const avatarUrl = (personData.avatarUrl ?? '').trim();
   const { data, error } = await supabase
     .from('people')
     .insert({
       name: personData.name,
-      avatar_url: personData.avatarUrl,
+      avatar_url: avatarUrl,
       email: personData.email ?? null,
       is_claimed: false,
       source: personData.source ?? 'manual',
@@ -880,7 +882,7 @@ export const ensureUserExists = async (authUserId: string, userName: string, use
       clerk_user_id: authUserId,
       auth_user_id: authUserId,
       user_id: authUserId,
-      avatar_url: `https://i.pravatar.cc/150?u=${authUserId}`,
+      avatar_url: '', // initials-first; users upload a photo via Settings
       email: userEmail || null,
       is_claimed: true,
       source: 'self',

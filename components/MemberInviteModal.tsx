@@ -77,7 +77,7 @@ const MemberInviteModal: React.FC<MemberInviteModalProps> = ({ open, groupId, ex
         person = matchedPerson ?? await addPerson({
           name: name.trim(),
           email: email.trim().toLowerCase() || undefined,
-          avatarUrl: `https://i.pravatar.cc/150?u=${encodeURIComponent(name.trim())}`,
+          avatarUrl: '', // initials until they upload a photo in Settings
           source: 'manual',
         });
       }

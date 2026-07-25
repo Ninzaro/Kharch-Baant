@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import ArchivedGroupsModal from './ArchivedGroupsModal';
 import BaseModal from './BaseModal';
 import ThemeToggle from './ThemeToggle';
@@ -8,12 +9,14 @@ import DataExport from './DataExport';
 import DangerZone from './DangerZone';
 import AboutSection from './AboutSection';
 import AdminDeletionRequestsPanel from './AdminDeletionRequestsPanel';
-import Avatar from './Avatar';
+import Avatar, { isStockAvatarUrl } from './Avatar';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
 import * as api from '../services/apiService';
 import { Person, Theme } from '../types';
 import toast from 'react-hot-toast';
 import { updateUserAvatar, updatePerson } from '../services/supabaseApiService';
+import { useAuth } from '../contexts/SupabaseAuthContext';
+import { qk } from '../services/queries';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -35,6 +38,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   theme,
   onThemeChange
 }) => {
+  const { updateLocalPerson } = useAuth();
+  const queryClient = useQueryClient();
   const [showArchivedGroups, setShowArchivedGroups] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
@@ -53,6 +58,18 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     }
   }, [currentUserPerson]);
 
+  const syncAvatarToCaches = (nextAvatar: string) => {
+    if (!currentUserPerson) return;
+    const updated: Person = { ...currentUserPerson, avatarUrl: nextAvatar };
+    updateLocalPerson(updated);
+    // Keep people lists in sync so Add Expense / GroupView show the new photo immediately
+    queryClient.setQueriesData<Person[]>({ queryKey: ['people'] }, (old) => {
+      if (!old) return old;
+      return old.map((p) => (p.id === updated.id ? { ...p, avatarUrl: nextAvatar } : p));
+    });
+    void queryClient.invalidateQueries({ queryKey: qk.people(currentUserPerson.id) });
+  };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !currentUserId) return;
@@ -69,6 +86,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       setAvatarUrl(base64); // Optimistic update
       try {
         await updateUserAvatar(currentUserId, base64);
+        syncAvatarToCaches(base64);
         toast.success('Profile picture updated!');
       } catch (error) {
         console.error('Failed to update avatar', error);
@@ -88,6 +106,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     setAvatarUrl(null); // Optimistic — Avatar component shows CSS initials for null/empty
     try {
       await updateUserAvatar(currentUserId, null); // Service stores '' to satisfy NOT NULL
+      syncAvatarToCaches('');
       toast.success('Now showing initials.');
     } catch (error) {
       console.error('Failed to remove avatar', error);
@@ -147,7 +166,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                     >
                       {isUploading ? 'Uploading...' : 'Upload Photo'}
                     </button>
-                    {avatarUrl && avatarUrl.trim() !== '' && (
+                    {avatarUrl && avatarUrl.trim() !== '' && !isStockAvatarUrl(avatarUrl) && (
                       <button
                         onClick={handleRemovePhoto}
                         disabled={isUploading}
@@ -156,8 +175,19 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                         Use Initials
                       </button>
                     )}
+                    {avatarUrl && isStockAvatarUrl(avatarUrl) && (
+                      <button
+                        onClick={handleRemovePhoto}
+                        disabled={isUploading}
+                        className="px-3 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs rounded-md transition-colors border border-rose-500/30"
+                      >
+                        Clear stock photo
+                      </button>
+                    )}
                   </div>
-                  <p className="text-[10px] text-slate-500">Max size 100KB.</p>
+                  <p className="text-[10px] text-slate-500">
+                    No photo → initials. Upload optional (max 100KB).
+                  </p>
                 </div>
               </div>
             </div>

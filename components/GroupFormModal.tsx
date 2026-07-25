@@ -225,7 +225,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
             return {
                 id: currentUserId,
                 name: fallbackName,
-                avatarUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(fallbackName)}&background=6366f1&color=ffffff`
+                avatarUrl: ''
             };
         }
         return person;

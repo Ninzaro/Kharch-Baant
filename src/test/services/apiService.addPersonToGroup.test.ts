@@ -73,7 +73,7 @@ describe('addPersonToGroup', () => {
     expect(result).toEqual(mockPerson)
   })
 
-  it('should add person to group with generated avatar URL', async () => {
+  it('should default to empty avatar (initials) when none provided', async () => {
     const groupId = 'g1'
     const personData = {
       name: 'Jane Smith'
@@ -82,7 +82,7 @@ describe('addPersonToGroup', () => {
     const mockPerson = {
       id: 'p2',
       name: 'Jane Smith',
-      avatarUrl: 'https://i.pravatar.cc/150?u=Jane%20Smith'
+      avatarUrl: ''
     }
     
     vi.mocked(supabaseApi.addPerson).mockResolvedValue(mockPerson)
@@ -93,7 +93,7 @@ describe('addPersonToGroup', () => {
     expect(supabaseApi.addPerson).toHaveBeenCalledWith({
       name: 'Jane Smith',
       email: undefined,
-      avatarUrl: 'https://i.pravatar.cc/150?u=Jane%20Smith',
+      avatarUrl: '',
       source: 'manual',
     })
     
@@ -106,7 +106,7 @@ describe('addPersonToGroup', () => {
     expect(result).toEqual(mockPerson)
   })
 
-  it('should handle special characters in name for avatar URL generation', async () => {
+  it('should not generate external avatar URLs for special characters in name', async () => {
     const groupId = 'g1'
     const personData = {
       name: 'José María'
@@ -115,7 +115,7 @@ describe('addPersonToGroup', () => {
     const mockPerson = {
       id: 'p3',
       name: 'José María',
-      avatarUrl: 'https://i.pravatar.cc/150?u=Jos%C3%A9%20Mar%C3%ADa'
+      avatarUrl: ''
     }
     
     vi.mocked(supabaseApi.addPerson).mockResolvedValue(mockPerson)
@@ -126,7 +126,7 @@ describe('addPersonToGroup', () => {
     expect(supabaseApi.addPerson).toHaveBeenCalledWith({
       name: 'José María',
       email: undefined,
-      avatarUrl: 'https://i.pravatar.cc/150?u=Jos%C3%A9%20Mar%C3%ADa',
+      avatarUrl: '',
       source: 'manual',
     })
     
@@ -147,7 +147,7 @@ describe('addPersonToGroup', () => {
     expect(supabaseApi.addPerson).toHaveBeenCalledWith({
       name: 'John Doe',
       email: undefined,
-      avatarUrl: 'https://i.pravatar.cc/150?u=John%20Doe',
+      avatarUrl: '',
       source: 'manual',
     })
 
@@ -164,7 +164,7 @@ describe('addPersonToGroup', () => {
     const mockPerson = {
       id: 'p1',
       name: 'John Doe',
-      avatarUrl: 'https://i.pravatar.cc/150?u=John%20Doe'
+      avatarUrl: ''
     }
     
     const error = new Error('Failed to add person to group')
@@ -176,7 +176,7 @@ describe('addPersonToGroup', () => {
     expect(supabaseApi.addPerson).toHaveBeenCalledWith({
       name: 'John Doe',
       email: undefined,
-      avatarUrl: 'https://i.pravatar.cc/150?u=John%20Doe',
+      avatarUrl: '',
       source: 'manual',
     })
 
@@ -187,7 +187,7 @@ describe('addPersonToGroup', () => {
     })
   })
 
-  it('should handle empty name', async () => {
+  it('should handle empty name with empty avatar default', async () => {
     const groupId = 'g1'
     const personData = {
       name: ''
@@ -196,7 +196,7 @@ describe('addPersonToGroup', () => {
     const mockPerson = {
       id: 'p1',
       name: '',
-      avatarUrl: 'https://i.pravatar.cc/150?u='
+      avatarUrl: ''
     }
     
     vi.mocked(supabaseApi.addPerson).mockResolvedValue(mockPerson)
@@ -207,7 +207,7 @@ describe('addPersonToGroup', () => {
     expect(supabaseApi.addPerson).toHaveBeenCalledWith({
       name: '',
       email: undefined,
-      avatarUrl: 'https://i.pravatar.cc/150?u=',
+      avatarUrl: '',
       source: 'manual',
     })
     
