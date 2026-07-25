@@ -108,7 +108,7 @@ const AddActionModal: React.FC<AddActionModalProps> = ({
             </button>
             <button 
               onClick={handleCreateGroup}
-              className="px-4 py-2 bg-gradient-to-br from-success to-success text-foreground rounded-md hover:from-emerald-600 hover:to-teal-700"
+              className="px-4 py-2 bg-gradient-to-br from-success to-success text-success-foreground rounded-md hover:from-success/90 hover:to-success/80"
             >
               Create New Group
             </button>
@@ -171,7 +171,7 @@ const AddActionModal: React.FC<AddActionModalProps> = ({
         {/* Create Group Option */}
         <button
           onClick={handleCreateGroup}
-          className="w-full p-4 bg-gradient-to-br from-success to-success hover:from-emerald-600 hover:to-teal-700 rounded-lg transition-colors text-left"
+          className="w-full p-4 bg-gradient-to-br from-success to-success hover:from-success/90 hover:to-success/80 rounded-lg transition-colors text-left text-success-foreground"
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-foreground/20 rounded-lg flex items-center justify-center">

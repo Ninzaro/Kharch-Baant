@@ -81,7 +81,7 @@ const PaymentSourceManageModal: React.FC<PaymentSourceManageModalProps> = ({
             <button onClick={() => setQuery('')} className="text-xs text-muted-foreground hover:text-foreground">Clear</button>
           )}
         </div>
-        <ul className="divide-y divide-slate-700 rounded-md border border-border overflow-hidden mb-4">
+        <ul className="divide-y divide-border rounded-md border border-border overflow-hidden mb-4">
           {active.length === 0 && archived.length === 0 && (
             <li className="p-4 text-muted-foreground text-sm">No payment sources yet. Add one using the button below.</li>
           )}
@@ -132,7 +132,7 @@ const PaymentSourceManageModal: React.FC<PaymentSourceManageModalProps> = ({
         {archived.length > 0 && (
           <div>
             <h5 className="text-xs tracking-wide uppercase text-muted-foreground mb-2">Archived</h5>
-            <ul className="divide-y divide-slate-800 rounded-md border border-border overflow-hidden mb-4">
+            <ul className="divide-y divide-border rounded-md border border-border overflow-hidden mb-4">
               {archived.map(ps => (
                 <li key={ps.id} className="flex items-center justify-between p-2 bg-overlay/40">
                   <div className="pr-3 min-w-0">

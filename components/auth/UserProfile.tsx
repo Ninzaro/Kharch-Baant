@@ -88,7 +88,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onClose }) => {
                   type="text"
                   value={editName}
                   onChange={e => setEditName(e.target.value)}
-                  className="w-full bg-overlay/30 border border-border rounded-md px-3 py-2 text-foreground placeholder-slate-500 focus:ring-ring focus:border-ring text-sm"
+                  className="w-full bg-overlay/30 border border-border rounded-md px-3 py-2 text-foreground placeholder:text-muted-foreground focus:ring-ring focus:border-ring text-sm"
                   placeholder="Your name"
                   autoFocus
                 />
@@ -99,13 +99,13 @@ const UserProfile: React.FC<UserProfileProps> = ({ onClose }) => {
                   type="email"
                   value={editEmail}
                   onChange={e => setEditEmail(e.target.value)}
-                  className="w-full bg-overlay/30 border border-border rounded-md px-3 py-2 text-foreground placeholder-slate-500 focus:ring-ring focus:border-ring text-sm"
+                  className="w-full bg-overlay/30 border border-border rounded-md px-3 py-2 text-foreground placeholder:text-muted-foreground focus:ring-ring focus:border-ring text-sm"
                   placeholder="your@email.com"
                 />
                 <p className="mt-1 text-xs text-muted-foreground">Used to connect with others who add you by email.</p>
               </div>
               {saveError && (
-                <p className="text-sm text-destructive bg-rose-900/30 border border-rose-700/40 rounded-md px-3 py-2">
+                <p className="text-sm text-destructive bg-destructive/15 border border-destructive/40 rounded-md px-3 py-2">
                   {saveError}
                 </p>
               )}
@@ -155,7 +155,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onClose }) => {
                 <button
                   onClick={handleSignOut}
                   disabled={isSigningOut}
-                  className="w-full bg-destructive hover:bg-rose-700 disabled:opacity-50 text-destructive-foreground font-medium py-3 px-4 rounded-lg transition-colors"
+                  className="w-full bg-destructive hover:bg-destructive/90 disabled:opacity-50 text-destructive-foreground font-medium py-3 px-4 rounded-lg transition-colors"
                 >
                   {isSigningOut ? 'Signing out...' : 'Sign Out'}
                 </button>

@@ -215,7 +215,7 @@ const GroupView: React.FC<GroupViewProps> = ({
           </button>
           <button
             onClick={() => setIsBalancesModalOpen(true)}
-            className="px-4 py-2 rounded-md bg-gradient-to-br from-success to-success text-foreground hover:from-emerald-600 hover:to-teal-700 text-sm font-medium shadow"
+            className="px-4 py-2 rounded-md bg-gradient-to-br from-success to-success text-success-foreground hover:from-success/90 hover:to-success/80 text-sm font-medium shadow"
           >
             Balances
           </button>

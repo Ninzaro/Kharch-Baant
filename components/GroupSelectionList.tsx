@@ -56,7 +56,7 @@ const GroupSelectionList: React.FC<GroupSelectionListProps> = ({
             placeholder="Search groups..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-overlay/30 border border-border rounded-md px-3 py-2 text-foreground placeholder-slate-500 focus:ring-ring focus:border-ring text-sm"
+            className="w-full bg-overlay/30 border border-border rounded-md px-3 py-2 text-foreground placeholder:text-muted-foreground focus:ring-ring focus:border-ring text-sm"
           />
         </div>
       )}

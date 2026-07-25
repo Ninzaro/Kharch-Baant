@@ -197,7 +197,7 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
             type="button"
             onClick={onClose}
             disabled={submitting}
-            className="flex-1 px-4 py-3 bg-card text-muted-foreground rounded-xl hover:bg-muted transition-colors font-medium"
+            className="flex-1 px-4 py-3 bg-muted text-muted-foreground rounded-xl hover:bg-muted/80 transition-colors font-medium"
           >
             Cancel
           </button>
@@ -205,10 +205,10 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
             type="button"
             onClick={handleSubmit}
             disabled={!isValid}
-            className="flex-[2] px-4 py-3 bg-success text-success-foreground rounded-xl hover:bg-success transition-colors font-bold shadow-lg shadow-success/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="flex-[2] px-4 py-3 bg-success text-success-foreground rounded-xl hover:bg-success/90 transition-colors font-bold shadow-lg shadow-success/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {submitting ? (
-              <span className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+              <span className="w-5 h-5 border-2 border-success-foreground/30 border-t-success-foreground rounded-full animate-spin" />
             ) : isEditing ? (
               <>Save changes <ArrowRightIcon width="16" height="16" /></>
             ) : (
@@ -233,7 +233,7 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0"
               min="1"
-              className="w-full bg-transparent text-center text-5xl font-bold text-foreground placeholder-slate-700 focus:outline-none p-2 pl-8"
+              className="w-full bg-transparent text-center text-5xl font-bold text-foreground placeholder:text-muted-foreground focus:outline-none p-2 pl-8"
               aria-label="Settlement Amount"
             />
           </div>

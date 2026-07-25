@@ -131,13 +131,13 @@ const MemberInviteModal: React.FC<MemberInviteModalProps> = ({ open, groupId, ex
             value={email}
             onChange={e => handleEmailChange(e.target.value)}
             placeholder="rahul@example.com"
-            className="w-full bg-overlay/30 border border-border rounded-md px-3 py-2 text-foreground placeholder-slate-500 focus:ring-ring focus:border-ring"
+            className="w-full bg-overlay/30 border border-border rounded-md px-3 py-2 text-foreground placeholder:text-muted-foreground focus:ring-ring focus:border-ring"
           />
           {lookingUp && (
             <p className="mt-1 text-xs text-muted-foreground">Checking...</p>
           )}
           {matchedPerson?.isClaimed && (
-            <div className="mt-2 flex items-center gap-2 bg-emerald-900/30 border border-emerald-700/40 rounded-md px-3 py-2">
+            <div className="mt-2 flex items-center gap-2 bg-success/15 border border-success/40 rounded-md px-3 py-2">
               <span className="text-success text-xs font-medium">✓ Already on Kharch Baant</span>
               <span className="text-muted-foreground text-xs">{matchedPerson.name} will be added directly.</span>
             </div>
@@ -163,14 +163,14 @@ const MemberInviteModal: React.FC<MemberInviteModalProps> = ({ open, groupId, ex
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="e.g. Priya"
-              className="w-full bg-overlay/30 border border-border rounded-md px-3 py-2 text-foreground placeholder-slate-500 focus:ring-ring focus:border-ring"
+              className="w-full bg-overlay/30 border border-border rounded-md px-3 py-2 text-foreground placeholder:text-muted-foreground focus:ring-ring focus:border-ring"
               required={!matchedPerson}
             />
           </div>
         )}
 
         {error && (
-          <div className="text-sm text-destructive bg-rose-900/30 border border-rose-700/40 rounded-md px-3 py-2">
+          <div className="text-sm text-destructive bg-destructive/15 border border-destructive/40 rounded-md px-3 py-2">
             {error}
           </div>
         )}

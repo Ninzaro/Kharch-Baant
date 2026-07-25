@@ -58,3 +58,6 @@ android/.idea/
 
 .vercel
 coverage/
+
+scripts/spotcheck-output/
+

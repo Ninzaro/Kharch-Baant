@@ -158,7 +158,7 @@ const InvitePage: React.FC = () => {
   }, [usage]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/40 to-background flex items-center justify-center p-4">
       <div className="bg-foreground/10 backdrop-blur-md p-6 md:p-8 rounded-2xl shadow-xl border border-border max-w-3xl w-full">
         {status === 'loading' && (
           <div className="text-center text-muted-foreground">Validating invite...</div>
@@ -266,7 +266,7 @@ const InvitePage: React.FC = () => {
                           toast.error(e?.message || 'Failed to join');
                         }
                       }}
-                      className="w-full px-4 py-2 bg-gradient-to-br from-success to-success hover:from-emerald-600 hover:to-teal-700 text-foreground rounded-lg font-medium"
+                      className="w-full px-4 py-2 bg-gradient-to-br from-success to-success hover:from-success/90 hover:to-success/80 text-success-foreground rounded-lg font-medium"
                     >
                       {status === 'accepted' ? 'Joined' : 'Join Group'}
                     </button>

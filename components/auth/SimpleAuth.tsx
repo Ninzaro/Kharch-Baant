@@ -11,7 +11,7 @@ const SimpleAuth: React.FC<SimpleAuthProps> = ({ children }) => {
 
   if (!isSignedIn) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-background via-primary/40 to-background flex items-center justify-center p-4">
         <div className="bg-foreground/10 backdrop-blur-md rounded-2xl p-8 shadow-lg border border-border max-w-md w-full">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-foreground mb-2">💰</h1>
@@ -28,7 +28,7 @@ const SimpleAuth: React.FC<SimpleAuthProps> = ({ children }) => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-foreground/10 border border-border rounded-lg text-foreground placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-foreground/10 border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 placeholder="your@email.com"
               />
             </div>

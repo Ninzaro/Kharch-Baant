@@ -79,7 +79,7 @@ const GroupList: React.FC<GroupListProps> = ({ groups, people, selectedGroupId, 
                 </ul>
             </nav>
             <button
-                className="w-full bg-gradient-to-br from-success to-success hover:from-emerald-600 hover:to-teal-700 text-foreground font-bold py-2 px-4 rounded-lg transition-colors mt-4"
+                className="w-full bg-gradient-to-br from-success to-success hover:from-success/90 hover:to-success/80 text-success-foreground font-bold py-2 px-4 rounded-lg transition-colors mt-4"
             >
                 Add New
             </button>

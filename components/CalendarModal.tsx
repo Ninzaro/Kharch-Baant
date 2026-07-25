@@ -73,7 +73,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, onDateSe
                                     onClick={() => handleDateClick(day)}
                                     className={`w-full h-full rounded-full transition-colors text-sm
                                         ${selDate.getTime() === day.getTime() ? 'bg-primary text-primary-foreground font-bold' : ''}
-                                        ${selDate.getTime() !== day.getTime() && today.getTime() === day.getTime() ? 'border border-slate-500' : ''}
+                                        ${selDate.getTime() !== day.getTime() && today.getTime() === day.getTime() ? 'border border-border' : ''}
                                         ${selDate.getTime() !== day.getTime() ? 'hover:bg-foreground/10' : ''}
                                     `}
                                 >

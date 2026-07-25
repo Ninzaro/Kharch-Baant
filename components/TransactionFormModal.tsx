@@ -365,7 +365,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                     onChange={e => setAmount(e.target.value === '' ? '' : parseFloat(e.target.value))}
                                     onFocus={() => handleStepFocus('amount')}
                                     onKeyDown={handleAmountSubmit}
-                                    className="w-full bg-transparent text-5xl font-bold p-0 pl-10 border-none focus:ring-0 placeholder-slate-800 outline-none text-foreground transition-all"
+                                    className="w-full bg-transparent text-5xl font-bold p-0 pl-10 border-none focus:ring-0 placeholder:text-muted-foreground outline-none text-foreground transition-all"
                                     placeholder="0"
                                     autoFocus
                                 />
