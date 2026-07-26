@@ -112,14 +112,30 @@ export default defineConfig(({ mode }) => {
         }
       },
       define: {
-        // Explicitly define import.meta.env variables for Vercel compatibility (prioritize process.env)
-        'import.meta.env.VITE_CLERK_PUBLISHABLE_KEY': JSON.stringify(process.env.VITE_CLERK_PUBLISHABLE_KEY || env.VITE_CLERK_PUBLISHABLE_KEY),
-        'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(process.env.VITE_SUPABASE_URL || env.VITE_SUPABASE_URL),
-        'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(process.env.VITE_SUPABASE_ANON_KEY || env.VITE_SUPABASE_ANON_KEY),
-        'import.meta.env.VITE_API_MODE': JSON.stringify(process.env.VITE_API_MODE || env.VITE_API_MODE || 'supabase'),
+        // Prefer loadEnv(.env.local) over bare process.env so local dev always
+        // picks up file-based secrets. Never JSON.stringify(undefined) — that
+        // breaks define and can blank import.meta.env.* at runtime.
+        'import.meta.env.VITE_CLERK_PUBLISHABLE_KEY': JSON.stringify(
+          env.VITE_CLERK_PUBLISHABLE_KEY || process.env.VITE_CLERK_PUBLISHABLE_KEY || ''
+        ),
+        'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(
+          env.VITE_SUPABASE_URL || process.env.VITE_SUPABASE_URL || ''
+        ),
+        'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(
+          env.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || ''
+        ),
+        'import.meta.env.VITE_API_MODE': JSON.stringify(
+          env.VITE_API_MODE || process.env.VITE_API_MODE || 'supabase'
+        ),
+        'import.meta.env.REACT_APP_SUPABASE_URL': JSON.stringify(
+          env.REACT_APP_SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL || ''
+        ),
+        'import.meta.env.REACT_APP_SUPABASE_ANON_KEY': JSON.stringify(
+          env.REACT_APP_SUPABASE_ANON_KEY || process.env.REACT_APP_SUPABASE_ANON_KEY || ''
+        ),
         // Gemini API key shims for process.env access in geminiService.ts
-        'process.env.API_KEY': JSON.stringify(env.VITE_GEMINI_API_KEY || env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.VITE_GEMINI_API_KEY || env.GEMINI_API_KEY),
+        'process.env.API_KEY': JSON.stringify(env.VITE_GEMINI_API_KEY || env.GEMINI_API_KEY || ''),
+        'process.env.GEMINI_API_KEY': JSON.stringify(env.VITE_GEMINI_API_KEY || env.GEMINI_API_KEY || ''),
         // Polyfills for Node.js modules
         global: 'globalThis',
       }
