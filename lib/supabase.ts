@@ -1,12 +1,21 @@
 import { createClient } from '@supabase/supabase-js'
 import { Database } from './database.types'
-import { getEnvValue } from '../utils/env'
 
-const supabaseUrl = getEnvValue('VITE_SUPABASE_URL', 'REACT_APP_SUPABASE_URL')
-const supabaseAnonKey = getEnvValue('VITE_SUPABASE_ANON_KEY', 'REACT_APP_SUPABASE_ANON_KEY')
+// Literal import.meta.env.* paths — Vite only inlines these (not dynamic lookups).
+const supabaseUrl =
+  import.meta.env.VITE_SUPABASE_URL ||
+  import.meta.env.REACT_APP_SUPABASE_URL ||
+  ''
+const supabaseAnonKey =
+  import.meta.env.VITE_SUPABASE_ANON_KEY ||
+  import.meta.env.REACT_APP_SUPABASE_ANON_KEY ||
+  ''
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Supabase credentials are missing. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (or their REACT_APP_ equivalents).')
+  throw new Error(
+    'Supabase credentials are missing. Ensure .env.local has VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY, then restart `npm run dev`. ' +
+      `(url=${supabaseUrl ? 'set' : 'missing'} key=${supabaseAnonKey ? 'set' : 'missing'})`
+  )
 }
 
 // Helper to get the Clerk JWT for Supabase (used by both HTTP and Realtime)
@@ -40,13 +49,13 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
         headers.set('Authorization', `Bearer ${token}`);
       }
       // Always send the anon key as apikey header
-      headers.set('apikey', supabaseAnonKey!);
+      headers.set('apikey', supabaseAnonKey);
       return fetch(url, { ...(options as RequestInit), headers });
     },
   },
   realtime: {
     params: {
-      apikey: supabaseAnonKey!,
+      apikey: supabaseAnonKey,
     },
   },
 })

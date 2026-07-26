@@ -18,6 +18,8 @@ export default defineConfig(({ mode }) => {
           protocolImports: true,
         }),
         VitePWA({
+          // Dev: do not register SW (stale caches caused blank screens + old CDN html2canvas)
+          devOptions: { enabled: false },
           // Avoid unexpected auto-refreshes by not forcing immediate activation
           // We'll switch to a prompt-based update flow
           registerType: 'prompt',
