@@ -89,6 +89,8 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [activeStep, setActiveStep] = useState<StepId>('amount');
     const [touchedSteps, setTouchedSteps] = useState<Set<StepId>>(new Set());
+    /** True only after the user picks a category in the select (or when editing an existing expense). */
+    const [tagManuallySet, setTagManuallySet] = useState(false);
 
     // Split State
     const [splitMode, setSplitMode] = useState<SplitMode>('equal');
@@ -110,7 +112,8 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
         setAmount('');
         setPaidById(currentUserId);
         setDate(new Date().toISOString().split('T')[0]);
-        setTag(TAGS[0]);
+        setTag(TAGS[0]); // UI default only — auto-classify may override until user picks manually
+        setTagManuallySet(false);
         const defaultCash = paymentSources.find(p => p.type === 'Cash' && p.isActive !== false);
         setPaymentSourceId(defaultCash?.id);
         setComment('');
@@ -132,6 +135,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                 setPaidById(transaction.paidById);
                 setDate(transaction.date);
                 setTag(transaction.tag);
+                setTagManuallySet(true); // preserve existing category; do not auto-overwrite on edit
                 setPaymentSourceId(transaction.paymentSourceId);
                 setComment(transaction.comment || '');
                 setSplitMode(transaction.split.mode);
@@ -242,15 +246,18 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
     };
 
     const handleDescriptionBlur = async () => {
-        // Auto-suggest category from "What's this for?" when empty / Other.
-        // Works for new expenses and edits (if category not already customized).
+        // Auto-suggest category from "What's this for?".
+        // Default form tag is Food (TAGS[0]) — that is NOT a manual choice, so we still
+        // classify. Only skip when the user picked a category themselves (or we're editing).
+        // Always re-suggest for explicit "Other" so AI/keywords can upgrade it.
+        const trimmed = description.trim();
         const shouldSuggest =
-            description.trim().length > 3 &&
-            (!tag || tag === 'Other');
+            trimmed.length > 3 &&
+            (!tagManuallySet || tag === 'Other');
         if (shouldSuggest) {
             setIsSuggestingTag(true);
             try {
-                const suggestedTag = await classifyDescription(description);
+                const suggestedTag = await classifyDescription(trimmed);
                 if (suggestedTag) setTag(suggestedTag as Tag);
             } finally {
                 setIsSuggestingTag(false);
@@ -273,10 +280,25 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
 
 
     // Submit
-    const handleSubmit = (e?: React.FormEvent) => {
+    const handleSubmit = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
 
         if (!isSplitValid || !description || !(Number(amount) > 0) || !paidById || splitParticipants.length === 0) return;
+
+        // Final categorize pass if user never blurred description / left default Food
+        let finalTag = tag;
+        const trimmedDesc = description.trim();
+        if (trimmedDesc.length > 3 && (!tagManuallySet || finalTag === 'Other')) {
+            try {
+                const suggestedTag = await classifyDescription(trimmedDesc);
+                if (suggestedTag) {
+                    finalTag = suggestedTag as Tag;
+                    setTag(finalTag);
+                }
+            } catch {
+                // keep current tag
+            }
+        }
 
         const baseParticipants = splitParticipants.map(personId => ({
             personId,
@@ -316,13 +338,15 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
             if (!paidById) return;
         }
 
-        // Cute Icons
-        let finalDescription = description.trim();
+        // Cute Icons: append category emoji on create (replace any trailing emoji first)
+        let finalDescription = trimmedDesc;
         if (enableCuteIcons && !transaction) {
-            const icon = getIconForCategory(tag);
-            if (!/\p{Emoji}$/u.test(finalDescription)) {
-                finalDescription = `${finalDescription} ${icon}`;
-            }
+            const icon = getIconForCategory(finalTag);
+            // Strip trailing emoji so a stale icon cannot block the correct category icon
+            const withoutTrailingEmoji = finalDescription
+                .replace(/\s*[\p{Extended_Pictographic}\p{Emoji_Presentation}]\uFE0F?$/u, '')
+                .trim();
+            finalDescription = `${withoutTrailingEmoji} ${icon}`;
         }
 
         onSave({
@@ -331,7 +355,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
             paidById: finalPaidById,
             payers,
             date,
-            tag,
+            tag: finalTag,
             paymentSourceId,
             split: { mode: splitMode, participants },
             comment,
@@ -577,7 +601,11 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                 </div>
                                 <select
                                     value={tag}
-                                    onChange={e => { setTag(e.target.value as Tag); handleStepFocus('category'); }}
+                                    onChange={e => {
+                                        setTag(e.target.value as Tag);
+                                        setTagManuallySet(true);
+                                        handleStepFocus('category');
+                                    }}
                                     className={`w-full bg-overlay/20 text-xs rounded-xl p-2.5 border transition-all appearance-none ${activeStep === 'category' ? 'border-primary' : 'border-border'}`}
                                 >
                                     {TAGS.map(t => <option key={t} value={t} className="bg-background text-foreground">{t}</option>)}

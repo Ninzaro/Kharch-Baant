@@ -482,11 +482,34 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      find_person_by_email: {
+        Args: { p_email: string }
+        Returns: {
+          auth_user_id: string | null
+          avatar_url: string
+          clerk_user_id: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          is_claimed: boolean
+          name: string
+          source: string
+          updated_at: string | null
+          user_id: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "people"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       cleanup_expired_invites: { Args: never; Returns: number }
       debug_auth_check: { Args: never; Returns: Json }
       generate_invite_token: { Args: never; Returns: string }
       get_current_user_person_id: { Args: never; Returns: string }
       i_am_member_of: { Args: { p_group_id: string }; Returns: boolean }
+      i_can_see_person: { Args: { p_person_id: string }; Returns: boolean }
       i_created_group: { Args: { p_group_id: string }; Returns: boolean }
       requesting_user_id: { Args: never; Returns: string }
     }

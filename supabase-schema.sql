@@ -154,16 +154,18 @@ INSERT INTO transactions (id, group_id, description, amount, paid_by_id, date, t
     ('30000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000003', 'Gas for the car', 60, '00000000-0000-0000-0000-000000000002', '2024-07-15', 'Transport', 'equal', '[{"personId": "00000000-0000-0000-0000-000000000001", "value": 1}, {"personId": "00000000-0000-0000-0000-000000000002", "value": 1}, {"personId": "00000000-0000-0000-0000-000000000004", "value": 1}]'),
     ('30000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000003', 'Groceries for the trip', 120, '00000000-0000-0000-0000-000000000001', '2024-07-15', 'Groceries', 'equal', '[{"personId": "00000000-0000-0000-0000-000000000001", "value": 1}, {"personId": "00000000-0000-0000-0000-000000000002", "value": 1}, {"personId": "00000000-0000-0000-0000-000000000004", "value": 1}, {"personId": "00000000-0000-0000-0000-000000000005", "value": 1}]');
 
--- Enable Row Level Security (RLS) for future authentication
+-- Enable Row Level Security (RLS)
 ALTER TABLE people ENABLE ROW LEVEL SECURITY;
 ALTER TABLE groups ENABLE ROW LEVEL SECURITY;
 ALTER TABLE group_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payment_sources ENABLE ROW LEVEL SECURITY;
 
--- For now, allow all operations (you can restrict this later with proper auth)
-CREATE POLICY "Allow all operations" ON people FOR ALL USING (true);
-CREATE POLICY "Allow all operations" ON groups FOR ALL USING (true);
-CREATE POLICY "Allow all operations" ON group_members FOR ALL USING (true);
-CREATE POLICY "Allow all operations" ON transactions FOR ALL USING (true);
-CREATE POLICY "Allow all operations" ON payment_sources FOR ALL USING (true);
+-- ⚠ DO NOT create "Allow all operations" policies here.
+-- Open policies (USING (true) FOR ALL) leak every user's data to the anon key.
+-- Apply the Clerk-aware policies from supabase/migrations/ instead, especially:
+--   20260412000005_use_clerk_user_id_in_rls.sql
+--   20260412000006_fix_requesting_user_id.sql
+--   20260412000007_fix_group_members_visibility.sql
+--   20260728000000_phase_a_rls_people_visibility.sql
+-- Fresh installs: run those migrations after this schema file.

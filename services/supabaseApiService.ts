@@ -834,15 +834,15 @@ export const addPerson = async (personData: Omit<Person, 'id'>): Promise<Person>
 };
 
 export const findPersonByEmail = async (email: string): Promise<Person | null> => {
-  const { data, error } = await supabase
-    .from('people')
-    .select('*')
-    .eq('email', email)
-    .maybeSingle();
+  // SECURITY DEFINER RPC — exact email match only (no full-table people SELECT)
+  const { data, error } = await supabase.rpc('find_person_by_email', {
+    p_email: email.toLowerCase().trim(),
+  });
 
   if (error) throw error;
-  if (!data) return null;
-  return transformDbPersonToAppPerson(data);
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row) return null;
+  return transformDbPersonToAppPerson(row);
 };
 
 // USER MANAGEMENT

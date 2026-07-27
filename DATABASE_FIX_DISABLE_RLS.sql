@@ -1,3 +1,9 @@
+-- ╔══════════════════════════════════════════════════════════════════════════╗
+-- ║  DANGER — DO NOT RUN ON PRODUCTION / SHARED DATABASES                    ║
+-- ║  Disabling RLS exposes all rows to the anon key. Historical emergency    ║
+-- ║  only. Prefer supabase/migrations/* Clerk RLS policies.                  ║
+-- ╚══════════════════════════════════════════════════════════════════════════╝
+
 -- EMERGENCY FIX: Disable Row Level Security temporarily
 -- Run this in your Supabase SQL Editor to fix the immediate issue
 

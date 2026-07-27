@@ -1,48 +1,45 @@
-import { describe, it, expect, vi } from 'vitest';
-import { suggestTagForDescription } from '../../../services/geminiService';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Mock the Google GenAI to avoid needing actual API key for tests
-vi.mock('@google/genai', () => ({
-  GoogleGenAI: vi.fn().mockImplementation(() => ({
-    models: {
-      generateContent: vi.fn().mockResolvedValue({
-        text: () => 'Food'
-      })
-    }
-  }))
+vi.mock('../../../lib/supabase', () => ({
+  supabase: {
+    functions: {
+      invoke: vi.fn().mockResolvedValue({ data: null, error: { message: 'not deployed' } }),
+    },
+  },
 }));
 
-describe('Gemini Service', () => {
-  it('should suggest appropriate tags for descriptions', async () => {
-    const testCases = [
-      { description: 'Lunch at McDonald\'s', expectedTag: 'Food' },
-      { description: 'Uber ride to office', expectedTag: 'Transport' },
-      { description: 'Netflix subscription', expectedTag: 'Entertainment' },
-    ];
-
-    for (const testCase of testCases) {
-      const result = await suggestTagForDescription(testCase.description);
-
-      // geminiService initializes its client at module-load from env. In the
-      // test env there's no GEMINI_KEY so the service silently returns ''
-      // before ever touching the mocked GoogleGenAI. Assert the contract
-      // (a string) rather than truthiness.
-      expect(typeof result).toBe('string');
-    }
+describe('geminiService (no client API key)', () => {
+  beforeEach(() => {
+    vi.resetModules();
   });
 
-  it('should handle empty descriptions gracefully', async () => {
-    const result = await suggestTagForDescription('');
-    expect(result).toBeDefined();
+  it('suggestTagForDescription returns empty when edge function is unavailable', async () => {
+    const { suggestTagForDescription } = await import('../../../services/geminiService');
+    const result = await suggestTagForDescription('Lunch at a fancy place');
+    expect(result).toBe('');
   });
 
-  it('should return empty string when no API key is configured', async () => {
-    // This will test the actual behavior when no API key is present
-    // Reset the mock to test real behavior
-    vi.doUnmock('@google/genai');
-    
-    const result = await suggestTagForDescription('Test description');
-    // Without API key, should return empty string
-    expect(typeof result).toBe('string');
+  it('returns empty for short / empty descriptions', async () => {
+    const { suggestTagForDescription } = await import('../../../services/geminiService');
+    expect(await suggestTagForDescription('')).toBe('');
+    expect(await suggestTagForDescription('  ')).toBe('');
+  });
+
+  it('getIconForCategory maps known tags', async () => {
+    const { getIconForCategory } = await import('../../../services/geminiService');
+    expect(getIconForCategory('Travel')).toBe('✈️');
+    expect(getIconForCategory('Food')).toBe('🍔');
+  });
+
+  it('uses tag from edge function when present', async () => {
+    const { supabase } = await import('../../../lib/supabase');
+    vi.mocked(supabase.functions.invoke).mockResolvedValueOnce({
+      data: { tag: 'Travel' },
+      error: null,
+    } as any);
+
+    const { suggestTagForDescription } = await import('../../../services/geminiService');
+    const result = await suggestTagForDescription('Weekend trip booking');
+    expect(result).toBe('Travel');
   });
 });

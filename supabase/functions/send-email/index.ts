@@ -1,233 +1,232 @@
 /**
  * Supabase Edge Function: Send Email
- * 
- * This function handles email sending on the server side to avoid CORS issues.
- * It receives email data from the frontend and sends emails via MailerSend.
+ *
+ * MailerSend API key lives only in function secrets (MAILERSEND_API_KEY).
+ * Never expose that key to the browser or mobile app.
+ *
+ * Deploy:
+ *   supabase secrets set MAILERSEND_API_KEY=mlsn.... MAILERSEND_FROM_EMAIL=noreply@...
+ *   supabase functions deploy send-email
  */
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import "https://deno.land/x/xhr@0.1.0/mod.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+};
 
 interface EmailRequest {
   type: 'welcome' | 'group_invite' | 'member_added' | 'settle_up' | 'new_expense';
-  data: any;
+  data: Record<string, unknown>;
+}
+
+function escapeHtml(value: unknown): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function json(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders });
+  }
+
+  if (req.method !== 'POST') {
+    return json({ error: 'Method not allowed' }, 405);
+  }
+
+  // Require a bearer token (Clerk JWT via Supabase client). Prevents anonymous spam.
+  const auth = req.headers.get('Authorization') || '';
+  if (!auth.startsWith('Bearer ') || auth.length < 20) {
+    return json({ error: 'Unauthorized' }, 401);
   }
 
   try {
-    const { type, data }: EmailRequest = await req.json()
-    
-    // Validate MailerSend configuration
-    const mailersendApiKey = Deno.env.get('MAILERSEND_API_KEY')
-    const fromEmail = Deno.env.get('MAILERSEND_FROM_EMAIL')
-    
+    const { type, data }: EmailRequest = await req.json();
+
+    const mailersendApiKey = Deno.env.get('MAILERSEND_API_KEY');
+    const fromEmail = Deno.env.get('MAILERSEND_FROM_EMAIL');
+
     if (!mailersendApiKey || !fromEmail) {
-      return new Response(
-        JSON.stringify({ error: 'MailerSend not configured' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
+      return json({ error: 'MailerSend not configured on server' }, 503);
     }
 
-    let emailPayload: any = {}
+    if (!type || !data || typeof data !== 'object') {
+      return json({ error: 'Invalid payload' }, 400);
+    }
 
-    // Build email payload based on type
+    let emailPayload: Record<string, unknown> | null = null;
+
     switch (type) {
-      case 'welcome':
+      case 'welcome': {
+        const userName = escapeHtml(data.userName);
+        const userEmail = String(data.userEmail || '');
+        const appUrl = escapeHtml(data.appUrl || 'https://kharchbaant.com');
+        if (!userEmail) return json({ error: 'userEmail required' }, 400);
         emailPayload = {
           from: { email: fromEmail, name: 'Kharch Baant' },
-          to: [{ email: data.userEmail, name: data.userName }],
+          to: [{ email: userEmail, name: String(data.userName || '') }],
           subject: 'Welcome to Kharch Baant! 🎉',
-          html: `
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-                .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
-                .button { display: inline-block; padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 6px; margin: 20px 0; }
-                .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
-              </style>
-            </head>
-            <body>
-              <div class="container">
-                <div class="header">
-                  <h1>🎉 Welcome to Kharch Baant!</h1>
-                </div>
-                <div class="content">
-                  <p>Hi ${data.userName},</p>
-                  <p>Thanks for joining Kharch Baant! We're excited to help you track and split expenses with your friends and family.</p>
-                  
-                  <h3>What you can do:</h3>
-                  <ul>
-                    <li>✅ Create groups for trips, flat sharing, or any shared expenses</li>
-                    <li>💰 Track expenses with smart split modes (equal, unequal, percentage, shares)</li>
-                    <li>📊 See real-time balances and who owes what</li>
-                    <li>🎫 Invite members via WhatsApp, SMS, or shareable links</li>
-                    <li>🤖 Get AI-powered expense category suggestions</li>
-                  </ul>
+          html: `<p>Hi ${userName},</p><p>Thanks for joining Kharch Baant!</p><p><a href="${appUrl}">Open the app</a></p>`,
+          text: `Hi ${data.userName}, thanks for joining Kharch Baant! ${data.appUrl || ''}`,
+        };
+        break;
+      }
 
-                  <a href="${data.appUrl || 'https://kharchbaant.com'}" class="button">Start Tracking Expenses</a>
-
-                  <p>If you have any questions, feel free to reach out to us anytime.</p>
-                  <p>Happy expense tracking! 🚀</p>
-                </div>
-                <div class="footer">
-                  <p>Kharch Baant - Split expenses, not friendships</p>
-                </div>
-              </div>
-            </body>
-            </html>
-          `,
-          text: `
-            Welcome to Kharch Baant, ${data.userName}!
-
-            Thanks for joining! We're excited to help you track and split expenses.
-
-            What you can do:
-            - Create groups for trips, flat sharing, or any shared expenses
-            - Track expenses with smart split modes
-            - See real-time balances
-            - Invite members easily
-            - Get AI-powered suggestions
-
-            Start now: ${data.appUrl || 'https://kharchbaant.com'}
-
-            Kharch Baant - Split expenses, not friendships
-          `
-        }
-        break
-
-      case 'group_invite':
+      case 'group_invite': {
+        const inviteeEmail = String(data.inviteeEmail || '');
+        const inviterName = escapeHtml(data.inviterName);
+        const groupName = escapeHtml(data.groupName);
+        const inviteUrl = escapeHtml(data.inviteUrl);
+        const expiresInDays = Number(data.expiresInDays ?? 30);
+        if (!inviteeEmail || !data.inviteUrl) return json({ error: 'invite fields required' }, 400);
         emailPayload = {
           from: { email: fromEmail, name: 'Kharch Baant' },
-          to: [{ email: data.inviteeEmail }],
-          subject: `${data.inviterName} invited you to join "${data.groupName}" on Kharch Baant`,
+          to: [{ email: inviteeEmail }],
+          subject: `${String(data.inviterName)} invited you to join "${String(data.groupName)}" on Kharch Baant`,
           html: `
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-                .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
-                .invite-box { background: white; border: 2px solid #10b981; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; }
-                .button { display: inline-block; padding: 12px 30px; background: #10b981; color: white; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; }
-                .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
-              </style>
-            </head>
-            <body>
-              <div class="container">
-                <div class="header">
-                  <h1>🎉 You're Invited!</h1>
-                </div>
-                <div class="content">
-                  <p><strong>${data.inviterName}</strong> has invited you to join their expense group on Kharch Baant.</p>
-                  
-                  <div class="invite-box">
-                    <h2>"${data.groupName}"</h2>
-                    <p>Start tracking and splitting expenses together!</p>
-                  </div>
-
-                  <a href="${data.inviteUrl}" class="button">Join Group Now</a>
-
-                  <p><strong>What happens next?</strong></p>
-                  <ul>
-                    <li>Click the button above to accept the invite</li>
-                    <li>Sign in or create a free account (takes 30 seconds)</li>
-                    <li>You'll be automatically added to the group</li>
-                    <li>Start tracking expenses together!</li>
-                  </ul>
-
-                  <p style="color: #666; font-size: 14px;">⏰ This invite expires in ${data.expiresInDays} days</p>
-                </div>
-                <div class="footer">
-                  <p>Kharch Baant - Split expenses, not friendships</p>
-                  <p style="font-size: 12px; color: #999;">If you didn't expect this invitation, you can safely ignore this email.</p>
-                </div>
-              </div>
-            </body>
-            </html>
+            <p><strong>${inviterName}</strong> invited you to <strong>"${groupName}"</strong>.</p>
+            <p><a href="${inviteUrl}">Join group</a></p>
+            <p style="color:#666;font-size:14px">Invite expires in ${expiresInDays} days.</p>
           `,
-          text: `
-            You're invited to join "${data.groupName}" on Kharch Baant!
+          text: `${data.inviterName} invited you to "${data.groupName}". Join: ${data.inviteUrl}`,
+        };
+        break;
+      }
 
-            ${data.inviterName} wants you to join their expense group.
+      case 'member_added': {
+        const memberEmail = String(data.memberEmail || '');
+        if (!memberEmail) return json({ error: 'memberEmail required' }, 400);
+        emailPayload = {
+          from: { email: fromEmail, name: 'Kharch Baant' },
+          to: [{ email: memberEmail, name: String(data.memberName || '') }],
+          subject: `You've been added to "${String(data.groupName)}" on Kharch Baant`,
+          html: `
+            <p>Hi ${escapeHtml(data.memberName)},</p>
+            <p><strong>${escapeHtml(data.addedByName)}</strong> added you to
+            <strong>"${escapeHtml(data.groupName)}"</strong>.</p>
+            <p><a href="${escapeHtml(data.groupUrl)}">View group</a></p>
+          `,
+          text: `${data.addedByName} added you to "${data.groupName}". ${data.groupUrl || ''}`,
+        };
+        break;
+      }
 
-            Click here to join: ${data.inviteUrl}
+      case 'settle_up': {
+        const payerEmail = String(data.payerEmail || '');
+        const receiverEmail = String(data.receiverEmail || '');
+        const amount = Number(data.amount || 0);
+        const currency = String(data.currency || '');
+        const formatAmount = `${currency} ${amount.toFixed(2)}`;
+        if (!payerEmail || !receiverEmail) return json({ error: 'payer/receiver email required' }, 400);
 
-            This invite expires in ${data.expiresInDays} days.
+        // Send two messages sequentially (MailerSend one-to-many is awkward for different subjects)
+        const sendOne = async (to: string, toName: string, subject: string, body: string) => {
+          const res = await fetch('https://api.mailersend.com/v1/email', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${mailersendApiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              from: { email: fromEmail, name: 'Kharch Baant' },
+              to: [{ email: to, name: toName }],
+              subject,
+              html: `<p>${body}</p>`,
+              text: body,
+            }),
+          });
+          if (!res.ok) {
+            const errorText = await res.text();
+            throw new Error(errorText);
+          }
+          return res.json().catch(() => ({}));
+        };
 
-            Kharch Baant - Split expenses, not friendships
-          `
-        }
-        break
+        const payerBody = `You paid ${formatAmount} to ${data.receiverName} in "${data.groupName}" (recorded by ${data.settledByName}).`;
+        const receiverBody = `You received ${formatAmount} from ${data.payerName} in "${data.groupName}" (recorded by ${data.settledByName}).`;
+
+        const [a, b] = await Promise.all([
+          sendOne(payerEmail, String(data.payerName || ''), `Settlement: you paid ${formatAmount}`, payerBody),
+          sendOne(
+            receiverEmail,
+            String(data.receiverName || ''),
+            `Settlement: you received ${formatAmount}`,
+            receiverBody
+          ),
+        ]);
+
+        return json({
+          success: true,
+          messageId: [a?.id, b?.id].filter(Boolean).join(',') || undefined,
+        });
+      }
+
+      case 'new_expense': {
+        const emails = Array.isArray(data.memberEmails)
+          ? (data.memberEmails as string[]).filter(Boolean)
+          : [];
+        if (emails.length === 0) return json({ error: 'memberEmails required' }, 400);
+        const amount = Number(data.amount || 0);
+        const currency = String(data.currency || '');
+        const formatAmount = `${currency} ${amount.toFixed(2)}`;
+        const splitWith = Array.isArray(data.splitWithNames)
+          ? (data.splitWithNames as string[]).join(', ')
+          : '';
+        emailPayload = {
+          from: { email: fromEmail, name: 'Kharch Baant' },
+          to: emails.map((email) => ({ email })),
+          subject: `New expense in "${String(data.groupName)}": ${String(data.description)}`,
+          html: `
+            <p>New expense in <strong>${escapeHtml(data.groupName)}</strong></p>
+            <p><strong>${escapeHtml(formatAmount)}</strong> — ${escapeHtml(data.description)}</p>
+            <p>Paid by: ${escapeHtml(data.paidByName)} · Split with: ${escapeHtml(splitWith)}</p>
+            <p><a href="${escapeHtml(data.expenseUrl)}">View details</a></p>
+          `,
+          text: `New expense in ${data.groupName}: ${formatAmount} ${data.description}. Paid by ${data.paidByName}.`,
+        };
+        break;
+      }
 
       default:
-        return new Response(
-          JSON.stringify({ error: 'Unsupported email type' }),
-          { 
-            status: 400, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
-        )
+        return json({ error: 'Unsupported email type' }, 400);
     }
 
-    // Send email via MailerSend API
+    if (!emailPayload) {
+      return json({ error: 'No payload' }, 400);
+    }
+
     const response = await fetch('https://api.mailersend.com/v1/email', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${mailersendApiKey}`,
+        Authorization: `Bearer ${mailersendApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(emailPayload),
-    })
+    });
 
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error('MailerSend API error:', errorText)
-      return new Response(
-        JSON.stringify({ error: 'Failed to send email', details: errorText }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
+      const errorText = await response.text();
+      console.error('MailerSend API error:', errorText);
+      return json({ error: 'Failed to send email', details: errorText }, 502);
     }
 
-    const result = await response.json()
-    console.log('Email sent successfully:', result)
-
-    return new Response(
-      JSON.stringify({ success: true, messageId: result.id }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    )
-
+    const result = await response.json().catch(() => ({}));
+    return json({ success: true, messageId: result.id });
   } catch (error) {
-    console.error('Email function error:', error)
-    return new Response(
-      JSON.stringify({ error: 'Internal server error', details: error.message }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    )
+    console.error('Email function error:', error);
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    return json({ error: 'Internal server error', details: message }, 500);
   }
-})
+});

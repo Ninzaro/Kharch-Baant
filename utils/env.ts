@@ -21,15 +21,12 @@ const KNOWN: Record<string, () => string | undefined> = {
   VITE_SUPABASE_ANON_KEY: () => nonEmpty(import.meta.env.VITE_SUPABASE_ANON_KEY),
   VITE_CLERK_PUBLISHABLE_KEY: () => nonEmpty(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY),
   VITE_API_MODE: () => nonEmpty(import.meta.env.VITE_API_MODE),
-  VITE_GEMINI_API_KEY: () => nonEmpty(import.meta.env.VITE_GEMINI_API_KEY),
-  VITE_MAILERSEND_API_KEY: () => nonEmpty(import.meta.env.VITE_MAILERSEND_API_KEY),
-  VITE_MAILERSEND_FROM_EMAIL: () => nonEmpty(import.meta.env.VITE_MAILERSEND_FROM_EMAIL),
+  // VITE_GEMINI_* / VITE_MAILERSEND_* removed — secrets belong on Edge Functions only
   VITE_DEBUG_ENABLED: () => nonEmpty(import.meta.env.VITE_DEBUG_ENABLED),
   VITE_DEV_MODE: () => nonEmpty(import.meta.env.VITE_DEV_MODE),
   REACT_APP_SUPABASE_URL: () => nonEmpty(import.meta.env.REACT_APP_SUPABASE_URL),
   REACT_APP_SUPABASE_ANON_KEY: () => nonEmpty(import.meta.env.REACT_APP_SUPABASE_ANON_KEY),
   REACT_APP_API_MODE: () => nonEmpty(import.meta.env.REACT_APP_API_MODE),
-  GEMINI_API_KEY: () => nonEmpty(import.meta.env.GEMINI_API_KEY),
 };
 
 export const getEnvValue = (...keys: string[]): string | undefined => {

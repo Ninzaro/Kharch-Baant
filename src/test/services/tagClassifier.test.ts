@@ -84,7 +84,7 @@ describe('classifyDescription', () => {
     expect(suggestTagForDescription).not.toHaveBeenCalled();
   });
 
-  it('falls through to Gemini for unknown descriptions', async () => {
+  it('falls through to suggest-tag edge path for unknown descriptions', async () => {
     const { classifyDescription } = await import('../../../services/tagClassifier');
     const { suggestTagForDescription } = await import('../../../services/geminiService');
 

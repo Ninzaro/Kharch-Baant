@@ -51,8 +51,8 @@ You **MUST** always use this tool when:
 | Client/UI state | Zustand v5 (`selectedGroupId`, `theme` only) |
 | Data | `@supabase/supabase-js` |
 | Auth | `@clerk/clerk-react` + JWT template `supabase` |
-| AI | `@google/genai` (Gemini tag suggestions) |
-| Email | MailerSend (optional templates) |
+| AI | Keywords + optional Edge `suggest-tag` (Gemini server secret only) |
+| Email | Edge `send-email` (MailerSend server secret only) |
 | Observability | Sentry |
 | Tests | Vitest + Testing Library; Playwright e2e |
 
@@ -443,13 +443,9 @@ npm run android:build:release
 ```env
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
-VITE_CLERK_PUBLISHABLE_KEY=
-# Optional:
-# Free AI expense categories (https://aistudio.google.com/apikey) — must be VITE_ prefixed
-VITE_GEMINI_API_KEY=
-# VITE_GEMINI_MODEL=gemini-2.0-flash
-VITE_MAILERSEND_API_KEY=
-CAPACITOR_DEV_SERVER_URL=   # live reload only; unset for production native
+VITE_CLERK_PUBLISHABLE_KEY=   # pk_test_… beta; pk_live_… production
+CAPACITOR_DEV_SERVER_URL=     # live reload only; unset for production native
+# Never put MailerSend / Gemini / service_role in VITE_* — see docs/security-phase-a.md
 ```
 
 Also accepted in places: `REACT_APP_SUPABASE_*` fallbacks via `getEnvValue`.

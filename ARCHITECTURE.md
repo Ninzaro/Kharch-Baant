@@ -63,8 +63,8 @@ Adding a dependency outside this list requires updating this section *first*.
 | Client/UI state | `zustand` v5 (`persist` + `devtools`) | |
 | Backend / DB | Supabase (`@supabase/supabase-js` v2) | Postgres + RLS + Realtime |
 | Auth | Clerk (`@clerk/clerk-react`) | Supabase Auth disabled. Migration to Supabase Auth planned, not started. |
-| AI | `@google/genai` (Gemini) | Category suggestions |
-| Email | `mailersend` | Transactional templates, fire-and-forget |
+| AI | Keywords + optional Edge `suggest-tag` (Gemini server secret) | Category suggestions — no client API key |
+| Email | Edge `send-email` (MailerSend server secret) | Transactional mail — no client API key |
 | Mobile | Capacitor 7 (Android only) | |
 | Notifications | `react-hot-toast` | |
 | Icons | `lucide-react` + `components/Icons.tsx` | |
@@ -203,7 +203,7 @@ Realtime bridges handle freshness; window-focus refetch is intentionally off.
 
 | File | Role |
 |---|---|
-| `geminiService.ts` | `suggestTagForDescription(description) → Tag`. Reads `VITE_GEMINI_API_KEY` (falls back to `GEMINI_API_KEY`). No caching, no rate limiting (debt §15). |
+| `geminiService.ts` | `suggestTagForDescription` → Edge Function `suggest-tag` (or empty). `getIconForCategory` local. No client Gemini key. |
 | `emailService.ts` | MailerSend templates (welcome, group invite, member added, settle up, new expense). Fire-and-forget (debt §15). |
 
 ---
@@ -428,10 +428,8 @@ Reads come from three layers (any one may resolve a key):
 | `VITE_SUPABASE_ANON_KEY` | yes | Supabase anon key (also accepts `REACT_APP_SUPABASE_ANON_KEY`) |
 | `VITE_CLERK_PUBLISHABLE_KEY` | yes | Clerk publishable key — `index.tsx` throws if missing |
 | `VITE_API_MODE` | listed required by `envValidation.ts`; ⚠ unclear if still used | Was `'supabase' \| 'mock'`; mock allegedly removed |
-| `VITE_GEMINI_API_KEY` | optional | Enables AI tag suggestions (also `GEMINI_API_KEY`) |
-| `VITE_MAILERSEND_API_KEY` | optional | Enables transactional emails |
-| `VITE_MAILERSEND_FROM_EMAIL` | optional | Sender |
-| `VITE_MAILERSEND_TEMPLATE_*` | optional | Five template IDs |
+| ~~`VITE_GEMINI_API_KEY`~~ | **removed** | Use Edge secret `GEMINI_API_KEY` only |
+| ~~`VITE_MAILERSEND_*`~~ | **removed** | Use Edge secrets `MAILERSEND_API_KEY` / `MAILERSEND_FROM_EMAIL` |
 | `VITE_DEBUG_ENABLED`, `VITE_DEV_MODE` | optional | Surface in `envValidation.ts`; usage thin |
 | `CAPACITOR_DEV_SERVER_URL` | optional | Live-reload dev server URL (e.g. `http://192.168.1.10:3000`). Unset in production. Set in shell or `.env.local` — **never commit**. |
 
@@ -497,8 +495,9 @@ These are real and worth flagging in any PR that touches nearby code. Items grou
 9. **Sentry DSN hardcoded** in `index.tsx`. Should be `VITE_SENTRY_DSN`.
 10. ~~**Hardcoded LAN IP** (`192.168.1.10`) in `capacitor.config.ts` `server.url`~~ — **Resolved 2026-04-25.** Now driven by `CAPACITOR_DEV_SERVER_URL` env var; unset = production (native `dist/` serving).
 11. **`(window as any).Clerk` global access** in `lib/supabase.ts` `getClerkSupabaseToken`. Couples to Clerk's window injection — fragile.
-12. **MailerSend calls are fire-and-forget** with no retry/queue. A failed send is silent.
-13. **No client-side rate limiting on Gemini calls.**
+12. **MailerSend / Gemini via Edge Functions** (Phase A 2026-07-28) — client no longer holds keys. Still fire-and-forget; failed sends silent. Deploy secrets + functions before production email/AI.
+13. ~~**Client Gemini key**~~ — **Resolved Phase A.** Server `suggest-tag` + keywords fallback.
+14b. **Live RLS must be verified** in Supabase SQL editor after applying `20260728000000_phase_a_rls_people_visibility.sql` (see `docs/security-phase-a.md`).
 
 ### Cruft
 14. **`/src/` is vestigial** — only `src/test/` is used. Either flatten to `tests/` or commit to a full `/src/` move (don't leave it half-done).
