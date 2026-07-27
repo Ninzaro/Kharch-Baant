@@ -1,26 +1,50 @@
-
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI } from '@google/genai';
 import { TAGS, Tag } from '../types';
 
-// Resolve API key from Vite-exposed env (client) or Node fallback (tests / tooling)
-const viteEnv = (import.meta as any)?.env ?? {};
-const GEMINI_KEY: string | undefined =
-  viteEnv.VITE_GEMINI_API_KEY ||
-  viteEnv.GEMINI_API_KEY ||
-  (typeof process !== 'undefined' && (process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || process.env.API_KEY));
+/**
+ * AI expense category suggestion (optional).
+ *
+ * Free setup (Google AI Studio free tier):
+ *   1. Open https://aistudio.google.com/apikey
+ *   2. Create an API key
+ *   3. In .env.local set:
+ *        VITE_GEMINI_API_KEY=your_key_here
+ *        VITE_GEMINI_MODEL=gemini-2.0-flash   # optional; free default
+ *   4. Restart `npm run dev`
+ *
+ * IMPORTANT: The key MUST be prefixed with VITE_ so Vite exposes it to the browser.
+ * A bare GEMINI_API_KEY=… is only available in Node scripts, not in the React app.
+ *
+ * Security note: VITE_* keys are bundled into the client. For production, prefer a
+ * Supabase Edge Function proxy so the key never ships to the browser.
+ */
 
-// Only instantiate client if we actually have a key; otherwise we'll no-op.
+// Literal import.meta.env paths — required for Vite to inject values
+const GEMINI_KEY =
+  import.meta.env.VITE_GEMINI_API_KEY ||
+  import.meta.env.GEMINI_API_KEY || // only works if also listed in envPrefix / define
+  '';
+
+/** Free-tier friendly default; override with VITE_GEMINI_MODEL */
+const GEMINI_MODEL =
+  import.meta.env.VITE_GEMINI_MODEL || 'gemini-2.0-flash';
+
 const ai = GEMINI_KEY ? new GoogleGenAI({ apiKey: GEMINI_KEY }) : null;
+
+if (import.meta.env.DEV && !GEMINI_KEY) {
+  console.info(
+    '[AI tags] No VITE_GEMINI_API_KEY set — category suggestions use keywords only. ' +
+      'Get a free key at https://aistudio.google.com/apikey and add it to .env.local'
+  );
+}
+
+export const isAiTaggingConfigured = (): boolean => Boolean(ai && GEMINI_KEY);
 
 export const suggestTagForDescription = async (description: string): Promise<Tag | ''> => {
   if (!ai || !GEMINI_KEY) {
-    // No key configured; silently skip suggestions
     return '';
   }
 
-  // This detailed prompt provides the "exhaustive logic" requested by the user.
-  // It gives the model clear definitions and examples for each category,
-  // leading to much more accurate and consistent tag suggestions.
   const prompt = `You are an expert expense categorization assistant. Your task is to categorize a user's expense description into one of the following predefined categories. Respond with ONLY the category name.
 
 Here are the categories and what they include:
@@ -59,43 +83,42 @@ Based on these definitions, categorize the following expense description:
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODEL,
       contents: prompt,
       config: {
-        // Disable thinking for low latency and deterministic output
-        thinkingConfig: { thinkingBudget: 0 },
         temperature: 0,
-      }
+      },
     });
 
     const suggestedTag = (response as any).text?.trim?.() || '';
 
-    // Validate if the response is one of the allowed tags
     if (TAGS.includes(suggestedTag as Tag)) {
       return suggestedTag as Tag;
     }
 
-    // If the model returns something unexpected, fall back to 'Other'
-    return 'Other';
+    // Model sometimes returns extra punctuation / casing
+    const normalized = TAGS.find((t) => t.toLowerCase() === suggestedTag.toLowerCase());
+    if (normalized) return normalized;
 
+    return 'Other';
   } catch (error) {
-    console.error("Error suggesting tag from Gemini:", error);
-    return ''; // Return empty string on error to not block user
+    console.error('[AI tags] Gemini request failed:', error);
+    return '';
   }
 };
 
 export const getIconForCategory = (tag: Tag): string => {
   const icons: Record<Tag, string> = {
-    'Food': '🍔',
-    'Groceries': '🛒',
-    'Transport': '🚕',
-    'Travel': '✈️',
-    'Housing': '🏠',
-    'Utilities': '💡',
-    'Entertainment': '🎬',
-    'Shopping': '🛍️',
-    'Health': '💊',
-    'Other': '📝',
+    Food: '🍔',
+    Groceries: '🛒',
+    Transport: '🚕',
+    Travel: '✈️',
+    Housing: '🏠',
+    Utilities: '💡',
+    Entertainment: '🎬',
+    Shopping: '🛍️',
+    Health: '💊',
+    Other: '📝',
   };
   return icons[tag] || '📝';
 };

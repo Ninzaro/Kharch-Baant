@@ -6,6 +6,7 @@ interface ImportMetaEnv {
   readonly VITE_SUPABASE_ANON_KEY?: string
   readonly VITE_CLERK_PUBLISHABLE_KEY?: string
   readonly VITE_GEMINI_API_KEY?: string
+  readonly VITE_GEMINI_MODEL?: string
   readonly VITE_MAILERSEND_API_KEY?: string
   readonly VITE_MAILERSEND_FROM_EMAIL?: string
   readonly REACT_APP_SUPABASE_URL?: string

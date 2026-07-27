@@ -242,13 +242,20 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
     };
 
     const handleDescriptionBlur = async () => {
-        if (description.trim().length > 3 && !transaction && !tag) {
+        // Auto-suggest category from "What's this for?" when empty / Other.
+        // Works for new expenses and edits (if category not already customized).
+        const shouldSuggest =
+            description.trim().length > 3 &&
+            (!tag || tag === 'Other');
+        if (shouldSuggest) {
             setIsSuggestingTag(true);
-            const suggestedTag = await classifyDescription(description);
-            if (suggestedTag) setTag(suggestedTag as Tag);
-            setIsSuggestingTag(false);
+            try {
+                const suggestedTag = await classifyDescription(description);
+                if (suggestedTag) setTag(suggestedTag as Tag);
+            } finally {
+                setIsSuggestingTag(false);
+            }
         }
-        // If we just finished description, split is next logically
         if (activeStep === 'description') handleStepFocus('split');
     };
 
@@ -377,7 +384,12 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                     <div className="flex group mb-2" onClick={() => handleStepFocus('description')}>
                         <TimelineNode state={getStepState('description')} />
                         <div className="flex-1 pb-8">
-                            <label className={`block text-xs font-bold uppercase tracking-wider mb-1 transition-colors ${activeStep === 'description' ? 'text-primary' : 'text-muted-foreground'}`}>What's this for?</label>
+                            <div className="flex justify-between items-center mb-1">
+                                <label className={`block text-xs font-bold uppercase tracking-wider transition-colors ${activeStep === 'description' ? 'text-primary' : 'text-muted-foreground'}`}>What's this for?</label>
+                                {isSuggestingTag && (
+                                    <span className="text-[10px] text-primary animate-pulse font-medium">Suggesting category…</span>
+                                )}
+                            </div>
                             <input
                                 ref={descRef}
                                 type="text"
@@ -385,9 +397,12 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                 onChange={e => setDescription(e.target.value)}
                                 onFocus={() => handleStepFocus('description')}
                                 onBlur={handleDescriptionBlur}
-                                className={`w-full bg-overlay/20 text-lg rounded-xl p-3 border transition-all ${activeStep === 'description' ? 'border-primary ring-1 ring-primary/50' : 'border-border text-muted-foreground'}`}
+                                className={`w-full bg-muted/40 text-lg rounded-xl p-3 border transition-all text-foreground ${activeStep === 'description' ? 'border-primary ring-1 ring-primary/50' : 'border-border'}`}
                                 placeholder="e.g. Train Tickets, Dinner..."
                             />
+                            <p className="mt-1 text-[10px] text-muted-foreground">
+                                Category is filled automatically from keywords or free AI (Gemini) when configured.
+                            </p>
                         </div>
                     </div>
 

@@ -445,7 +445,9 @@ VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
 VITE_CLERK_PUBLISHABLE_KEY=
 # Optional:
+# Free AI expense categories (https://aistudio.google.com/apikey) — must be VITE_ prefixed
 VITE_GEMINI_API_KEY=
+# VITE_GEMINI_MODEL=gemini-2.0-flash
 VITE_MAILERSEND_API_KEY=
 CAPACITOR_DEV_SERVER_URL=   # live reload only; unset for production native
 ```

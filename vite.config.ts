@@ -135,7 +135,13 @@ export default defineConfig(({ mode }) => {
         'import.meta.env.REACT_APP_SUPABASE_ANON_KEY': JSON.stringify(
           env.REACT_APP_SUPABASE_ANON_KEY || process.env.REACT_APP_SUPABASE_ANON_KEY || ''
         ),
-        // Gemini API key shims for process.env access in geminiService.ts
+        'import.meta.env.VITE_GEMINI_API_KEY': JSON.stringify(
+          env.VITE_GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || env.GEMINI_API_KEY || process.env.GEMINI_API_KEY || ''
+        ),
+        'import.meta.env.VITE_GEMINI_MODEL': JSON.stringify(
+          env.VITE_GEMINI_MODEL || process.env.VITE_GEMINI_MODEL || 'gemini-2.0-flash'
+        ),
+        // Gemini API key shims for process.env access in tests / tooling
         'process.env.API_KEY': JSON.stringify(env.VITE_GEMINI_API_KEY || env.GEMINI_API_KEY || ''),
         'process.env.GEMINI_API_KEY': JSON.stringify(env.VITE_GEMINI_API_KEY || env.GEMINI_API_KEY || ''),
         // Polyfills for Node.js modules
