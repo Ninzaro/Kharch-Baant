@@ -94,3 +94,45 @@ Historical fix scripts may still exist under root / `migrations/`. Treat as **ar
 - OK public: React source, anon key, Clerk publishable key.
 - Not OK public / not OK in client: MailerSend, Gemini, service_role, Clerk secret.
 - Data isolation: RLS + Clerk JWT — not obscurity of the source tree.
+
+---
+
+# Phase B — Claim / invites / Edge auth (2026-08-12)
+
+## What changed in code
+
+| Area | Change |
+|---|---|
+| Claim RPC | `claim_person_by_email` binds identity to JWT `sub` via `requesting_user_id()`; client `p_clerk_id` must match or is ignored path rejects mismatch. |
+| Invite validate | Client uses `get_invite_preview(token)` (SECURITY DEFINER, exact token) — works pre-auth without open `group_invites` SELECT. |
+| Invite accept | Client uses `accept_group_invite(token)` — membership from JWT person row, not client-only inserts. |
+| Invite RLS | Members/creators only on `group_invites` / `email_invites`. |
+| Edge `send-email` | Real JWT verification (`getClaims` / `getUser` / optional HS256 secret), per-user rate limit, optional `ALLOWED_ORIGINS`, email format + recipient caps. |
+| Edge `suggest-tag` | Same JWT + rate limit + CORS helpers. |
+
+Migration: `supabase/migrations/20260812000000_phase_b_claim_invites_security.sql`
+
+## You must do manually
+
+### 1. Apply Phase B SQL on live Supabase
+
+SQL Editor → paste and run that migration file.
+
+### 2. Redeploy Edge Functions
+
+```bash
+supabase functions deploy send-email
+supabase functions deploy suggest-tag
+# production CORS:
+supabase secrets set ALLOWED_ORIGINS=https://your-production-domain.com
+# if getClaims fails for your Clerk JWT template, also set:
+# supabase secrets set SUPABASE_JWT_SECRET=<Project Settings → API → JWT Secret>
+```
+
+### 3. Smoke checks
+
+1. New user with matching unclaimed email → claims correctly.
+2. Unauthenticated open of `/invite/<token>` → preview loads.
+3. Accept invite while signed in → joins group once.
+4. Second user cannot list other groups’ invites via table API.
+5. Edge: request without `Authorization` → 401; with valid Clerk JWT → works.

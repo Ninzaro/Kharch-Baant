@@ -5,15 +5,17 @@
  *
  * Deploy:
  *   supabase secrets set GEMINI_API_KEY=AIza... GEMINI_MODEL=gemini-2.0-flash
+ *   supabase secrets set ALLOWED_ORIGINS=https://your-domain.com
  *   supabase functions deploy suggest-tag
  */
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import {
+  corsHeadersFor,
+  jsonResponse,
+  rateLimit,
+  requireAuthSub,
+} from '../_shared/auth.ts';
 
 const TAGS = [
   'Food',
@@ -28,42 +30,40 @@ const TAGS = [
   'Other',
 ] as const;
 
-function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
-}
-
 serve(async (req) => {
+  const cors = corsHeadersFor(req);
+
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: cors });
   }
 
   if (req.method !== 'POST') {
-    return json({ error: 'Method not allowed' }, 405);
+    return jsonResponse({ error: 'Method not allowed' }, 405, cors);
   }
 
-  const auth = req.headers.get('Authorization') || '';
-  if (!auth.startsWith('Bearer ') || auth.length < 20) {
-    return json({ error: 'Unauthorized' }, 401);
+  const sub = await requireAuthSub(req);
+  if (!sub) {
+    return jsonResponse({ error: 'Unauthorized' }, 401, cors);
+  }
+
+  // Gemini cost / abuse guard
+  if (!rateLimit(`tag:${sub}`, 30, 60_000)) {
+    return jsonResponse({ error: 'Rate limit exceeded' }, 429, cors);
   }
 
   const apiKey = Deno.env.get('GEMINI_API_KEY');
   if (!apiKey) {
-    // Not configured — client falls back to keywords/cache
-    return json({ tag: '', reason: 'GEMINI_API_KEY not set' }, 503);
+    return jsonResponse({ tag: '', reason: 'GEMINI_API_KEY not set' }, 503, cors);
   }
 
   try {
     const body = await req.json();
     const description = String(body?.description || '').trim();
     if (description.length <= 3) {
-      return json({ tag: '' });
+      return jsonResponse({ tag: '' }, 200, cors);
     }
-    // Hard cap to limit abuse / cost
     if (description.length > 200) {
-      return json({ error: 'description too long' }, 400);
+      return jsonResponse({ error: 'description too long' }, 400, cors);
     }
 
     const model = Deno.env.get('GEMINI_MODEL') || 'gemini-2.0-flash';
@@ -84,7 +84,7 @@ Expense: "${description.replace(/"/g, "'")}"`;
     if (!geminiRes.ok) {
       const errText = await geminiRes.text();
       console.error('Gemini error:', errText);
-      return json({ tag: '', error: 'gemini_failed' }, 502);
+      return jsonResponse({ tag: '', error: 'gemini_failed' }, 502, cors);
     }
 
     const geminiJson = await geminiRes.json();
@@ -92,14 +92,14 @@ Expense: "${description.replace(/"/g, "'")}"`;
       geminiJson?.candidates?.[0]?.content?.parts?.[0]?.text?.trim?.() || '';
 
     const exact = TAGS.find((t) => t === text);
-    if (exact) return json({ tag: exact });
+    if (exact) return jsonResponse({ tag: exact }, 200, cors);
 
     const normalized = TAGS.find((t) => t.toLowerCase() === text.toLowerCase());
-    if (normalized) return json({ tag: normalized });
+    if (normalized) return jsonResponse({ tag: normalized }, 200, cors);
 
-    return json({ tag: 'Other' });
+    return jsonResponse({ tag: 'Other' }, 200, cors);
   } catch (error) {
     console.error('suggest-tag error:', error);
-    return json({ tag: '', error: 'internal' }, 500);
+    return jsonResponse({ tag: '', error: 'internal' }, 500, cors);
   }
 });

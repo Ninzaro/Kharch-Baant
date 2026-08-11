@@ -49,51 +49,45 @@ const InvitePage: React.FC = () => {
           return;
         }
         setGroup(result.group);
-        // Optional metadata from validateInvite
-        const inviteAny: any = (result as any).invite || null;
+        // Metadata + inviter/emails come from get_invite_preview RPC (no open table SELECTs)
+        const inviteAny = result.invite || null;
         if (inviteAny) {
-          setExpiresAt(inviteAny.expiresAt || inviteAny.expires_at || null);
-          const currentUses = inviteAny.currentUses ?? inviteAny.current_uses ?? null;
-          const maxUses = inviteAny.maxUses ?? inviteAny.max_uses ?? null;
+          setExpiresAt(inviteAny.expiresAt || null);
+          const currentUses = inviteAny.currentUses ?? null;
+          const maxUses = inviteAny.maxUses ?? null;
           if (currentUses !== null || maxUses !== null) {
-            setUsage({ current: Number(currentUses || 0), max: maxUses === null || maxUses === undefined ? null : Number(maxUses) });
-          }
-          const invitedBy = inviteAny.invitedBy ?? inviteAny.invited_by ?? null;
-          if (invitedBy) {
-            const { data: inviterRow } = await supabase.from('people').select('*').eq('id', invitedBy).maybeSingle();
-            if (inviterRow) setInviter({
-              id: inviterRow.id,
-              name: (inviterRow as any).name,
-              avatarUrl: (inviterRow as any).avatar_url,
-              email: (inviterRow as any).email,
-              authUserId: (inviterRow as any).auth_user_id || (inviterRow as any).clerk_user_id || undefined,
+            setUsage({
+              current: Number(currentUses || 0),
+              max: maxUses === null || maxUses === undefined ? null : Number(maxUses),
             });
           }
-          // Load any email-specific invites tied to this group invite (for auto-join gating)
-          if (inviteAny.id) {
-            const { data: emailRows, error: emailErr } = await supabase
-              .from('email_invites')
-              .select('email')
-              .eq('group_invite_id', inviteAny.id);
-            if (!emailErr && emailRows) {
-              setEmailInvites(emailRows.map((r: any) => ({ email: (r.email || '').toLowerCase().trim() })));
-            }
-            setEmailInvitesLoaded(true);
-          } else {
-            setEmailInvitesLoaded(true);
-          }
         }
-        // Load members preview
-        const { data: membersRows } = await supabase
-          .from('group_members')
-          .select('person_id, people:person_id ( id, name, avatar_url )')
-          .eq('group_id', result.group.id);
-        const people: Person[] = (membersRows || []).map((r: any) => ({
-          id: r.people.id,
-          name: r.people.name,
-          avatarUrl: r.people.avatar_url,
-        }));
-        setMembers(people);
+        if (result.inviter) {
+          setInviter({
+            id: result.inviter.id,
+            name: result.inviter.name,
+            avatarUrl: result.inviter.avatarUrl || '',
+          });
+        }
+        setEmailInvites(result.emailInvites || []);
+        setEmailInvitesLoaded(true);
+        // Members preview (may be empty pre-auth under RLS — invite still valid)
+        try {
+          const { data: membersRows } = await supabase
+            .from('group_members')
+            .select('person_id, people:person_id ( id, name, avatar_url )')
+            .eq('group_id', result.group.id);
+          const people: Person[] = (membersRows || [])
+            .filter((r: any) => r?.people?.id)
+            .map((r: any) => ({
+              id: r.people.id,
+              name: r.people.name,
+              avatarUrl: r.people.avatar_url,
+            }));
+          setMembers(people);
+        } catch {
+          setMembers([]);
+        }
         setStatus('valid');
       } catch (e: any) {
         setStatus('error');

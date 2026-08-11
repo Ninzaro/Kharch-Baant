@@ -508,6 +508,10 @@ export type Database = {
       debug_auth_check: { Args: never; Returns: Json }
       generate_invite_token: { Args: never; Returns: string }
       get_current_user_person_id: { Args: never; Returns: string }
+      /** Exact-token invite preview (anon + authenticated). Phase B. */
+      get_invite_preview: { Args: { p_token: string }; Returns: Json }
+      /** JWT-bound invite accept. Phase B. */
+      accept_group_invite: { Args: { p_token: string }; Returns: Json }
       i_am_member_of: { Args: { p_group_id: string }; Returns: boolean }
       i_can_see_person: { Args: { p_person_id: string }; Returns: boolean }
       i_created_group: { Args: { p_group_id: string }; Returns: boolean }

@@ -6,15 +6,21 @@
  *
  * Deploy:
  *   supabase secrets set MAILERSEND_API_KEY=mlsn.... MAILERSEND_FROM_EMAIL=noreply@...
+ *   # production:
+ *   supabase secrets set ALLOWED_ORIGINS=https://your-domain.com
+ *   # optional HS256 fallback for Clerk JWT:
+ *   supabase secrets set SUPABASE_JWT_SECRET=your-jwt-secret
  *   supabase functions deploy send-email
  */
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import {
+  corsHeadersFor,
+  isValidEmail,
+  jsonResponse,
+  rateLimit,
+  requireAuthSub,
+} from '../_shared/auth.ts';
 
 interface EmailRequest {
   type: 'welcome' | 'group_invite' | 'member_added' | 'settle_up' | 'new_expense';
@@ -30,26 +36,32 @@ function escapeHtml(value: unknown): string {
     .replace(/'/g, '&#39;');
 }
 
-function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
+const MAX_RECIPIENTS = 25;
+const MAX_STRING = 500;
+
+function clip(value: unknown, max = MAX_STRING): string {
+  return String(value ?? '').slice(0, max);
 }
 
 serve(async (req) => {
+  const cors = corsHeadersFor(req);
+
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: cors });
   }
 
   if (req.method !== 'POST') {
-    return json({ error: 'Method not allowed' }, 405);
+    return jsonResponse({ error: 'Method not allowed' }, 405, cors);
   }
 
-  // Require a bearer token (Clerk JWT via Supabase client). Prevents anonymous spam.
-  const auth = req.headers.get('Authorization') || '';
-  if (!auth.startsWith('Bearer ') || auth.length < 20) {
-    return json({ error: 'Unauthorized' }, 401);
+  const sub = await requireAuthSub(req);
+  if (!sub) {
+    return jsonResponse({ error: 'Unauthorized' }, 401, cors);
+  }
+
+  // Per-user abuse cap (per isolate; still blocks naive spam loops)
+  if (!rateLimit(`email:${sub}`, 20, 60_000)) {
+    return jsonResponse({ error: 'Rate limit exceeded' }, 429, cors);
   }
 
   try {
@@ -59,79 +71,84 @@ serve(async (req) => {
     const fromEmail = Deno.env.get('MAILERSEND_FROM_EMAIL');
 
     if (!mailersendApiKey || !fromEmail) {
-      return json({ error: 'MailerSend not configured on server' }, 503);
+      return jsonResponse({ error: 'MailerSend not configured on server' }, 503, cors);
     }
 
     if (!type || !data || typeof data !== 'object') {
-      return json({ error: 'Invalid payload' }, 400);
+      return jsonResponse({ error: 'Invalid payload' }, 400, cors);
     }
 
     let emailPayload: Record<string, unknown> | null = null;
 
     switch (type) {
       case 'welcome': {
-        const userName = escapeHtml(data.userName);
-        const userEmail = String(data.userEmail || '');
-        const appUrl = escapeHtml(data.appUrl || 'https://kharchbaant.com');
-        if (!userEmail) return json({ error: 'userEmail required' }, 400);
+        const userName = escapeHtml(clip(data.userName, 120));
+        const userEmail = String(data.userEmail || '').trim();
+        const appUrl = escapeHtml(clip(data.appUrl || 'https://kharchbaant.com', 300));
+        if (!isValidEmail(userEmail)) return jsonResponse({ error: 'userEmail required' }, 400, cors);
         emailPayload = {
           from: { email: fromEmail, name: 'Kharch Baant' },
-          to: [{ email: userEmail, name: String(data.userName || '') }],
+          to: [{ email: userEmail, name: clip(data.userName, 120) }],
           subject: 'Welcome to Kharch Baant! 🎉',
           html: `<p>Hi ${userName},</p><p>Thanks for joining Kharch Baant!</p><p><a href="${appUrl}">Open the app</a></p>`,
-          text: `Hi ${data.userName}, thanks for joining Kharch Baant! ${data.appUrl || ''}`,
+          text: `Hi ${clip(data.userName)}, thanks for joining Kharch Baant! ${clip(data.appUrl || '')}`,
         };
         break;
       }
 
       case 'group_invite': {
-        const inviteeEmail = String(data.inviteeEmail || '');
-        const inviterName = escapeHtml(data.inviterName);
-        const groupName = escapeHtml(data.groupName);
-        const inviteUrl = escapeHtml(data.inviteUrl);
+        const inviteeEmail = String(data.inviteeEmail || '').trim();
+        const inviterName = escapeHtml(clip(data.inviterName, 120));
+        const groupName = escapeHtml(clip(data.groupName, 120));
+        const inviteUrl = escapeHtml(clip(data.inviteUrl, 500));
         const expiresInDays = Number(data.expiresInDays ?? 30);
-        if (!inviteeEmail || !data.inviteUrl) return json({ error: 'invite fields required' }, 400);
+        if (!isValidEmail(inviteeEmail) || !data.inviteUrl) {
+          return jsonResponse({ error: 'invite fields required' }, 400, cors);
+        }
         emailPayload = {
           from: { email: fromEmail, name: 'Kharch Baant' },
           to: [{ email: inviteeEmail }],
-          subject: `${String(data.inviterName)} invited you to join "${String(data.groupName)}" on Kharch Baant`,
+          subject: `${clip(data.inviterName, 80)} invited you to join "${clip(data.groupName, 80)}" on Kharch Baant`,
           html: `
             <p><strong>${inviterName}</strong> invited you to <strong>"${groupName}"</strong>.</p>
             <p><a href="${inviteUrl}">Join group</a></p>
             <p style="color:#666;font-size:14px">Invite expires in ${expiresInDays} days.</p>
           `,
-          text: `${data.inviterName} invited you to "${data.groupName}". Join: ${data.inviteUrl}`,
+          text: `${clip(data.inviterName)} invited you to "${clip(data.groupName)}". Join: ${clip(data.inviteUrl)}`,
         };
         break;
       }
 
       case 'member_added': {
-        const memberEmail = String(data.memberEmail || '');
-        if (!memberEmail) return json({ error: 'memberEmail required' }, 400);
+        const memberEmail = String(data.memberEmail || '').trim();
+        if (!isValidEmail(memberEmail)) {
+          return jsonResponse({ error: 'memberEmail required' }, 400, cors);
+        }
         emailPayload = {
           from: { email: fromEmail, name: 'Kharch Baant' },
-          to: [{ email: memberEmail, name: String(data.memberName || '') }],
-          subject: `You've been added to "${String(data.groupName)}" on Kharch Baant`,
+          to: [{ email: memberEmail, name: clip(data.memberName, 120) }],
+          subject: `You've been added to "${clip(data.groupName, 80)}" on Kharch Baant`,
           html: `
-            <p>Hi ${escapeHtml(data.memberName)},</p>
-            <p><strong>${escapeHtml(data.addedByName)}</strong> added you to
-            <strong>"${escapeHtml(data.groupName)}"</strong>.</p>
-            <p><a href="${escapeHtml(data.groupUrl)}">View group</a></p>
+            <p>Hi ${escapeHtml(clip(data.memberName, 120))},</p>
+            <p><strong>${escapeHtml(clip(data.addedByName, 120))}</strong> added you to
+            <strong>"${escapeHtml(clip(data.groupName, 120))}"</strong>.</p>
+            <p><a href="${escapeHtml(clip(data.groupUrl, 500))}">View group</a></p>
           `,
-          text: `${data.addedByName} added you to "${data.groupName}". ${data.groupUrl || ''}`,
+          text: `${clip(data.addedByName)} added you to "${clip(data.groupName)}". ${clip(data.groupUrl || '')}`,
         };
         break;
       }
 
       case 'settle_up': {
-        const payerEmail = String(data.payerEmail || '');
-        const receiverEmail = String(data.receiverEmail || '');
+        const payerEmail = String(data.payerEmail || '').trim();
+        const receiverEmail = String(data.receiverEmail || '').trim();
         const amount = Number(data.amount || 0);
-        const currency = String(data.currency || '');
-        const formatAmount = `${currency} ${amount.toFixed(2)}`;
-        if (!payerEmail || !receiverEmail) return json({ error: 'payer/receiver email required' }, 400);
+        const currency = clip(data.currency || '', 12);
+        const formatAmount = `${currency} ${Number.isFinite(amount) ? amount.toFixed(2) : '0.00'}`;
+        if (!isValidEmail(payerEmail) || !isValidEmail(receiverEmail)) {
+          return jsonResponse({ error: 'payer/receiver email required' }, 400, cors);
+        }
 
-        // Send two messages sequentially (MailerSend one-to-many is awkward for different subjects)
         const sendOne = async (to: string, toName: string, subject: string, body: string) => {
           const res = await fetch('https://api.mailersend.com/v1/email', {
             method: 'POST',
@@ -143,7 +160,7 @@ serve(async (req) => {
               from: { email: fromEmail, name: 'Kharch Baant' },
               to: [{ email: to, name: toName }],
               subject,
-              html: `<p>${body}</p>`,
+              html: `<p>${escapeHtml(body)}</p>`,
               text: body,
             }),
           });
@@ -154,57 +171,66 @@ serve(async (req) => {
           return res.json().catch(() => ({}));
         };
 
-        const payerBody = `You paid ${formatAmount} to ${data.receiverName} in "${data.groupName}" (recorded by ${data.settledByName}).`;
-        const receiverBody = `You received ${formatAmount} from ${data.payerName} in "${data.groupName}" (recorded by ${data.settledByName}).`;
+        const payerBody = `You paid ${formatAmount} to ${clip(data.receiverName)} in "${clip(data.groupName)}" (recorded by ${clip(data.settledByName)}).`;
+        const receiverBody = `You received ${formatAmount} from ${clip(data.payerName)} in "${clip(data.groupName)}" (recorded by ${clip(data.settledByName)}).`;
 
         const [a, b] = await Promise.all([
-          sendOne(payerEmail, String(data.payerName || ''), `Settlement: you paid ${formatAmount}`, payerBody),
+          sendOne(payerEmail, clip(data.payerName, 120), `Settlement: you paid ${formatAmount}`, payerBody),
           sendOne(
             receiverEmail,
-            String(data.receiverName || ''),
+            clip(data.receiverName, 120),
             `Settlement: you received ${formatAmount}`,
             receiverBody
           ),
         ]);
 
-        return json({
-          success: true,
-          messageId: [a?.id, b?.id].filter(Boolean).join(',') || undefined,
-        });
+        return jsonResponse(
+          {
+            success: true,
+            messageId: [a?.id, b?.id].filter(Boolean).join(',') || undefined,
+          },
+          200,
+          cors
+        );
       }
 
       case 'new_expense': {
         const emails = Array.isArray(data.memberEmails)
-          ? (data.memberEmails as string[]).filter(Boolean)
+          ? (data.memberEmails as string[])
+              .map((e) => String(e || '').trim())
+              .filter((e) => isValidEmail(e))
+              .slice(0, MAX_RECIPIENTS)
           : [];
-        if (emails.length === 0) return json({ error: 'memberEmails required' }, 400);
+        if (emails.length === 0) {
+          return jsonResponse({ error: 'memberEmails required' }, 400, cors);
+        }
         const amount = Number(data.amount || 0);
-        const currency = String(data.currency || '');
-        const formatAmount = `${currency} ${amount.toFixed(2)}`;
+        const currency = clip(data.currency || '', 12);
+        const formatAmount = `${currency} ${Number.isFinite(amount) ? amount.toFixed(2) : '0.00'}`;
         const splitWith = Array.isArray(data.splitWithNames)
-          ? (data.splitWithNames as string[]).join(', ')
+          ? (data.splitWithNames as string[]).map((n) => clip(n, 80)).join(', ')
           : '';
         emailPayload = {
           from: { email: fromEmail, name: 'Kharch Baant' },
           to: emails.map((email) => ({ email })),
-          subject: `New expense in "${String(data.groupName)}": ${String(data.description)}`,
+          subject: `New expense in "${clip(data.groupName, 80)}": ${clip(data.description, 80)}`,
           html: `
-            <p>New expense in <strong>${escapeHtml(data.groupName)}</strong></p>
-            <p><strong>${escapeHtml(formatAmount)}</strong> — ${escapeHtml(data.description)}</p>
-            <p>Paid by: ${escapeHtml(data.paidByName)} · Split with: ${escapeHtml(splitWith)}</p>
-            <p><a href="${escapeHtml(data.expenseUrl)}">View details</a></p>
+            <p>New expense in <strong>${escapeHtml(clip(data.groupName, 120))}</strong></p>
+            <p><strong>${escapeHtml(formatAmount)}</strong> — ${escapeHtml(clip(data.description, 200))}</p>
+            <p>Paid by: ${escapeHtml(clip(data.paidByName, 120))} · Split with: ${escapeHtml(splitWith)}</p>
+            <p><a href="${escapeHtml(clip(data.expenseUrl, 500))}">View details</a></p>
           `,
-          text: `New expense in ${data.groupName}: ${formatAmount} ${data.description}. Paid by ${data.paidByName}.`,
+          text: `New expense in ${clip(data.groupName)}: ${formatAmount} ${clip(data.description)}. Paid by ${clip(data.paidByName)}.`,
         };
         break;
       }
 
       default:
-        return json({ error: 'Unsupported email type' }, 400);
+        return jsonResponse({ error: 'Unsupported email type' }, 400, cors);
     }
 
     if (!emailPayload) {
-      return json({ error: 'No payload' }, 400);
+      return jsonResponse({ error: 'No payload' }, 400, cors);
     }
 
     const response = await fetch('https://api.mailersend.com/v1/email', {
@@ -219,14 +245,13 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('MailerSend API error:', errorText);
-      return json({ error: 'Failed to send email', details: errorText }, 502);
+      return jsonResponse({ error: 'Failed to send email' }, 502, cors);
     }
 
     const result = await response.json().catch(() => ({}));
-    return json({ success: true, messageId: result.id });
+    return jsonResponse({ success: true, messageId: result.id }, 200, cors);
   } catch (error) {
     console.error('Email function error:', error);
-    const message = error instanceof Error ? error.message : 'Internal server error';
-    return json({ error: 'Internal server error', details: message }, 500);
+    return jsonResponse({ error: 'Internal server error' }, 500, cors);
   }
 });

@@ -495,9 +495,9 @@ These are real and worth flagging in any PR that touches nearby code. Items grou
 9. **Sentry DSN hardcoded** in `index.tsx`. Should be `VITE_SENTRY_DSN`.
 10. ~~**Hardcoded LAN IP** (`192.168.1.10`) in `capacitor.config.ts` `server.url`~~ — **Resolved 2026-04-25.** Now driven by `CAPACITOR_DEV_SERVER_URL` env var; unset = production (native `dist/` serving).
 11. **`(window as any).Clerk` global access** in `lib/supabase.ts` `getClerkSupabaseToken`. Couples to Clerk's window injection — fragile.
-12. **MailerSend / Gemini via Edge Functions** (Phase A 2026-07-28) — client no longer holds keys. Still fire-and-forget; failed sends silent. Deploy secrets + functions before production email/AI.
+12. **MailerSend / Gemini via Edge Functions** (Phase A 2026-07-28) — client no longer holds keys. Phase B adds JWT verify + rate limits + optional `ALLOWED_ORIGINS`. Still fire-and-forget on client; deploy secrets + functions before production email/AI.
 13. ~~**Client Gemini key**~~ — **Resolved Phase A.** Server `suggest-tag` + keywords fallback.
-14b. **Live RLS must be verified** in Supabase SQL editor after applying `20260728000000_phase_a_rls_people_visibility.sql` (see `docs/security-phase-a.md`).
+14b. **Live RLS must be verified** in Supabase SQL editor after applying Phase A + Phase B migrations (`20260728000000_…`, `20260812000000_phase_b_claim_invites_security.sql`) — see `docs/security-phase-a.md`.
 
 ### Cruft
 14. **`/src/` is vestigial** — only `src/test/` is used. Either flatten to `tests/` or commit to a full `/src/` move (don't leave it half-done).

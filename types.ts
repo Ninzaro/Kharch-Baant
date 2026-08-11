@@ -348,6 +348,10 @@ export interface ValidateInviteResponse {
     isValid: boolean;
     invite?: GroupInvite;
     group?: Group;
+    /** Public preview only (no email) — from get_invite_preview RPC */
+    inviter?: Pick<Person, 'id' | 'name' | 'avatarUrl'>;
+    /** Targeted invite emails for auto-join gating */
+    emailInvites?: { email: string }[];
     error?: string;
 }
 

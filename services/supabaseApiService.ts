@@ -1066,179 +1066,121 @@ export const createGroupInvite = async (request: CreateInviteRequest & { invited
 };
 
 /**
- * Validate an invite token
+ * Validate an invite token via SECURITY DEFINER RPC (exact token match).
+ * Works for anon (pre-auth invite landing) without open SELECT on group_invites.
  */
 export const validateInvite = async (inviteToken: string): Promise<ValidateInviteResponse> => {
-  // Get invite with group info
-  const { data: inviteData, error } = await supabase
-    .from('group_invites')
-    .select(`
-      *,
-      groups (
-        id,
-        name,
-        currency,
-        group_type,
-        trip_start_date,
-        trip_end_date,
-        created_by,
-        is_archived
-      )
-    `)
-    .eq('invite_token', inviteToken)
-    .eq('is_active', true)
-    .single();
+  const { data, error } = await supabase.rpc('get_invite_preview', {
+    p_token: inviteToken,
+  });
 
-  if (error || !inviteData) {
+  if (error) {
+    console.warn('get_invite_preview failed:', error.message);
+    return { isValid: false, error: 'Invite not found or expired' };
+  }
+
+  const payload = (typeof data === 'string' ? JSON.parse(data) : data) as {
+    is_valid?: boolean;
+    error?: string;
+    invite?: Record<string, unknown>;
+    group?: Record<string, unknown>;
+    inviter?: { id?: string; name?: string; avatar_url?: string } | null;
+    email_invites?: { email?: string }[];
+  } | null;
+
+  if (!payload?.is_valid || !payload.invite || !payload.group) {
     return {
       isValid: false,
-      error: 'Invite not found or expired',
+      error: payload?.error || 'Invite not found or expired',
     };
   }
 
-  // Check if expired
-  const now = new Date();
-  const expiresAt = new Date(inviteData.expires_at);
-  if (now > expiresAt) {
-    // Deactivate expired invite
-    await supabase
-      .from('group_invites')
-      .update({ is_active: false })
-      .eq('id', inviteData.id);
-
-    return {
-      isValid: false,
-      error: 'Invite has expired',
-    };
-  }
-
-  // Check usage limits
-  if (inviteData.max_uses !== null && inviteData.current_uses >= inviteData.max_uses) {
-    return {
-      isValid: false,
-      error: 'Invite has reached maximum usage limit',
-    };
-  }
-
-  const invite = transformDbInviteToAppInvite(inviteData);
-
-  // Transform the joined group data to the expected format
-  const groupData = inviteData.groups;
+  const invite = transformDbInviteToAppInvite(payload.invite);
+  const g = payload.group;
   const group: Group = {
-    id: groupData.id,
-    name: groupData.name,
-    currency: groupData.currency,
-    groupType: groupData.group_type as GroupType,
-    tripStartDate: groupData.trip_start_date || undefined,
-    tripEndDate: groupData.trip_end_date || undefined,
-    createdBy: groupData.created_by || undefined,
-    isArchived: groupData.is_archived || false,
-    members: [] // Will be populated by transformDbGroupToAppGroup if needed
+    id: String(g.id),
+    name: String(g.name ?? ''),
+    currency: (g.currency as Group['currency']) ?? undefined,
+    groupType: (g.group_type as GroupType) || undefined,
+    tripStartDate: (g.trip_start_date as string) || undefined,
+    tripEndDate: (g.trip_end_date as string) || undefined,
+    createdBy: (g.created_by as string) || undefined,
+    isArchived: Boolean(g.is_archived),
+    members: [],
   };
+
+  const inviter = payload.inviter?.id
+    ? {
+        id: String(payload.inviter.id),
+        name: String(payload.inviter.name || ''),
+        avatarUrl: String(payload.inviter.avatar_url || ''),
+      }
+    : undefined;
+
+  const emailInvites = Array.isArray(payload.email_invites)
+    ? payload.email_invites
+        .map((e) => ({ email: String(e?.email || '').toLowerCase().trim() }))
+        .filter((e) => e.email)
+    : [];
 
   return {
     isValid: true,
     invite,
     group,
+    inviter,
+    emailInvites,
   };
 };
 
 /**
- * Accept an invite and join the group
+ * Accept an invite via SECURITY DEFINER RPC.
+ * Membership is bound to the JWT subject (not client-supplied personId alone).
  */
 export const acceptInvite = async (request: AcceptInviteRequest): Promise<AcceptInviteResponse> => {
-  const { inviteToken, personId } = request;
+  const { inviteToken } = request;
 
-  // First validate the invite
-  const validation = await validateInvite(inviteToken);
-  if (!validation.isValid || !validation.invite || !validation.group) {
+  const { data, error } = await supabase.rpc('accept_group_invite', {
+    p_token: inviteToken,
+  });
+
+  if (error) {
+    console.warn('accept_group_invite failed:', error.message);
+    return { success: false, error: error.message || 'Failed to join group' };
+  }
+
+  const payload = (typeof data === 'string' ? JSON.parse(data) : data) as {
+    success?: boolean;
+    error?: string;
+    group_id?: string;
+    group_name?: string;
+    already_member?: boolean;
+  } | null;
+
+  if (!payload?.success) {
     return {
       success: false,
-      error: validation.error || 'Invalid invite',
+      error: payload?.error || 'Failed to join group',
     };
   }
 
-  // Check if user is already a member
-  const { data: existingMember } = await supabase
-    .from('group_members')
-    .select('id')
-    .eq('group_id', validation.group.id)
-    .eq('person_id', personId)
-    .single();
-
-  if (existingMember) {
-    return {
-      success: false,
-      error: 'You are already a member of this group',
-    };
-  }
-
-  // Add user to group
-  const { error: memberError } = await supabase
-    .from('group_members')
-    .insert({
-      group_id: validation.group.id,
-      person_id: personId,
-    });
-
-  if (memberError) {
-    return {
-      success: false,
-      error: 'Failed to join group',
-    };
-  }
-
-  // Update invite usage count
-  const { error: updateError } = await supabase
-    .from('group_invites')
-    .update({
-      current_uses: validation.invite.currentUses + 1,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', validation.invite.id);
-
-  if (updateError) {
-    console.error('Failed to update invite usage count:', updateError);
-  }
-
-  // Update email invite status if this person accepted via email
-  await supabase
-    .from('email_invites')
-    .update({
-      status: 'accepted',
-      accepted_at: new Date().toISOString(),
-      accepted_by: personId,
-    })
-    .eq('group_invite_id', validation.invite.id)
-    .eq('status', 'pending');
-
-  // Send email notification to new member (async, don't wait)
-  if (emailService.isEmailServiceEnabled()) {
-    // Get new member info
-    const { data: newMemberData } = await supabase
-      .from('people')
-      .select('name, email, clerk_user_id')
-      .eq('id', personId)
-      .single();
-
-    // Get inviter info
-    const { data: inviterData } = await supabase
-      .from('people')
-      .select('name')
-      .eq('id', validation.invite.invitedBy)
-      .single();
-
-    if (newMemberData && inviterData) {
-      const groupUrl = `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}`;
-      // Can send welcome email using emailService
-      // emailService.sendWelcomeToGroupEmail({...})
+  // After accept, multi-use invites may still preview; maxed invites may not.
+  // Always prefer RPC group_id so success is not lost when the link deactivates.
+  if (payload.group_id) {
+    const preview = await validateInvite(inviteToken);
+    if (preview.isValid && preview.group) {
+      return { success: true, group: preview.group };
     }
+    return {
+      success: true,
+      group: {
+        id: payload.group_id,
+        name: payload.group_name || '',
+        members: [],
+      } as Group,
+    };
   }
 
-  return {
-    success: true,
-    group: validation.group,
-  };
+  return { success: true };
 };
 
 /**
