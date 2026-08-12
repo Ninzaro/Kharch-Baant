@@ -121,30 +121,38 @@ Output: `android/app/build/outputs/apk/debug/app-debug.apk`
 
 ### Release Build (AAB - for Play Store)
 
-1. **Create a Keystore** (first time only):
+**Never put keystore passwords in `capacitor.config.ts` or git.**
+
+1. **Create a Keystore** (first time only). Back up the `.keystore` file **offline** — losing it means you cannot update the Play listing.
+
+   Easiest (prompts for a password, writes the config for you):
+
    ```bash
-   keytool -genkey -v -keystore kharch-baant-release.keystore -alias kharch-baant -keyalg RSA -keysize 2048 -validity 10000
+   npm run android:keystore
    ```
 
-2. **Update `capacitor.config.ts`:**
-   ```typescript
-   android: {
-     buildOptions: {
-       keystorePath: 'path/to/kharch-baant-release.keystore',
-       keystorePassword: 'your-keystore-password',
-       keystoreAlias: 'kharch-baant',
-       keystoreAliasPassword: 'your-alias-password',
-       releaseType: 'AAB'
-     }
-   }
+   Manual alternative:
+
+   ```bash
+   keytool -genkeypair -v -keystore android/kharch-baant-release.keystore -alias kharch-baant -keyalg RSA -keysize 2048 -validity 10000
+   copy android\keystore.properties.example android\keystore.properties
    ```
 
-3. **Build Release:**
+   Then edit `android/keystore.properties` with `storeFile`, passwords, and `keyAlias`.
+
+3. **Unset live-reload** (`CAPACITOR_DEV_SERVER_URL` must be empty).
+
+4. **Build Release:**
+
    ```bash
    npm run android:build:release
    ```
 
+   This builds web assets, syncs Capacitor, **fails if a LAN `server.url` is still in the Android config**, then runs `bundleRelease`.
+
    Output: `android/app/build/outputs/bundle/release/app-release.aab`
+
+See `docs/play-store-launch.md` for Play Console, Clerk production keys, privacy URL, and Data safety.
 
 ## Available Scripts
 

@@ -18,37 +18,46 @@ if (!supabaseUrl || !supabaseAnonKey) {
   )
 }
 
-// Helper to get the Clerk JWT for Supabase (used by both HTTP and Realtime)
+/**
+ * Clerk session JWT for Supabase (HTTP + Realtime).
+ *
+ * After migrating off Supabase *legacy* HS256 secrets, PostgREST verifies
+ * tokens via JWKS. The old `getToken({ template: 'supabase' })` HS256 token
+ * then fails with "No suitable key or wrong key type".
+ *
+ * Native path: Clerk session token + Clerk added as a Third-party Auth
+ * provider in the Supabase dashboard. `sub` remains the Clerk user id
+ * (`requesting_user_id()`).
+ */
 export const getClerkSupabaseToken = async (): Promise<string> => {
   const clerk = (window as any).Clerk;
-  if (clerk?.session) {
-    try {
-      const token = await clerk.session.getToken({ template: 'supabase' });
-      return token || '';
-    } catch (e) {
-      console.warn('Failed to get Clerk Supabase token:', e);
-    }
+  if (!clerk?.session) return '';
+  try {
+    const sessionToken = await clerk.session.getToken();
+    if (sessionToken) return sessionToken;
+  } catch (e) {
+    console.warn('Failed to get Clerk session token:', e);
   }
   return '';
 };
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
-    // We manage auth via Clerk, not Supabase Auth
     persistSession: false,
     autoRefreshToken: false,
     detectSessionInUrl: false,
   },
+  accessToken: async () => {
+    const token = await getClerkSupabaseToken();
+    return token || null;
+  },
   global: {
-    // Intercept every fetch (including realtime WebSocket upgrade headers)
-    // to inject the Clerk JWT as Authorization header
     fetch: async (url, options = {}) => {
       const token = await getClerkSupabaseToken();
       const headers = new Headers((options as RequestInit).headers);
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
       }
-      // Always send the anon key as apikey header
       headers.set('apikey', supabaseAnonKey);
       return fetch(url, { ...(options as RequestInit), headers });
     },

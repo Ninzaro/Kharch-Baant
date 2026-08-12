@@ -919,14 +919,18 @@ const AppWithAuth: React.FC = () => {
     const [inviteInfo, setInviteInfo] = useState<{ token: string; groupName?: string } | null>(null);
 
     useEffect(() => {
-        const urlPath = window.location.pathname;
-        const inviteMatch = urlPath.match(/^\/invite\/(.+)$/);
-        if (inviteMatch) {
-            const token = inviteMatch[1];
-            localStorage.setItem('pendingInviteToken', token);
-            // Defer to dedicated InvitePage for UI/acceptance flow
-            setInviteInfo({ token });
-        }
+        const syncInviteFromLocation = () => {
+            const urlPath = window.location.pathname;
+            const inviteMatch = urlPath.match(/^\/invite\/(.+)$/);
+            if (inviteMatch) {
+                const token = inviteMatch[1];
+                localStorage.setItem('pendingInviteToken', token);
+                setInviteInfo({ token });
+            }
+        };
+        syncInviteFromLocation();
+        window.addEventListener('popstate', syncInviteFromLocation);
+        return () => window.removeEventListener('popstate', syncInviteFromLocation);
     }, []);
 
     if (loading) {

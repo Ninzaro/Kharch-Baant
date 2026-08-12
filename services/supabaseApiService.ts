@@ -1285,3 +1285,19 @@ export const mergePersonByEmail = async (email: string, clerkUserId: string): Pr
   return transformDbPersonToAppPerson(data);
 };
 
+/** Strip identity from the signed-in people row. Clerk user delete is separate. */
+export const anonymizeMyAccount = async (): Promise<{ success: boolean; error?: string }> => {
+  const { data, error } = await supabase.rpc('anonymize_my_account');
+  if (error) {
+    return { success: false, error: error.message };
+  }
+  const payload = (typeof data === 'string' ? JSON.parse(data) : data) as {
+    success?: boolean;
+    error?: string;
+  } | null;
+  if (!payload?.success) {
+    return { success: false, error: payload?.error || 'Failed to delete account data' };
+  }
+  return { success: true };
+};
+

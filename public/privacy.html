@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Privacy Policy — Kharch Baant</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, sans-serif; line-height: 1.55; max-width: 42rem; margin: 2rem auto; padding: 0 1.25rem; }
+    h1, h2 { line-height: 1.25; }
+    a { color: inherit; }
+  </style>
+</head>
+<body>
+  <h1>Privacy Policy</h1>
+  <p><strong>Kharch Baant</strong> (“the app”) is a shared-expense tracker. This policy describes what we collect and why. Last updated: 13 August 2026.</p>
+
+  <h2>Who we are</h2>
+  <p>The app is operated by the Kharch Baant project. Contact: the email listed on the Google Play Store listing for this app.</p>
+
+  <h2>Data we collect</h2>
+  <ul>
+    <li><strong>Account:</strong> name, email, and authentication identifiers from Clerk (our sign-in provider).</li>
+    <li><strong>Profile:</strong> optional photo you upload (stored as part of your profile).</li>
+    <li><strong>Expense data:</strong> groups, members, amounts, split details, payment-source labels, notes, and related emails you enter for invites.</li>
+    <li><strong>Diagnostics:</strong> crash and performance events via Sentry in production builds (may include device/app metadata; session replay may capture on-screen content if enabled).</li>
+  </ul>
+
+  <h2>How we use it</h2>
+  <p>We use this data only to run the app: sign you in, store splits and balances, send invite or notification emails you trigger, suggest expense categories, and fix crashes.</p>
+
+  <h2>Processors</h2>
+  <ul>
+    <li><strong>Clerk</strong> — authentication.</li>
+    <li><strong>Supabase</strong> — database, file-less row storage, and Edge Functions.</li>
+    <li><strong>MailerSend</strong> — transactional email when configured (invites and notifications you request).</li>
+    <li><strong>Google Gemini</strong> — optional category suggestion from expense descriptions (via our server; not required to use the app).</li>
+    <li><strong>Sentry</strong> — error monitoring in production.</li>
+    <li><strong>Google Play / Vercel</strong> — app distribution and web hosting.</li>
+  </ul>
+
+  <h2>Legal basis / sharing</h2>
+  <p>We do not sell your personal data. We share it with the processors above to provide the service, or if required by law. Group members you add can see names, amounts, and related activity in shared groups.</p>
+
+  <h2>Retention</h2>
+  <p>We keep account and expense records until you delete your account or we close the service. Historical expenses in a group may remain after you leave so other members’ balances stay consistent; your display name is then shown as “Deleted user”.</p>
+
+  <h2>Your rights</h2>
+  <ul>
+    <li>Access and export: Settings → Data Management (where available), or email us.</li>
+    <li>Correction: Settings → Profile.</li>
+    <li>Deletion: Settings → Delete Account, or follow <a href="/account-deletion.html">account deletion</a>.</li>
+  </ul>
+
+  <h2>Children</h2>
+  <p>The app is not directed at children under 13. Do not create an account for a child under 13.</p>
+
+  <h2>Security</h2>
+  <p>Access to your data is protected by sign-in and database row-level security. No method of transmission is 100% secure.</p>
+
+  <h2>Changes</h2>
+  <p>We may update this policy. The “Last updated” date will change when we do. Continued use after an update means you accept the revised policy.</p>
+</body>
+</html>

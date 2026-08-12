@@ -36,6 +36,8 @@ export { findPersonByEmail, updatePerson, mergePersonByEmail } from './supabaseA
 
 // USER MANAGEMENT
 export const ensureUserExists = async (userId: string, userName: string, userEmail: string): Promise<Person> => supabaseApi.ensureUserExists(userId, userName, userEmail);
+export const anonymizeMyAccount = (): Promise<{ success: boolean; error?: string }> =>
+  supabaseApi.anonymizeMyAccount();
 
 // MEMBERSHIP HELPERS
 export const addPersonToGroup = async (

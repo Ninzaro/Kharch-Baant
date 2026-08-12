@@ -44,6 +44,25 @@ const initCapacitor = async () => {
         console.log('App state changed. Is active?', isActive);
       });
       
+      const openInviteFromUrl = (rawUrl: string) => {
+        const match = rawUrl.match(/invite\/([^/?#]+)/i);
+        if (!match) return;
+        const token = decodeURIComponent(match[1]);
+        const next = `/invite/${token}`;
+        if (window.location.pathname !== next) {
+          window.history.replaceState({}, '', next);
+          window.dispatchEvent(new PopStateEvent('popstate'));
+        }
+      };
+
+      CapacitorApp.addListener('appUrlOpen', ({ url }) => {
+        openInviteFromUrl(url);
+      });
+      const launchUrl = await CapacitorApp.getLaunchUrl();
+      if (launchUrl?.url) {
+        openInviteFromUrl(launchUrl.url);
+      }
+
       // Handle back button (Android)
       CapacitorApp.addListener('backButton', ({ canGoBack }) => {
         if (!canGoBack) {

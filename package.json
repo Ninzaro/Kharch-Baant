@@ -1,7 +1,7 @@
 {
   "name": "kharch-baant-shared-expense-tracker",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -17,7 +17,9 @@
     "android:open": "npx cap open android",
     "android:run": "powershell -Command \"$env:JAVA_HOME='E:\\Program Files\\Java\\jdk-21'; npm run android:sync; if ($?) { npx cap run android }\"",
     "android:build": "powershell -Command \"$env:JAVA_HOME='E:\\Program Files\\Java\\jdk-21'; npm run build; npx cap sync android; cd android; .\\gradlew.bat assembleDebug\"",
-    "android:build:release": "powershell -Command \"$env:JAVA_HOME='E:\\Program Files\\Java\\jdk-21'; npm run build; npx cap sync android; cd android; .\\gradlew.bat bundleRelease\""
+    "android:keystore": "powershell -ExecutionPolicy Bypass -File scripts/create-release-keystore.ps1",
+    "android:assert-release": "node scripts/assert-android-release.mjs",
+    "android:build:release": "powershell -ExecutionPolicy Bypass -File scripts/android-release.ps1"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.4",
@@ -27,7 +29,7 @@
     "@capacitor/keyboard": "^7.0.3",
     "@capacitor/splash-screen": "^7.0.3",
     "@capacitor/status-bar": "^7.0.3",
-    "@clerk/clerk-react": "^5.61.4",
+    "@clerk/clerk-react": "^5.61.9",
     "@sentry/react": "^10.48.0",
     "@supabase/supabase-js": "^2.58.0",
     "@tanstack/react-query": "^5.90.6",

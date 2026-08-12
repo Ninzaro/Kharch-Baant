@@ -512,6 +512,8 @@ export type Database = {
       get_invite_preview: { Args: { p_token: string }; Returns: Json }
       /** JWT-bound invite accept. Phase B. */
       accept_group_invite: { Args: { p_token: string }; Returns: Json }
+      /** Strip identity from the caller's people row. Play / GDPR. */
+      anonymize_my_account: { Args: Record<string, never>; Returns: Json }
       i_am_member_of: { Args: { p_group_id: string }; Returns: boolean }
       i_can_see_person: { Args: { p_person_id: string }; Returns: boolean }
       i_created_group: { Args: { p_group_id: string }; Returns: boolean }

@@ -16,6 +16,7 @@ import { Person, Theme } from '../types';
 import toast from 'react-hot-toast';
 import { updateUserAvatar, updatePerson } from '../services/supabaseApiService';
 import { useAuth } from '../contexts/SupabaseAuthContext';
+import { useUser } from '@clerk/clerk-react';
 import { qk } from '../services/queries';
 
 interface SettingsModalProps {
@@ -38,7 +39,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   theme,
   onThemeChange
 }) => {
-  const { updateLocalPerson } = useAuth();
+  const { updateLocalPerson, signOut } = useAuth();
+  const { user: clerkUser } = useUser();
   const queryClient = useQueryClient();
   const [showArchivedGroups, setShowArchivedGroups] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
@@ -121,11 +123,67 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     fileInputRef.current?.click();
   };
 
-  // Placeholder handlers
-  const handleExport = () => toast.success('Exporting data...');
+  const handleExport = async () => {
+    if (!currentUserPerson) {
+      toast.error('Sign in to export your data.');
+      return;
+    }
+    try {
+      const [groups, transactions] = await Promise.all([
+        api.getGroups(currentUserPerson.id),
+        api.getTransactions(currentUserPerson.id),
+      ]);
+      const payload = {
+        exportedAt: new Date().toISOString(),
+        app: 'Kharch Baant',
+        person: {
+          id: currentUserPerson.id,
+          name: currentUserPerson.name,
+          email: currentUserPerson.email,
+        },
+        groups,
+        transactions,
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const day = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `kharch-baant-export-${day}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('Download started — keep this file private.');
+    } catch (err) {
+      console.error(err);
+      toast.error('Export failed. Try again.');
+    }
+  };
   const handleImport = (file: File) => toast.success(`Importing from ${file.name}`);
   const handleReset = () => setIsResetModalOpen(true);
   const handleDeleteAccount = () => setIsDeleteAccountModalOpen(true);
+
+  const confirmDeleteAccount = async () => {
+    try {
+      const result = await api.anonymizeMyAccount();
+      if (!result.success) {
+        toast.error(result.error || 'Could not delete account data.');
+        return;
+      }
+      try {
+        if (clerkUser && typeof clerkUser.delete === 'function') {
+          await clerkUser.delete();
+        }
+      } catch (clerkErr) {
+        console.warn('Clerk user.delete failed (enable in Clerk Dashboard):', clerkErr);
+      }
+      toast.success('Your account data has been deleted.');
+      setIsDeleteAccountModalOpen(false);
+      await signOut();
+    } catch (err) {
+      console.error(err);
+      toast.error('Account deletion failed. Please try again.');
+    }
+  };
 
   return (
     <>
@@ -275,8 +333,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         entityType="transaction"
         entityName="Your Account"
         onConfirm={() => {
-          toast.success('Account deleted!');
-          setIsDeleteAccountModalOpen(false);
+          void confirmDeleteAccount();
         }}
         onCancel={() => setIsDeleteAccountModalOpen(false)}
         impactDescription="This will permanently delete your profile and remove you from all groups. This action cannot be undone."

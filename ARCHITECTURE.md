@@ -324,8 +324,8 @@ Owns all server state. Components and hooks read via the hooks in `services/quer
 
 ### How the Clerk JWT reaches Supabase
 
-1. Clerk user signs in → Clerk session has a JWT template named `supabase`.
-2. `lib/supabase.ts` exports `getClerkSupabaseToken()`, which calls `(window as any).Clerk.session.getToken({ template: 'supabase' })`.
+1. Clerk user signs in → the **session token** is sent to Supabase (native third-party auth). The deprecated HS256 `template: 'supabase'` is not used after migrating off legacy JWT secrets.
+2. `lib/supabase.ts` exports `getClerkSupabaseToken()`, which calls `(window as any).Clerk.session.getToken()` (no template).
 3. The Supabase client is constructed with a `global.fetch` override that calls `getClerkSupabaseToken()` per-request and sets:
    - `Authorization: Bearer <jwt>`
    - `apikey: <anon key>`
@@ -493,6 +493,8 @@ These are real and worth flagging in any PR that touches nearby code. Items grou
 
 ### Security / config
 9. **Sentry DSN hardcoded** in `index.tsx`. Should be `VITE_SENTRY_DSN`.
+9b. **Vercel security headers** (HSTS, nosniff, frame deny, referrer, permissions-policy, COOP) live in `vercel.json`. A restrictive Content-Security-Policy is **not** set: Clerk Frontend API host changes between `pk_test` / `pk_live`, and OAuth/Turnstile/CDN hosts were not fully verified against a production instance. Add CSP only after listing those origins.
+9c. **Play Store / public launch** — see `docs/play-store-launch.md`. Account deletion is `anonymize_my_account` + Clerk `user.delete()`. Android release must not ship Capacitor `server.url` (live-reload).
 10. ~~**Hardcoded LAN IP** (`192.168.1.10`) in `capacitor.config.ts` `server.url`~~ — **Resolved 2026-04-25.** Now driven by `CAPACITOR_DEV_SERVER_URL` env var; unset = production (native `dist/` serving).
 11. **`(window as any).Clerk` global access** in `lib/supabase.ts` `getClerkSupabaseToken`. Couples to Clerk's window injection — fragile.
 12. **MailerSend / Gemini via Edge Functions** (Phase A 2026-07-28) — client no longer holds keys. Phase B adds JWT verify + rate limits + optional `ALLOWED_ORIGINS`. Still fire-and-forget on client; deploy secrets + functions before production email/AI.

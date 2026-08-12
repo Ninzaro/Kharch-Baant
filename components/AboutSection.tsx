@@ -6,8 +6,11 @@ const AboutSection: React.FC = () => (
     <div className="text-muted-foreground text-xs">
       <div>Kharch Baant Shared Expense Tracker</div>
       <div>Version: 1.0.0</div>
-      <div>© 2025 Kodanda10</div>
-      <a href="https://github.com/Kodanda10/Kharch-Baant" target="_blank" rel="noopener noreferrer" className="text-primary underline">GitHub Repo</a>
+      <div>© {new Date().getFullYear()} Kharch Baant</div>
+      <div className="flex flex-col gap-1 mt-1">
+        <a href="/privacy.html" target="_blank" rel="noopener noreferrer" className="text-primary underline">Privacy Policy</a>
+        <a href="/account-deletion.html" target="_blank" rel="noopener noreferrer" className="text-primary underline">Delete your account</a>
+      </div>
     </div>
   </div>
 );
