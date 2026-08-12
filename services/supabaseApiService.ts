@@ -844,7 +844,20 @@ export const findPersonByEmail = async (email: string): Promise<Person | null> =
 
 // USER MANAGEMENT
 export const ensureUserExists = async (authUserId: string, userName: string, userEmail: string): Promise<Person> => {
-  // Fast path: user already claimed their record
+  // Identity is taken from the JWT inside the RPC (authUserId is not trusted).
+  const { data, error } = await supabase.rpc('ensure_my_person', {
+    p_name: userName || (userEmail ? userEmail.split('@')[0] : 'User'),
+    p_email: userEmail ? userEmail.trim().toLowerCase() : null,
+  });
+
+  if (!error) {
+    const row = Array.isArray(data) ? data[0] : data;
+    if (row) return transformDbPersonToAppPerson(row);
+  } else {
+    console.warn('ensure_my_person failed, falling back:', error.message);
+  }
+
+  // Fast path if RPC is not deployed yet
   const { data: byAuthId, error: authIdError } = await supabase
     .from('people')
     .select('*')
@@ -854,9 +867,6 @@ export const ensureUserExists = async (authUserId: string, userName: string, use
   if (authIdError) console.warn('⚠️ Error checking clerk_user_id:', authIdError);
   if (byAuthId) return transformDbPersonToAppPerson(byAuthId);
 
-  // Claim path: unclaimed dummy with matching email.
-  // Uses a SECURITY DEFINER function to bypass RLS — dummies have user_id = NULL
-  // so a direct UPDATE would be silently blocked by the "user_id = requesting_user_id()" policy.
   if (userEmail) {
     const { data: claimedRows, error: claimError } = await supabase
       .rpc('claim_person_by_email', {
@@ -871,15 +881,14 @@ export const ensureUserExists = async (authUserId: string, userName: string, use
     }
   }
 
-  // New user: create fresh record
-  const { data, error } = await supabase
+  // Do not write clerk text ids into auth_user_id (uuid) — that insert fails
+  const { data: inserted, error: insertError } = await supabase
     .from('people')
     .insert({
       name: userName || userEmail.split('@')[0],
       clerk_user_id: authUserId,
-      auth_user_id: authUserId,
       user_id: authUserId,
-      avatar_url: '', // initials-first; users upload a photo via Settings
+      avatar_url: '',
       email: userEmail || null,
       is_claimed: true,
       source: 'self',
@@ -887,9 +896,8 @@ export const ensureUserExists = async (authUserId: string, userName: string, use
     .select()
     .single();
 
-  if (error) {
-    // Race condition: another request created the row between our check and insert
-    if (error.code === '23505') {
+  if (insertError) {
+    if (insertError.code === '23505') {
       const { data: retry } = await supabase
         .from('people')
         .select('*')
@@ -897,10 +905,10 @@ export const ensureUserExists = async (authUserId: string, userName: string, use
         .maybeSingle();
       if (retry) return transformDbPersonToAppPerson(retry);
     }
-    throw error;
+    throw insertError;
   }
 
-  return transformDbPersonToAppPerson(data);
+  return transformDbPersonToAppPerson(inserted);
 };
 
 // ============================================================================

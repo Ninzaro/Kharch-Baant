@@ -514,6 +514,7 @@ export type Database = {
       accept_group_invite: { Args: { p_token: string }; Returns: Json }
       /** Strip identity from the caller's people row. Play / GDPR. */
       anonymize_my_account: { Args: Record<string, never>; Returns: Json }
+      ensure_my_person: { Args: { p_email?: string; p_name: string }; Returns: unknown }
       create_unclaimed_person: {
         Args: { p_avatar_url?: string; p_email?: string; p_name: string }
         Returns: {
