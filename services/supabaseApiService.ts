@@ -815,22 +815,19 @@ export const getPeople = async (personId?: string): Promise<Person[]> => {
 };
 
 export const addPerson = async (personData: Omit<Person, 'id'>): Promise<Person> => {
-  // Empty avatar_url → Avatar shows local initials (never default to stock photo hosts)
+  // SECURITY DEFINER RPC — INSERT ... RETURNING is blocked by people SELECT RLS
+  // (i_can_see_person does not include a brand-new unclaimed row).
   const avatarUrl = (personData.avatarUrl ?? '').trim();
-  const { data, error } = await supabase
-    .from('people')
-    .insert({
-      name: personData.name,
-      avatar_url: avatarUrl,
-      email: personData.email ?? null,
-      is_claimed: false,
-      source: personData.source ?? 'manual',
-    })
-    .select()
-    .single();
+  const { data, error } = await supabase.rpc('create_unclaimed_person', {
+    p_name: personData.name,
+    p_email: personData.email ?? null,
+    p_avatar_url: avatarUrl,
+  });
 
   if (error) throw error;
-  return transformDbPersonToAppPerson(data);
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row) throw new Error('Failed to create person');
+  return transformDbPersonToAppPerson(row);
 };
 
 export const findPersonByEmail = async (email: string): Promise<Person | null> => {

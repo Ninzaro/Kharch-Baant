@@ -514,6 +514,22 @@ export type Database = {
       accept_group_invite: { Args: { p_token: string }; Returns: Json }
       /** Strip identity from the caller's people row. Play / GDPR. */
       anonymize_my_account: { Args: Record<string, never>; Returns: Json }
+      create_unclaimed_person: {
+        Args: { p_avatar_url?: string; p_email?: string; p_name: string }
+        Returns: {
+          auth_user_id: string | null
+          avatar_url: string
+          clerk_user_id: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          is_claimed: boolean
+          name: string
+          source: string
+          updated_at: string | null
+          user_id: string | null
+        }[]
+      }
       i_am_member_of: { Args: { p_group_id: string }; Returns: boolean }
       i_can_see_person: { Args: { p_person_id: string }; Returns: boolean }
       i_created_group: { Args: { p_group_id: string }; Returns: boolean }
