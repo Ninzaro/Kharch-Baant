@@ -52,7 +52,7 @@ jobs:
         run: chmod +x ./android/gradlew
 
       - name: Decode Keystore
-        run: echo "${{ secrets.KEYSTORE_FILE }}" | base64 -d > android/release-key.jks
+        run: echo "${{ secrets.KEYSTORE_FILE }}" | base64 -d > android/app/release-key.jks
 
       # 7. Build signed AAB with auto-incremented versionCode
       - name: Build Release AAB
