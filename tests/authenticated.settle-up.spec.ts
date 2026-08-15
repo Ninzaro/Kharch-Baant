@@ -1,97 +1,67 @@
 /**
  * Settle-up flow — authenticated Playwright specs.
  *
- * Requires a Clerk session (see auth.setup.ts + TEST_USER_* env vars).
- * Automatically skipped when auth state is absent.
- *
- * Covered flows:
- *   - Settle-Up button is present and opens the modal
- *   - Modal renders payer/receiver selects
- *   - Submit is disabled when payer === receiver
- *   - Submit is disabled when amount is zero or blank
- *   - Submitting a valid settle-up shows a success indication
+ * Requires TEST_USER_EMAIL + TEST_USER_PASSWORD and a group with 2+ members.
  */
 import { test, expect } from '@playwright/test';
-import * as fs from 'fs';
-import * as path from 'path';
-
-const AUTH_FILE = path.join(__dirname, '.auth/user.json');
-
-test.beforeAll(async () => {
-  if (!fs.existsSync(AUTH_FILE)) {
-    test.skip();
-  }
-});
+import { openFirstGroup } from './helpers/group';
 
 test.describe('Settle-up flow', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await openFirstGroup(page);
   });
 
-  // ── Settle-Up button ─────────────────────────────────────────────────────
-
-  test('Settle-Up button is visible', async ({ page }) => {
-    const settleBtn = page.getByRole('button', { name: /settle.?up/i });
-    await expect(settleBtn).toBeVisible({ timeout: 10_000 });
+  test('Settle Up button is visible', async ({ page }) => {
+    await expect(page.getByRole('button', { name: /settle.?up/i })).toBeVisible();
   });
 
-  test('Settle-Up button opens the modal', async ({ page }) => {
+  test('Settle Up opens the modal', async ({ page }) => {
     await page.getByRole('button', { name: /settle.?up/i }).click();
     const modal = page.getByRole('dialog');
-    await expect(modal).toBeVisible({ timeout: 5_000 });
+    await expect(modal).toBeVisible({ timeout: 8_000 });
     await expect(modal.getByRole('heading', { name: /settle.?up/i })).toBeVisible();
   });
-
-  // ── Modal form ───────────────────────────────────────────────────────────
 
   test('modal has payer and receiver selects', async ({ page }) => {
     await page.getByRole('button', { name: /settle.?up/i }).click();
     const modal = page.getByRole('dialog');
-
-    await expect(modal.getByLabel(/payer/i)).toBeVisible({ timeout: 5_000 });
-    await expect(modal.getByLabel(/receiver/i)).toBeVisible({ timeout: 5_000 });
+    await expect(modal.getByLabel(/^payer$/i)).toBeVisible({ timeout: 5_000 });
+    await expect(modal.getByLabel(/^receiver$/i)).toBeVisible({ timeout: 5_000 });
   });
 
   test('submit is disabled when payer equals receiver', async ({ page }) => {
     await page.getByRole('button', { name: /settle.?up/i }).click();
     const modal = page.getByRole('dialog');
+    const payerSelect = modal.getByLabel(/^payer$/i);
+    const receiverSelect = modal.getByLabel(/^receiver$/i);
 
-    const payerSelect   = modal.getByLabel(/payer/i);
-    const receiverSelect = modal.getByLabel(/receiver/i);
-
-    // Set both to the same person (first option)
     await payerSelect.waitFor();
-    const firstOption = await payerSelect.locator('option').first().getAttribute('value');
-    if (firstOption) {
-      await payerSelect.selectOption(firstOption);
-      await receiverSelect.selectOption(firstOption);
+    const options = payerSelect.locator('option:not([disabled])');
+    const firstValue = await options.nth(0).getAttribute('value');
+    if (!firstValue) {
+      test.skip(true, 'No members to select');
+      return;
     }
+    await payerSelect.selectOption(firstValue);
+    await receiverSelect.selectOption(firstValue);
 
-    const submitBtn = modal.getByRole('button', { name: /settle|submit|confirm/i });
-    await expect(submitBtn).toBeDisabled({ timeout: 3_000 });
+    await expect(modal.getByText(/cannot be the same person/i)).toBeVisible();
+    await expect(modal.getByRole('button', { name: /record settlement/i })).toBeDisabled();
   });
 
   test('submit is disabled when amount is blank or zero', async ({ page }) => {
     await page.getByRole('button', { name: /settle.?up/i }).click();
     const modal = page.getByRole('dialog');
-
-    const amountInput = modal.getByLabel(/amount/i);
-    await amountInput.waitFor();
+    const amountInput = modal.getByLabel(/settlement amount/i);
     await amountInput.fill('0');
-
-    const submitBtn = modal.getByRole('button', { name: /settle|submit|confirm/i });
-    await expect(submitBtn).toBeDisabled({ timeout: 3_000 });
+    await expect(modal.getByRole('button', { name: /record settlement/i })).toBeDisabled();
   });
-
-  // ── Close / cancel ───────────────────────────────────────────────────────
 
   test('modal can be closed without submitting', async ({ page }) => {
     await page.getByRole('button', { name: /settle.?up/i }).click();
     const modal = page.getByRole('dialog');
     await expect(modal).toBeVisible();
-
-    await modal.getByRole('button', { name: /close|cancel/i }).click();
+    await modal.getByRole('button', { name: /cancel/i }).click();
     await expect(modal).not.toBeVisible({ timeout: 3_000 });
   });
 });

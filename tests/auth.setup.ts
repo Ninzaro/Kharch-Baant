@@ -40,9 +40,9 @@ setup('authenticate', async ({ page }) => {
   await page.getByLabel(/password/i).fill(password);
   await page.getByRole('button', { name: /sign in|continue/i }).click();
 
-  // Wait until we land on the authenticated app shell
-  await expect(page.getByRole('heading', { name: /kharch.?baant|home|groups/i }))
-    .toBeVisible({ timeout: 20_000 });
+  await expect(
+    page.getByRole('heading', { name: /dashboard|kharch.?baant|your groups/i })
+  ).toBeVisible({ timeout: 25_000 });
 
   // Persist cookies + localStorage for reuse
   await page.context().storageState({ path: AUTH_FILE });

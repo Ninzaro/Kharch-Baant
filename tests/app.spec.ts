@@ -22,19 +22,11 @@ test.describe('App shell', () => {
     await page.goto('/');
     // Clerk either redirects to /sign-in or renders its embedded component in-place.
     // Either way the sign-in heading / button should appear within 10 s.
-    const signInIndicator = page
-      .getByRole('heading', { name: /sign in/i })
-      .or(page.getByRole('button', { name: /sign in/i }))
-      .or(page.getByText(/sign in/i).first());
-
-    await expect(signInIndicator).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('heading', { name: /sign in/i })).toBeVisible({ timeout: 15_000 });
   });
 
   test('sign-in page has no obviously broken layout (viewport check)', async ({ page }) => {
-    await page.goto('/');
-    // Wait for the page to settle before snapping
-    await page.waitForLoadState('networkidle');
-    // No explicit visual assertion — this catches hard crashes (blank white page, JS errors).
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('body')).not.toBeEmpty();
   });
 });
@@ -66,3 +58,20 @@ test.describe('PWA manifest', () => {
     expect(manifest.icons.length).toBeGreaterThan(0);
   });
 });
+
+// ─── Public legal pages (Play Store URLs) ───────────────────────────────────
+
+test.describe('Public legal pages', () => {
+  test('privacy policy is served', async ({ page }) => {
+    const response = await page.goto('/privacy.html');
+    expect(response?.ok()).toBeTruthy();
+    await expect(page.getByRole('heading', { name: /privacy policy/i })).toBeVisible();
+  });
+
+  test('account deletion page is served', async ({ page }) => {
+    const response = await page.goto('/account-deletion.html');
+    expect(response?.ok()).toBeTruthy();
+    await expect(page.getByRole('heading', { name: /delete your/i })).toBeVisible();
+  });
+});
+

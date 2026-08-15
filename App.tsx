@@ -601,6 +601,7 @@ const App: React.FC = () => {
                         selectedGroupId={selectedGroupId}
                         onSelectGroup={handleSelectGroup}
                         onGoHome={handleGoHome}
+                        onAddGroup={handleCreateGroupFromAddAction}
                     />
                     <GroupView
                         group={selectedGroup}
@@ -910,16 +911,35 @@ const App: React.FC = () => {
 }
 
 // Show sign-in screen when not authenticated
-import { SignIn } from '@clerk/clerk-react';
+import { SignIn, AuthenticateWithRedirectCallback } from '@clerk/clerk-react';
 
 const AppWithAuth: React.FC = () => {
     const { user, loading, isSyncing } = useAuth();
+    const [takingLong, setTakingLong] = useState(false);
+    const [isSsoCallback, setIsSsoCallback] = useState(() => 
+        typeof window !== 'undefined' && (
+            window.location.pathname.startsWith('/sso-callback') || 
+            window.location.search.includes('__clerk_status') ||
+            window.location.hash.includes('__clerk_status')
+        )
+    );
 
-    // Check if there's an invite token in the URL
+    useEffect(() => {
+        if (!loading) {
+            setTakingLong(false);
+            return;
+        }
+        const timer = setTimeout(() => {
+            setTakingLong(true);
+        }, 6000);
+        return () => clearTimeout(timer);
+    }, [loading]);
+
+    // Check if there's an invite token in the URL or SSO callback
     const [inviteInfo, setInviteInfo] = useState<{ token: string; groupName?: string } | null>(null);
 
     useEffect(() => {
-        const syncInviteFromLocation = () => {
+        const syncFromLocation = () => {
             const urlPath = window.location.pathname;
             const inviteMatch = urlPath.match(/^\/invite\/(.+)$/);
             if (inviteMatch) {
@@ -927,18 +947,53 @@ const AppWithAuth: React.FC = () => {
                 localStorage.setItem('pendingInviteToken', token);
                 setInviteInfo({ token });
             }
+            setIsSsoCallback(
+                window.location.pathname.startsWith('/sso-callback') || 
+                window.location.search.includes('__clerk_status') ||
+                window.location.hash.includes('__clerk_status')
+            );
         };
-        syncInviteFromLocation();
-        window.addEventListener('popstate', syncInviteFromLocation);
-        return () => window.removeEventListener('popstate', syncInviteFromLocation);
+        syncFromLocation();
+        window.addEventListener('popstate', syncFromLocation);
+        return () => window.removeEventListener('popstate', syncFromLocation);
     }, []);
+
+    if (isSsoCallback) {
+        return (
+            <div className="h-screen w-screen flex items-center justify-center bg-background text-foreground font-sans p-6">
+                <div className="text-center max-w-sm">
+                    <div className="animate-spin rounded-full h-12 w-12 border-2 border-primary border-t-transparent mx-auto mb-4" />
+                    <p className="text-foreground font-medium mb-1">Completing sign in...</p>
+                    <p className="text-xs text-muted-foreground">Please wait a moment</p>
+                    <AuthenticateWithRedirectCallback 
+                        signInFallbackRedirectUrl="/"
+                        signUpFallbackRedirectUrl="/"
+                    />
+                </div>
+            </div>
+        );
+    }
 
     if (loading) {
         return (
-            <div className="h-screen w-screen flex items-center justify-center bg-background text-foreground font-sans">
-                <div className="text-center">
+            <div className="h-screen w-screen flex items-center justify-center bg-background text-foreground font-sans p-6">
+                <div className="text-center max-w-sm">
                     <div className="animate-spin rounded-full h-12 w-12 border-2 border-primary border-t-transparent mx-auto mb-4" />
-                    <p className="text-muted-foreground">Loading...</p>
+                    <p className="text-foreground font-medium mb-1">
+                        {isSyncing ? "Syncing profile..." : "Connecting to authentication..."}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Please wait a moment</p>
+                    {takingLong && (
+                        <div className="mt-6 p-4 bg-card border border-border rounded-xl text-xs space-y-3">
+                            <p className="text-muted-foreground">Taking longer than usual to connect. Please check your internet connection.</p>
+                            <button
+                                onClick={() => window.location.reload()}
+                                className="w-full py-2 px-4 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
+                            >
+                                Retry / Reload
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         );
@@ -952,7 +1007,12 @@ const AppWithAuth: React.FC = () => {
     if (!user) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-background via-primary/40 to-background flex items-center justify-center p-4">
-               <SignIn />
+               <SignIn 
+                   forceRedirectUrl="https://www.motamaati.in"
+                   signUpForceRedirectUrl="https://www.motamaati.in"
+                   fallbackRedirectUrl="https://www.motamaati.in"
+                   signUpFallbackRedirectUrl="https://www.motamaati.in"
+               />
             </div>
         );
     }

@@ -95,6 +95,22 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ groups, transactions, people, c
 
                 <section>
                     <h2 className="text-xl font-semibold mb-4 text-muted-foreground">Your Groups</h2>
+                    {groups.length === 0 ? (
+                        <div className="bg-card border border-border rounded-2xl p-8 md:p-10 text-center max-w-lg">
+                            <p className="text-lg font-semibold text-foreground">No groups yet</p>
+                            <p className="text-sm text-muted-foreground mt-2">
+                                Create a trip, household, or shared wallet. Invite friends with a link and split expenses in seconds.
+                            </p>
+                            <button
+                                type="button"
+                                onClick={onAddGroup}
+                                className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-primary to-accent text-primary-foreground rounded-lg text-sm font-medium shadow-sm"
+                            >
+                                <PlusIcon className="h-5 w-5" />
+                                Create your first group
+                            </button>
+                        </div>
+                    ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {groups.map(group => (
                             <GroupSummaryCard
@@ -107,6 +123,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ groups, transactions, people, c
                             />
                         ))}
                     </div>
+                    )}
                 </section>
             </main>
 

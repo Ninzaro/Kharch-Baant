@@ -1,12 +1,11 @@
 import { defineConfig, devices } from '@playwright/test';
+import dotenv from 'dotenv';
+import path from 'path';
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
+dotenv.config({ path: path.resolve(process.cwd(), '.env.test'), override: true });
+
+const hasAuthCreds = Boolean(process.env.TEST_USER_EMAIL && process.env.TEST_USER_PASSWORD);
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -26,7 +25,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL for all page.goto() calls without an explicit origin. */
-    baseURL: 'http://localhost:3000',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
 
     /* Screenshot on failure to ease debugging. */
     screenshot: 'only-on-failure',
@@ -41,30 +40,35 @@ export default defineConfig({
     // Runs once before any authenticated test projects.
     // Writes Clerk session cookies to tests/.auth/user.json.
     // Skipped automatically when TEST_USER_EMAIL / TEST_USER_PASSWORD are absent.
-    {
-      name: 'auth setup',
-      testMatch: /auth\.setup\.ts/,
-    },
+    ...(hasAuthCreds
+      ? [
+          {
+            name: 'auth setup',
+            testMatch: /auth\.setup\.ts/,
+          },
+        ]
+      : []),
 
     // ─── Unauthenticated tests ─────────────────────────────────────────────
-    // App-shell, PWA manifest, sign-in page — no Clerk session needed.
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-      testIgnore: /authenticated/,
+      testIgnore: /authenticated|auth\.setup/,
     },
 
-    // ─── Authenticated tests ───────────────────────────────────────────────
-    // Depend on auth setup; reuse the saved session.
-    {
-      name: 'chromium-auth',
-      use: {
-        ...devices['Desktop Chrome'],
-        storageState: 'tests/.auth/user.json',
-      },
-      testMatch: /authenticated/,
-      dependencies: ['auth setup'],
-    },
+    ...(hasAuthCreds
+      ? [
+          {
+            name: 'chromium-auth',
+            use: {
+              ...devices['Desktop Chrome'],
+              storageState: 'tests/.auth/user.json',
+            },
+            testMatch: /authenticated/,
+            dependencies: ['auth setup'],
+          },
+        ]
+      : []),
 
     /* Test against mobile viewports. */
     // {

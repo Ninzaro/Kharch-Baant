@@ -8,6 +8,7 @@ interface GroupListProps {
     selectedGroupId: string | null;
     onSelectGroup: (groupId: string) => void;
     onGoHome: () => void;
+    onAddGroup?: () => void;
 }
 
 const GroupListItem: React.FC<{
@@ -55,7 +56,7 @@ const GroupListItem: React.FC<{
 };
 
 
-const GroupList: React.FC<GroupListProps> = ({ groups, people, selectedGroupId, onSelectGroup, onGoHome }) => {
+const GroupList: React.FC<GroupListProps> = ({ groups, people, selectedGroupId, onSelectGroup, onGoHome, onAddGroup }) => {
     return (
         <div className="bg-card/80 backdrop-blur-xl border-r border-border text-foreground w-64 p-4 flex-col hidden md:flex">
             <h1 className="text-2xl font-bold mb-6 cursor-pointer text-transparent bg-clip-text bg-gradient-to-br from-primary to-accent" onClick={onGoHome}>Kharch Baant</h1>
@@ -68,6 +69,9 @@ const GroupList: React.FC<GroupListProps> = ({ groups, people, selectedGroupId, 
                     <span>Dashboard</span>
                 </button>
                 <ul>
+                    {groups.length === 0 && (
+                        <li className="px-3 py-2 text-sm text-muted-foreground">No groups yet</li>
+                    )}
                     {groups.map(group => (
                         <GroupListItem
                             key={group.id}
@@ -79,12 +83,15 @@ const GroupList: React.FC<GroupListProps> = ({ groups, people, selectedGroupId, 
                     ))}
                 </ul>
             </nav>
+            {onAddGroup && (
             <button
                 type="button"
+                onClick={onAddGroup}
                 className="w-full bg-success hover:bg-success/90 text-success-foreground font-bold py-2 px-4 rounded-lg transition-colors mt-4"
             >
-                Add New
+                Add group
             </button>
+            )}
         </div>
     );
 };

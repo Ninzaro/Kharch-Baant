@@ -44,23 +44,39 @@ const initCapacitor = async () => {
         console.log('App state changed. Is active?', isActive);
       });
       
-      const openInviteFromUrl = (rawUrl: string) => {
-        const match = rawUrl.match(/invite\/([^/?#]+)/i);
-        if (!match) return;
-        const token = decodeURIComponent(match[1]);
-        const next = `/invite/${token}`;
-        if (window.location.pathname !== next) {
-          window.history.replaceState({}, '', next);
-          window.dispatchEvent(new PopStateEvent('popstate'));
+      const handleAppUrl = (rawUrl: string) => {
+        // Invite deep link
+        const inviteMatch = rawUrl.match(/invite\/([^/?#]+)/i);
+        if (inviteMatch) {
+          const token = decodeURIComponent(inviteMatch[1]);
+          const next = `/invite/${token}`;
+          if (window.location.pathname !== next) {
+            window.history.replaceState({}, '', next);
+            window.dispatchEvent(new PopStateEvent('popstate'));
+          }
+          return;
+        }
+
+        // SSO callback deep link (e.g. kharchbaant://sso-callback?... or https://.../sso-callback?...)
+        if (rawUrl.includes('sso-callback') || rawUrl.includes('__clerk_status')) {
+          try {
+            const queryIndex = rawUrl.indexOf('?');
+            const queryString = queryIndex !== -1 ? rawUrl.substring(queryIndex) : '';
+            const next = `/sso-callback${queryString}`;
+            window.history.replaceState({}, '', next);
+            window.dispatchEvent(new PopStateEvent('popstate'));
+          } catch (err) {
+            console.error('Error handling SSO callback deep link:', err);
+          }
         }
       };
 
       CapacitorApp.addListener('appUrlOpen', ({ url }) => {
-        openInviteFromUrl(url);
+        handleAppUrl(url);
       });
       const launchUrl = await CapacitorApp.getLaunchUrl();
       if (launchUrl?.url) {
-        openInviteFromUrl(launchUrl.url);
+        handleAppUrl(launchUrl.url);
       }
 
       // Handle back button (Android)

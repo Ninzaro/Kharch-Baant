@@ -24,14 +24,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- Custom-scheme invite deep link (no Digital Asset Links required) -->
+            <!-- Custom-scheme deep links (invite, sso-callback, etc.) -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="kharchbaant" android:host="invite" android:pathPrefix="/" />
+                <data android:scheme="kharchbaant" />
             </intent-filter>
 
+            <!-- App Links for motamaati.in -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="www.motamaati.in" />
+                <data android:scheme="https" android:host="motamaati.in" />
+            </intent-filter>
         </activity>
 
         <provider

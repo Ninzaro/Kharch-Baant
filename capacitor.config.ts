@@ -11,9 +11,23 @@ const config: CapacitorConfig = {
   appName: 'Kharch Baant',
   webDir: 'dist',
 
-  ...(devServerUrl
-    ? { server: { url: devServerUrl, cleartext: true } }
-    : {}),
+  server: {
+    androidScheme: 'https',
+    hostname: 'localhost',
+    allowNavigation: [
+      'accounts.google.com',
+      '*.google.com',
+      '*.clerk.accounts.dev',
+      '*.clerk.com',
+      'motamaati.in',
+      '*.motamaati.in',
+      'clerk.motamaati.in',
+      '*.clerk.motamaati.in'
+    ],
+    ...(devServerUrl
+      ? { url: devServerUrl, cleartext: true }
+      : {}),
+  },
 
   android: {
     buildOptions: {
@@ -22,6 +36,9 @@ const config: CapacitorConfig = {
   },
 
   plugins: {
+    CapacitorHttp: {
+      enabled: true
+    },
     SplashScreen: {
       launchShowDuration: 2000,
       launchAutoHide: true,

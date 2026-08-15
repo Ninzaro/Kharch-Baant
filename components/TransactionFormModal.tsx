@@ -398,6 +398,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                     onKeyDown={handleAmountSubmit}
                                     className="w-full bg-transparent text-5xl font-bold p-0 pl-10 border-none focus:ring-0 placeholder:text-muted-foreground outline-none text-foreground transition-all"
                                     placeholder="0"
+                                    aria-label="Amount"
                                     autoFocus
                                 />
                             </div>

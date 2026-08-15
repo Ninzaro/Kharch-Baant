@@ -32,6 +32,7 @@ dist-ssr
 .augment/rules/byterover-rules.md
 .vercel
 .env
+.env.test
 
 # Android / Capacitor
 android/app/build/
@@ -43,7 +44,9 @@ android/.idea/
 *.apk
 *.aab
 *.keystore
+*.jks
 !debug.keystore
+supabase/.temp/
 
 # Playwright
 /test-results/
@@ -61,4 +64,5 @@ android/.idea/
 coverage/
 
 scripts/spotcheck-output/
+backup_*.sql
 

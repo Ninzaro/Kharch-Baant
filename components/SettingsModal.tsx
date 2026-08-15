@@ -3,8 +3,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import ArchivedGroupsModal from './ArchivedGroupsModal';
 import BaseModal from './BaseModal';
 import ThemeToggle from './ThemeToggle';
-import CurrencySelector from './CurrencySelector';
-import LanguageSelector from './LanguageSelector';
 import DataExport from './DataExport';
 import DangerZone from './DangerZone';
 import AboutSection from './AboutSection';
@@ -45,9 +43,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   const [showArchivedGroups, setShowArchivedGroups] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
-
-  const [currency, setCurrency] = useState('INR');
-  const [language, setLanguage] = useState('English');
 
   // Profile State
   const [avatarUrl, setAvatarUrl] = useState<string | null>(currentUserPerson?.avatarUrl || null);
@@ -280,20 +275,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* Theme toggle */}
           <ThemeToggle theme={theme} onChange={onThemeChange} />
 
-          {/* Currency selector — UI placeholder, not yet persisted */}
-          <CurrencySelector value={currency} onChange={setCurrency} options={['INR', 'USD', 'EUR', 'GBP']} />
-
-          {/* Notifications (placeholder) */}
-          <div className="flex flex-col gap-2">
-            <label className="text-muted-foreground text-sm font-medium">Notifications</label>
-            <div className="text-muted-foreground text-xs">(Notification preferences coming soon)</div>
-          </div>
-
-          {/* Data management */}
           <DataExport onExport={handleExport} onImport={handleImport} />
-
-          {/* Language selector — UI placeholder, not yet persisted */}
-          <LanguageSelector value={language} onChange={setLanguage} options={['English', 'Hindi']} />
 
           {/* Manage Payment Sources */}
           <button
