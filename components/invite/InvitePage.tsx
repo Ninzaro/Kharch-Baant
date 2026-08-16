@@ -227,7 +227,7 @@ const InvitePage: React.FC = () => {
               {!user ? (
                 <div>
                   <div className="bg-overlay/20 border border-border rounded-xl p-4 flex justify-center">
-                    <SignIn forceRedirectUrl={window.location.href} signUpForceRedirectUrl={window.location.href} />
+                    <SignIn routing="hash" forceRedirectUrl={window.location.href} signUpForceRedirectUrl={window.location.href} />
                   </div>
                 </div>
               ) : (

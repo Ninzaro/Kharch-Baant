@@ -1008,8 +1008,7 @@ const AppWithAuth: React.FC = () => {
         return (
             <div className="min-h-screen bg-gradient-to-br from-background via-primary/40 to-background flex items-center justify-center p-4">
                <SignIn 
-                   forceRedirectUrl="/"
-                   signUpForceRedirectUrl="/"
+                   routing="hash"
                    fallbackRedirectUrl="/"
                    signUpFallbackRedirectUrl="/"
                />
