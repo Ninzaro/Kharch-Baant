@@ -11,9 +11,10 @@ const supabaseAnonKey =
   import.meta.env.REACT_APP_SUPABASE_ANON_KEY ||
   ''
 
+// Safe fallback if credentials are empty to allow ErrorBoundary/UI to mount
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    'Supabase credentials are missing. Ensure .env.local has VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY, then restart `npm run dev`. ' +
+  console.error(
+    'Supabase credentials are missing. ' +
       `(url=${supabaseUrl ? 'set' : 'missing'} key=${supabaseAnonKey ? 'set' : 'missing'})`
   )
 }

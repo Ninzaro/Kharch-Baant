@@ -102,23 +102,34 @@ if (!rootElement) {
 }
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-if (!PUBLISHABLE_KEY) {
-  throw new Error("Missing Publishable Key");
-}
 
 const root = ReactDOM.createRoot(rootElement);
-root.render(
-  <React.StrictMode>
-    <ErrorBoundary>
-      <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
-        <QueryClientProvider client={queryClient}>
-          <SupabaseAuthProvider>
-            <ToastProvider>
-              <AppWithAuth />
-            </ToastProvider>
-          </SupabaseAuthProvider>
-        </QueryClientProvider>
-      </ClerkProvider>
-    </ErrorBoundary>
-  </React.StrictMode>
-);
+
+if (!PUBLISHABLE_KEY) {
+  root.render(
+    <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6 text-center">
+      <div className="max-w-md p-6 bg-card border border-destructive rounded-2xl shadow-lg">
+        <h2 className="text-xl font-bold text-destructive mb-2">Configuration Error</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          Missing VITE_CLERK_PUBLISHABLE_KEY in the build environment. Please ensure the GitHub secret is configured.
+        </p>
+      </div>
+    </div>
+  );
+} else {
+  root.render(
+    <React.StrictMode>
+      <ErrorBoundary>
+        <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
+          <QueryClientProvider client={queryClient}>
+            <SupabaseAuthProvider>
+              <ToastProvider>
+                <AppWithAuth />
+              </ToastProvider>
+            </SupabaseAuthProvider>
+          </QueryClientProvider>
+        </ClerkProvider>
+      </ErrorBoundary>
+    </React.StrictMode>
+  );
+}
