@@ -13,7 +13,7 @@ const config: CapacitorConfig = {
 
   server: {
     androidScheme: 'https',
-    hostname: 'motamaati.in',
+    hostname: 'localhost',
     allowNavigation: [
       'accounts.google.com',
       '*.google.com',
