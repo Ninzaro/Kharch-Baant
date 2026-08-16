@@ -1008,10 +1008,10 @@ const AppWithAuth: React.FC = () => {
         return (
             <div className="min-h-screen bg-gradient-to-br from-background via-primary/40 to-background flex items-center justify-center p-4">
                <SignIn 
-                   forceRedirectUrl="https://www.motamaati.in"
-                   signUpForceRedirectUrl="https://www.motamaati.in"
-                   fallbackRedirectUrl="https://www.motamaati.in"
-                   signUpFallbackRedirectUrl="https://www.motamaati.in"
+                   forceRedirectUrl="https://motamaati.in"
+                   signUpForceRedirectUrl="https://motamaati.in"
+                   fallbackRedirectUrl="https://motamaati.in"
+                   signUpFallbackRedirectUrl="https://motamaati.in"
                />
             </div>
         );
