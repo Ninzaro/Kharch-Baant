@@ -1007,11 +1007,18 @@ const AppWithAuth: React.FC = () => {
     if (!user) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-background via-primary/40 to-background flex items-center justify-center p-4">
-               <SignIn 
-                   routing="hash"
-                   fallbackRedirectUrl="/"
-                   signUpFallbackRedirectUrl="/"
-               />
+                <div className="w-full max-w-md flex flex-col items-center">
+                    <div className="text-center mb-6">
+                        <h1 className="text-4xl font-bold text-foreground mb-2">💰</h1>
+                        <h2 className="text-2xl font-bold text-foreground">Kharch-Baant</h2>
+                        <p className="text-muted-foreground text-sm">Shared Expense Tracker</p>
+                    </div>
+                    <SignIn 
+                        routing="virtual"
+                        fallbackRedirectUrl="/"
+                        signUpFallbackRedirectUrl="/"
+                    />
+                </div>
             </div>
         );
     }
