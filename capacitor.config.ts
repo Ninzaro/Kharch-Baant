@@ -14,15 +14,15 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https',
     hostname: 'localhost',
+    // Do NOT include accounts.google.com — Google OAuth inside the WebView
+    // returns HTTP 400 "malformed". Let Google open in Chrome Custom Tabs.
     allowNavigation: [
-      'accounts.google.com',
-      '*.google.com',
       '*.clerk.accounts.dev',
       '*.clerk.com',
       'motamaati.in',
       '*.motamaati.in',
       'clerk.motamaati.in',
-      '*.clerk.motamaati.in'
+      'accounts.motamaati.in',
     ],
     ...(devServerUrl
       ? { url: devServerUrl, cleartext: true }

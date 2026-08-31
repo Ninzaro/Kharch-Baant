@@ -62,10 +62,10 @@ Adding a dependency outside this list requires updating this section *first*.
 | Server state | `@tanstack/react-query` v5 | |
 | Client/UI state | `zustand` v5 (`persist` + `devtools`) | |
 | Backend / DB | Supabase (`@supabase/supabase-js` v2) | Postgres + RLS + Realtime |
-| Auth | Clerk (`@clerk/clerk-react`) | Supabase Auth disabled. Migration to Supabase Auth planned, not started. |
+| Auth | Clerk (`@clerk/clerk-react`) | Permanent IdP. Supabase Auth disabled. |
 | AI | Keywords + optional Edge `suggest-tag` (Gemini server secret) | Category suggestions — no client API key |
 | Email | Edge `send-email` (MailerSend server secret) | Transactional mail — no client API key |
-| Mobile | Capacitor 7 (Android only) | |
+| Mobile | Capacitor 7 (Android only) | Plugins: App, Browser, Keyboard, SplashScreen, StatusBar. Native Google OAuth uses Chrome Custom Tabs (`@capacitor/browser`) + `kharchbaant://sso-callback` — Google must **not** run in the WebView. |
 | Notifications | `react-hot-toast` | |
 | Icons | `lucide-react` + `components/Icons.tsx` | |
 | Image export | `html2canvas` | |
@@ -261,6 +261,8 @@ Responsibilities (today, not ideal):
 ### Routing
 **No router.** Navigation is state-driven via `appStore.selectedGroupId`. The invite flow (`InvitePage.tsx`) is a special case keyed off URL params / localStorage. Introducing real URL routes (e.g. `react-router`, TanStack Router) would require updating this section.
 
+Unauthenticated native launch: `WelcomeScreen` → `AuthScreen` (Get started). Web still mounts Clerk `<SignIn>` immediately so Playwright and the PWA keep a single-step gate. `/sso-callback` (including `kharchbaant://sso-callback` rewritten in `index.tsx`) mounts `<AuthenticateWithRedirectCallback />`. On Capacitor, Google / Apple / Microsoft use `@capacitor/browser` Custom Tabs rather than Clerk's in-WebView social buttons.
+
 ---
 
 ## 7. Components
@@ -410,6 +412,7 @@ Supabase Postgres. Schema in `supabase-schema.sql`; deltas in `migrations/` and 
 - `npm run android:build:release` — produce AAB.
 - App ID: `com.kharchbaant.app`, web dir `dist/`.
 - `capacitor.config.ts` reads `CAPACITOR_DEV_SERVER_URL` from the environment. Set it in `.env.local` or your shell for live-reload dev. Leave it unset for production — Capacitor serves `dist/` natively.
+- `server.allowNavigation` must **not** include Google hosts. Native Google OAuth opens `@capacitor/browser` (Custom Tabs) and returns on `kharchbaant://sso-callback`. Clerk dashboard must allowlist that URL.
 
 ### CI
 - GitHub Actions: `.github/workflows/playwright.yml` runs Playwright on push.

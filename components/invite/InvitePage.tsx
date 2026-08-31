@@ -1,6 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../contexts/SupabaseAuthContext';
 import { SignIn } from '@clerk/clerk-react';
+import { Capacitor } from '@capacitor/core';
+import { nativeHideClerkSocials } from '../auth/clerkAppearance';
+import NativeSocialButtons from '../auth/NativeSocialButtons';
 import { validateInvite, acceptInvite } from '../../services/supabaseApiService';
 import { supabase } from '../../lib/supabase';
 import type { Group, Person } from '../../types';
@@ -226,8 +229,18 @@ const InvitePage: React.FC = () => {
             <div>
               {!user ? (
                 <div>
-                  <div className="bg-overlay/20 border border-border rounded-xl p-4 flex justify-center">
-                    <SignIn routing="virtual" forceRedirectUrl={window.location.href} signUpForceRedirectUrl={window.location.href} />
+                  <div className="bg-overlay/20 border border-border rounded-xl p-4 flex flex-col items-center">
+                    <NativeSocialButtons />
+                    <SignIn
+                      routing="virtual"
+                      forceRedirectUrl={window.location.href}
+                      signUpForceRedirectUrl={window.location.href}
+                      appearance={{
+                        elements: Capacitor.isNativePlatform()
+                          ? nativeHideClerkSocials
+                          : undefined,
+                      }}
+                    />
                   </div>
                 </div>
               ) : (

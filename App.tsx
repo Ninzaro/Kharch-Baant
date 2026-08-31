@@ -911,11 +911,16 @@ const App: React.FC = () => {
 }
 
 // Show sign-in screen when not authenticated
-import { SignIn, AuthenticateWithRedirectCallback } from '@clerk/clerk-react';
+import { AuthenticateWithRedirectCallback } from '@clerk/clerk-react';
+import { Capacitor } from '@capacitor/core';
+import { App as CapacitorApp } from '@capacitor/app';
+import AuthScreen from './components/auth/AuthScreen';
+import WelcomeScreen from './components/auth/WelcomeScreen';
 
 const AppWithAuth: React.FC = () => {
     const { user, loading, isSyncing } = useAuth();
     const [takingLong, setTakingLong] = useState(false);
+    const [showWelcome, setShowWelcome] = useState(() => Capacitor.isNativePlatform());
     const [isSsoCallback, setIsSsoCallback] = useState(() => 
         typeof window !== 'undefined' && (
             window.location.pathname.startsWith('/sso-callback') || 
@@ -937,6 +942,22 @@ const AppWithAuth: React.FC = () => {
 
     // Check if there's an invite token in the URL or SSO callback
     const [inviteInfo, setInviteInfo] = useState<{ token: string; groupName?: string } | null>(null);
+
+    useEffect(() => {
+        if (!Capacitor.isNativePlatform()) return;
+        let handle: { remove: () => Promise<void> } | undefined;
+        const sub = CapacitorApp.addListener('backButton', () => {
+            if (user) return;
+            if (isSsoCallback || inviteInfo?.token) return;
+            if (!showWelcome) {
+                setShowWelcome(true);
+                return;
+            }
+            CapacitorApp.exitApp();
+        });
+        sub.then((l) => { handle = l; }).catch(() => {});
+        return () => { handle?.remove(); };
+    }, [user, showWelcome, isSsoCallback, inviteInfo]);
 
     useEffect(() => {
         const syncFromLocation = () => {
@@ -1005,22 +1026,10 @@ const AppWithAuth: React.FC = () => {
     }
 
     if (!user) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-background via-primary/40 to-background flex items-center justify-center p-4">
-                <div className="w-full max-w-md flex flex-col items-center">
-                    <div className="text-center mb-6">
-                        <h1 className="text-4xl font-bold text-foreground mb-2">💰</h1>
-                        <h2 className="text-2xl font-bold text-foreground">Kharch-Baant</h2>
-                        <p className="text-muted-foreground text-sm">Shared Expense Tracker</p>
-                    </div>
-                    <SignIn 
-                        routing="virtual"
-                        fallbackRedirectUrl="/"
-                        signUpFallbackRedirectUrl="/"
-                    />
-                </div>
-            </div>
-        );
+        if (showWelcome) {
+            return <WelcomeScreen onContinue={() => setShowWelcome(false)} />;
+        }
+        return <AuthScreen onBack={() => setShowWelcome(true)} />;
     }
 
     return <App />;

@@ -114,6 +114,8 @@ StrictMode
 
 Invite deep-link is a special case (`components/invite/InvitePage.tsx`) via URL / localStorage.
 
+Native (Capacitor) unauthenticated launch is `WelcomeScreen` then `AuthScreen`. Web still shows Clerk sign-in immediately. Google / Apple / Microsoft on Android open Chrome Custom Tabs and return on `kharchbaant://sso-callback` — do not add Google/Apple/Microsoft hosts to `allowNavigation`.
+
 ### Identity model
 
 | Concept | Source |

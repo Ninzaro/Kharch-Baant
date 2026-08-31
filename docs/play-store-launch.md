@@ -24,6 +24,23 @@ Use this after Phase A/B security work. Code cannot finish Play Console or Clerk
 - In-app **Delete Account** → `anonymize_my_account` then Clerk `user.delete()`.
 - Public **privacy** and **account-deletion** pages (copied to `dist/` by Vite).
 - Invite deep link: `kharchbaant://invite/<token>`.
+- Native Google sign-in uses Chrome Custom Tabs and returns to `kharchbaant://sso-callback` (not the WebView).
+
+## Native Google login (closed testing)
+
+Google returns **HTTP 400 malformed** if OAuth runs inside the Capacitor WebView. Closed-testing builds must:
+
+1. Ship a build that **does not** list `accounts.google.com` in `capacitor.config.ts` `server.allowNavigation`.
+2. In **Clerk Dashboard (Production) → Configure → Paths**, add **Allowed redirect URLs**:
+   - `kharchbaant://sso-callback`
+   - `https://www.motamaati.in`
+   - `https://www.motamaati.in/sso-callback`
+3. In **Clerk → SSO connections**, enable **Google**, **Apple**, and **Microsoft** with your own provider credentials (native buttons are already in the app).
+4. In **Google Cloud → OAuth client (Web)**, Authorized JavaScript origins should include:
+   - `https://www.motamaati.in`
+   - `https://accounts.motamaati.in`
+   - `https://localhost` (Capacitor Android origin)
+5. Rebuild and upload a new AAB (`versionCode` +1) after these code + dashboard changes.
 
 ## Play Console — Data safety (honest defaults)
 

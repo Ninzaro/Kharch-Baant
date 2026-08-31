@@ -11,6 +11,7 @@ import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { App as CapacitorApp } from '@capacitor/app';
+import { Browser } from '@capacitor/browser';
 
 import { ClerkProvider } from '@clerk/clerk-react';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -57,12 +58,15 @@ const initCapacitor = async () => {
           return;
         }
 
-        // SSO callback deep link (e.g. kharchbaant://sso-callback?... or https://.../sso-callback?...)
+        // SSO callback (kharchbaant://sso-callback?... or https://.../sso-callback?...)
         if (rawUrl.includes('sso-callback') || rawUrl.includes('__clerk_status')) {
           try {
-            const queryIndex = rawUrl.indexOf('?');
-            const queryString = queryIndex !== -1 ? rawUrl.substring(queryIndex) : '';
-            const next = `/sso-callback${queryString}`;
+            void Browser.close().catch(() => {});
+            const q = rawUrl.includes('?') ? rawUrl.substring(rawUrl.indexOf('?')) : '';
+            const hashOnly = !q.includes('#') && rawUrl.includes('#')
+              ? rawUrl.substring(rawUrl.indexOf('#'))
+              : '';
+            const next = `/sso-callback${q}${hashOnly}`;
             window.history.replaceState({}, '', next);
             window.dispatchEvent(new PopStateEvent('popstate'));
           } catch (err) {
@@ -78,15 +82,6 @@ const initCapacitor = async () => {
       if (launchUrl?.url) {
         handleAppUrl(launchUrl.url);
       }
-
-      // Handle back button (Android)
-      CapacitorApp.addListener('backButton', ({ canGoBack }) => {
-        if (!canGoBack) {
-          CapacitorApp.exitApp();
-        } else {
-          window.history.back();
-        }
-      });
     } catch (error) {
       console.error('Error initializing Capacitor plugins:', error);
     }
