@@ -2,8 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../contexts/SupabaseAuthContext';
 import { SignIn } from '@clerk/clerk-react';
 import { Capacitor } from '@capacitor/core';
-import { nativeHideClerkSocials } from '../auth/clerkAppearance';
-import NativeSocialButtons from '../auth/NativeSocialButtons';
+import { openAccountPortal } from '../../hooks/useNativeOAuth';
 import { validateInvite, acceptInvite } from '../../services/supabaseApiService';
 import { supabase } from '../../lib/supabase';
 import type { Group, Person } from '../../types';
@@ -230,17 +229,21 @@ const InvitePage: React.FC = () => {
               {!user ? (
                 <div>
                   <div className="bg-overlay/20 border border-border rounded-xl p-4 flex flex-col items-center">
-                    <NativeSocialButtons />
-                    <SignIn
-                      routing="virtual"
-                      forceRedirectUrl={window.location.href}
-                      signUpForceRedirectUrl={window.location.href}
-                      appearance={{
-                        elements: Capacitor.isNativePlatform()
-                          ? nativeHideClerkSocials
-                          : undefined,
-                      }}
-                    />
+                    {Capacitor.isNativePlatform() ? (
+                      <button
+                        type="button"
+                        onClick={() => void openAccountPortal()}
+                        className="w-full py-3 px-4 rounded-xl bg-primary text-primary-foreground font-medium"
+                      >
+                        Sign in to join
+                      </button>
+                    ) : (
+                      <SignIn
+                        routing="virtual"
+                        forceRedirectUrl={window.location.href}
+                        signUpForceRedirectUrl={window.location.href}
+                      />
+                    )}
                   </div>
                 </div>
               ) : (

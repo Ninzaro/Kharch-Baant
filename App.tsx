@@ -916,11 +916,12 @@ import { Capacitor } from '@capacitor/core';
 import { App as CapacitorApp } from '@capacitor/app';
 import AuthScreen from './components/auth/AuthScreen';
 import WelcomeScreen from './components/auth/WelcomeScreen';
+import { useNativeOAuth } from './hooks/useNativeOAuth';
 
 const AppWithAuth: React.FC = () => {
     const { user, loading, isSyncing } = useAuth();
+    const { isNative, openAccountPortal } = useNativeOAuth();
     const [takingLong, setTakingLong] = useState(false);
-    const [showWelcome, setShowWelcome] = useState(() => Capacitor.isNativePlatform());
     const [isSsoCallback, setIsSsoCallback] = useState(() => 
         typeof window !== 'undefined' && (
             window.location.pathname.startsWith('/sso-callback') || 
@@ -944,20 +945,16 @@ const AppWithAuth: React.FC = () => {
     const [inviteInfo, setInviteInfo] = useState<{ token: string; groupName?: string } | null>(null);
 
     useEffect(() => {
-        if (!Capacitor.isNativePlatform()) return;
+        if (!isNative) return;
         let handle: { remove: () => Promise<void> } | undefined;
         const sub = CapacitorApp.addListener('backButton', () => {
             if (user) return;
             if (isSsoCallback || inviteInfo?.token) return;
-            if (!showWelcome) {
-                setShowWelcome(true);
-                return;
-            }
             CapacitorApp.exitApp();
         });
         sub.then((l) => { handle = l; }).catch(() => {});
         return () => { handle?.remove(); };
-    }, [user, showWelcome, isSsoCallback, inviteInfo]);
+    }, [user, isNative, isSsoCallback, inviteInfo]);
 
     useEffect(() => {
         const syncFromLocation = () => {
@@ -1026,10 +1023,18 @@ const AppWithAuth: React.FC = () => {
     }
 
     if (!user) {
-        if (showWelcome) {
-            return <WelcomeScreen onContinue={() => setShowWelcome(false)} />;
+        if (isNative) {
+            return (
+                <WelcomeScreen
+                    onContinue={() => {
+                        void openAccountPortal().catch((err) => {
+                            console.error('Could not open Clerk sign-in', err);
+                        });
+                    }}
+                />
+            );
         }
-        return <AuthScreen onBack={() => setShowWelcome(true)} />;
+        return <AuthScreen />;
     }
 
     return <App />;

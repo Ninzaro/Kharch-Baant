@@ -41,7 +41,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onContinue }) => {
           Get started
         </button>
         <p className="text-center text-xs text-muted-foreground">
-          Sign in or create an account on the next screen.
+          Sign in with Google, Apple, Microsoft, or email.
         </p>
       </div>
     </div>

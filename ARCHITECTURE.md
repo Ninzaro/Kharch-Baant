@@ -261,7 +261,7 @@ Responsibilities (today, not ideal):
 ### Routing
 **No router.** Navigation is state-driven via `appStore.selectedGroupId`. The invite flow (`InvitePage.tsx`) is a special case keyed off URL params / localStorage. Introducing real URL routes (e.g. `react-router`, TanStack Router) would require updating this section.
 
-Unauthenticated native launch: `WelcomeScreen` → `AuthScreen` (Get started). Web still mounts Clerk `<SignIn>` immediately so Playwright and the PWA keep a single-step gate. `/sso-callback` (including `kharchbaant://sso-callback` rewritten in `index.tsx`) mounts `<AuthenticateWithRedirectCallback />`. On Capacitor, Google / Apple / Microsoft use `@capacitor/browser` Custom Tabs rather than Clerk's in-WebView social buttons.
+Unauthenticated native launch: `WelcomeScreen` → Get started opens Clerk Account Portal in Chrome Custom Tabs. Web still mounts Clerk `<SignIn>` immediately so Playwright and the PWA keep a single-step gate. `/sso-callback` (including `kharchbaant://sso-callback` rewritten in `index.tsx`) mounts `<AuthenticateWithRedirectCallback />`.
 
 ---
 
