@@ -924,7 +924,8 @@ const AppWithAuth: React.FC = () => {
     const [takingLong, setTakingLong] = useState(false);
     const [isSsoCallback, setIsSsoCallback] = useState(() => 
         typeof window !== 'undefined' && (
-            window.location.pathname.startsWith('/sso-callback') || 
+            window.location.pathname.startsWith('/sso-callback') ||
+            window.location.pathname.includes('native-sso') ||
             window.location.search.includes('__clerk_status') ||
             window.location.hash.includes('__clerk_status')
         )
@@ -966,7 +967,8 @@ const AppWithAuth: React.FC = () => {
                 setInviteInfo({ token });
             }
             setIsSsoCallback(
-                window.location.pathname.startsWith('/sso-callback') || 
+                window.location.pathname.startsWith('/sso-callback') ||
+                window.location.pathname.includes('native-sso') ||
                 window.location.search.includes('__clerk_status') ||
                 window.location.hash.includes('__clerk_status')
             );

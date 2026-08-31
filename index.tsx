@@ -58,8 +58,12 @@ const initCapacitor = async () => {
           return;
         }
 
-        // SSO callback (kharchbaant://sso-callback?... or https://.../sso-callback?...)
-        if (rawUrl.includes('sso-callback') || rawUrl.includes('__clerk_status')) {
+        // SSO callback (kharchbaant://sso-callback, /native-sso.html, /sso-callback)
+        if (
+          rawUrl.includes('sso-callback') ||
+          rawUrl.includes('native-sso') ||
+          rawUrl.includes('__clerk_status')
+        ) {
           try {
             void Browser.close().catch(() => {});
             const q = rawUrl.includes('?') ? rawUrl.substring(rawUrl.indexOf('?')) : '';

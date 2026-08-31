@@ -37,6 +37,7 @@ Closed-testing builds must:
    - `kharchbaant://sso-callback`
    - `https://www.motamaati.in`
    - `https://www.motamaati.in/sso-callback`
+   - `https://www.motamaati.in/native-sso.html`
 3. In **Clerk → SSO connections**, enable **Google**, **Apple**, and **Microsoft** with your own provider credentials (native buttons are already in the app).
 4. In **Google Cloud → OAuth client (Web)**, Authorized JavaScript origins should include:
    - `https://www.motamaati.in`

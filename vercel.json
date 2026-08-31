@@ -5,6 +5,10 @@
   "installCommand": "npm install",
   "rewrites": [
     {
+      "source": "/native-sso",
+      "destination": "/native-sso.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
