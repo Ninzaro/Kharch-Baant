@@ -17,30 +17,41 @@
       text-align: center;
       padding: 24px;
     }
-    a {
-      color: #a5b4fc;
+    a.btn {
+      display: block;
+      margin-top: 24px;
+      padding: 16px 24px;
+      border-radius: 12px;
+      background: #6366f1;
+      color: #fff;
+      font-weight: 600;
+      text-decoration: none;
     }
   </style>
 </head>
 <body>
   <div>
-    <p>Opening Kharch Baant…</p>
-    <p><a id="open" href="kharchbaant://sso-callback">Open the app</a></p>
+    <p>Sign-in complete. Return to the app:</p>
+    <a class="btn" id="open" href="kharchbaant://sso-callback">Open Kharch Baant</a>
   </div>
   <script>
     (function () {
       var q = window.location.search || '';
       var hash = window.location.hash || '';
+      if (hash && hash.indexOf('#Intent') === 0) hash = '';
       var appUrl = 'kharchbaant://sso-callback' + q + hash;
       var intentUrl =
         'intent://sso-callback' +
         q +
-        '#Intent;scheme=kharchbaant;package=com.kharchbaant.app;end';
-      document.getElementById('open').href = appUrl;
-      window.location.replace(appUrl);
-      setTimeout(function () {
-        window.location.replace(intentUrl);
-      }, 400);
+        '#Intent;scheme=kharchbaant;package=com.kharchbaant.app;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end';
+      var link = document.getElementById('open');
+      link.href = intentUrl;
+      link.addEventListener('click', function (e) {
+        e.preventDefault();
+        window.location.href = intentUrl;
+        setTimeout(function () { window.location.href = appUrl; }, 300);
+      });
+      window.location.href = intentUrl;
     })();
   </script>
 </body>

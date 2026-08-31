@@ -33,11 +33,10 @@ Google returns **HTTP 400 malformed** if OAuth runs inside the Capacitor WebView
 Closed-testing builds must:
 
 1. Ship a build that **does not** list `accounts.google.com` in `capacitor.config.ts` `server.allowNavigation`.
-2. In **Clerk Dashboard (Production) → Configure → Paths**, add **Allowed redirect URLs**:
-   - `kharchbaant://sso-callback`
-   - `https://www.motamaati.in`
-   - `https://www.motamaati.in/sso-callback`
-   - `https://www.motamaati.in/native-sso.html`
+2. In **Clerk Dashboard (Production)**:
+   - **Paths → Allowed redirect URLs** (web list, not only mobile SSO): `https://www.motamaati.in/native-sso.html`
+   - **Account Portal → Redirects** tab: after sign-in / after sign-up = `https://www.motamaati.in/native-sso.html`
+   - Mobile SSO allowlist: `https://www.motamaati.in/native-sso.html` and `kharchbaant://sso-callback`
 3. In **Clerk → SSO connections**, enable **Google**, **Apple**, and **Microsoft** with your own provider credentials (native buttons are already in the app).
 4. In **Google Cloud → OAuth client (Web)**, Authorized JavaScript origins should include:
    - `https://www.motamaati.in`

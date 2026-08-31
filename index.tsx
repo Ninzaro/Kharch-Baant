@@ -66,13 +66,23 @@ const initCapacitor = async () => {
         ) {
           try {
             void Browser.close().catch(() => {});
-            const q = rawUrl.includes('?') ? rawUrl.substring(rawUrl.indexOf('?')) : '';
-            const hashOnly = !q.includes('#') && rawUrl.includes('#')
-              ? rawUrl.substring(rawUrl.indexOf('#'))
-              : '';
+            let q = rawUrl.includes('?') ? rawUrl.substring(rawUrl.indexOf('?')) : '';
+            const hashIdx = q.indexOf('#');
+            let hashOnly = '';
+            if (hashIdx >= 0) {
+              hashOnly = q.substring(hashIdx);
+              q = q.substring(0, hashIdx);
+            } else if (rawUrl.includes('#')) {
+              hashOnly = rawUrl.substring(rawUrl.indexOf('#'));
+            }
+            // Stay on the Capacitor origin (https://localhost). If the WebView
+            // already loaded motamaati.in, a relative URL would stay on the website.
             const next = `/sso-callback${q}${hashOnly}`;
-            window.history.replaceState({}, '', next);
-            window.dispatchEvent(new PopStateEvent('popstate'));
+            if (/motamaati\.in$/i.test(window.location.hostname)) {
+              window.location.replace('https://localhost' + next);
+            } else {
+              window.location.replace(next);
+            }
           } catch (err) {
             console.error('Error handling SSO callback deep link:', err);
           }

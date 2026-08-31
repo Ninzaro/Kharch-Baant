@@ -16,13 +16,12 @@ const config: CapacitorConfig = {
     hostname: 'localhost',
     // Do NOT include accounts.google.com — Google OAuth inside the WebView
     // returns HTTP 400 "malformed". Let Google open in Chrome Custom Tabs.
+    // Do not allow www.motamaati.in in the WebView. After Google, Clerk
+    // returns to native-sso.html; if the WebView loads that page we leave
+    // the app bundle and cannot finish sign-in. Keep Google out too.
     allowNavigation: [
       '*.clerk.accounts.dev',
       '*.clerk.com',
-      'motamaati.in',
-      '*.motamaati.in',
-      'clerk.motamaati.in',
-      'accounts.motamaati.in',
     ],
     ...(devServerUrl
       ? { url: devServerUrl, cleartext: true }

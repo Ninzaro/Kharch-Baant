@@ -9,6 +9,22 @@
       "destination": "/native-sso.html"
     },
     {
+      "source": "/native-sso.html",
+      "destination": "/native-sso.html"
+    },
+    {
+      "source": "/.well-known/assetlinks.json",
+      "destination": "/.well-known/assetlinks.json"
+    },
+    {
+      "source": "/privacy.html",
+      "destination": "/privacy.html"
+    },
+    {
+      "source": "/account-deletion.html",
+      "destination": "/account-deletion.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
@@ -40,6 +56,15 @@
         {
           "key": "Cross-Origin-Opener-Policy",
           "value": "same-origin-allow-popups"
+        }
+      ]
+    },
+    {
+      "source": "/.well-known/assetlinks.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
         }
       ]
     }
