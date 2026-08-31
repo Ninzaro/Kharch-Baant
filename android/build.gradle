@@ -22,7 +22,13 @@ allprojects {
         google()
         mavenCentral()
     }
+    configurations.all {
+        resolutionStrategy {
+            force "androidx.browser:browser:${project.hasProperty('androidxBrowserVersion') ? project.androidxBrowserVersion : '1.8.0'}"
+        }
+    }
 }
+
 
 task clean(type: Delete) {
     delete rootProject.buildDir
