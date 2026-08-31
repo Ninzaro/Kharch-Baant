@@ -1,11 +1,26 @@
 import React from 'react';
 import { SignIn } from '@clerk/clerk-react';
 
-/** Web Clerk sign-in. Android uses WelcomeScreen → Clerk Account Portal in Chrome. */
-const AuthScreen: React.FC = () => {
+interface AuthScreenProps {
+  onBack?: () => void;
+}
+
+/** Web Clerk sign-in & Native Email/Password fallback. */
+const AuthScreen: React.FC<AuthScreenProps> = ({ onBack }) => {
   return (
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4 safe-area-top safe-area-bottom">
       <div className="w-full max-w-md flex flex-col items-center">
+        {onBack && (
+          <div className="w-full flex justify-start mb-4">
+            <button
+              type="button"
+              onClick={onBack}
+              className="text-xs font-medium text-muted-foreground hover:text-foreground flex items-center gap-1.5 py-1 px-2 rounded-lg bg-card border border-border transition-colors"
+            >
+              ← Back to options
+            </button>
+          </div>
+        )}
         <div className="text-center mb-6">
           <h1 className="text-4xl font-bold text-foreground mb-2" aria-hidden>
             💰
@@ -24,3 +39,4 @@ const AuthScreen: React.FC = () => {
 };
 
 export default AuthScreen;
+

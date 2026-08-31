@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { AuthenticateWithRedirectCallback, useClerk } from '@clerk/clerk-react';
 
 function sessionIdFromLocation(): string | null {
@@ -11,30 +11,29 @@ function sessionIdFromLocation(): string | null {
   return hashParams.get('__clerk_created_session') || hashParams.get('created_session_id');
 }
 
-function leaveSsoPath() {
-  window.history.replaceState({}, '', '/');
-  window.dispatchEvent(new PopStateEvent('popstate'));
-}
-
 /**
- * Finish OAuth inside the app. Never send Clerk to the Account Portal here —
- * that re-opens Chrome and loops with native-sso.html.
+ * Finish OAuth inside the app.
+ * Utilizes customNavigate to stay within the SPA without full page refreshes.
  */
 const SsoFinish: React.FC = () => {
   const { setActive } = useClerk();
   const [stuck, setStuck] = useState(false);
 
+  const handleNavigate = useCallback((to: string) => {
+    window.history.replaceState({}, '', to || '/');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  }, []);
+
   useEffect(() => {
     const sessionId = sessionIdFromLocation();
     if (sessionId) {
       void setActive({ session: sessionId }).catch((err) => {
-        console.error('setActive after SSO failed', err);
+        console.warn('Direct setActive failed, letting AuthenticateWithRedirectCallback proceed:', err);
       });
     }
     const timer = setTimeout(() => {
       setStuck(true);
-      leaveSsoPath();
-    }, 15000);
+    }, 12000);
     return () => clearTimeout(timer);
   }, [setActive]);
 
@@ -43,9 +42,22 @@ const SsoFinish: React.FC = () => {
       <div className="text-center max-w-sm">
         <div className="animate-spin rounded-full h-12 w-12 border-2 border-primary border-t-transparent mx-auto mb-4" />
         <p className="text-foreground font-medium mb-1">Completing sign in...</p>
-        <p className="text-xs text-muted-foreground">
-          {stuck ? 'Still working… you can close this and tap Get started again.' : 'Please wait a moment'}
+        <p className="text-xs text-muted-foreground mb-4">
+          {stuck
+            ? 'Taking longer than expected. You can return to try again.'
+            : 'Please wait a moment'}
         </p>
+
+        {stuck && (
+          <button
+            type="button"
+            onClick={() => handleNavigate('/')}
+            className="py-2 px-4 bg-primary text-primary-foreground rounded-lg font-medium text-xs hover:bg-primary/90 transition-colors shadow-sm"
+          >
+            Return to Sign In
+          </button>
+        )}
+
         <AuthenticateWithRedirectCallback
           signInUrl="/"
           signUpUrl="/"
@@ -54,6 +66,7 @@ const SsoFinish: React.FC = () => {
           continueSignUpUrl="/"
           firstFactorUrl="/"
           secondFactorUrl="/"
+          customNavigate={handleNavigate}
         />
       </div>
     </div>
@@ -61,3 +74,4 @@ const SsoFinish: React.FC = () => {
 };
 
 export default SsoFinish;
+

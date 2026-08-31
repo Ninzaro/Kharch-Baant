@@ -917,10 +917,13 @@ import AuthScreen from './components/auth/AuthScreen';
 import WelcomeScreen from './components/auth/WelcomeScreen';
 import SsoFinish from './components/auth/SsoFinish';
 import { useNativeOAuth } from './hooks/useNativeOAuth';
+import toast from 'react-hot-toast';
 
 const AppWithAuth: React.FC = () => {
     const { user, loading, isSyncing } = useAuth();
-    const { isNative, openAccountPortal } = useNativeOAuth();
+    const { isNative, startGoogleOAuth } = useNativeOAuth();
+    const [oauthLoading, setOauthLoading] = useState(false);
+    const [showEmailAuth, setShowEmailAuth] = useState(false);
     const [takingLong, setTakingLong] = useState(false);
     const [isSsoCallback, setIsSsoCallback] = useState(() => 
         typeof window !== 'undefined' && (
@@ -951,11 +954,15 @@ const AppWithAuth: React.FC = () => {
         const sub = CapacitorApp.addListener('backButton', () => {
             if (user) return;
             if (isSsoCallback || inviteInfo?.token) return;
+            if (showEmailAuth) {
+                setShowEmailAuth(false);
+                return;
+            }
             CapacitorApp.exitApp();
         });
         sub.then((l) => { handle = l; }).catch(() => {});
         return () => { handle?.remove(); };
-    }, [user, isNative, isSsoCallback, inviteInfo]);
+    }, [user, isNative, isSsoCallback, inviteInfo, showEmailAuth]);
 
     useEffect(() => {
         const syncFromLocation = () => {
@@ -1021,13 +1028,24 @@ const AppWithAuth: React.FC = () => {
 
     if (!user) {
         if (isNative) {
+            if (showEmailAuth) {
+                return <AuthScreen onBack={() => setShowEmailAuth(false)} />;
+            }
             return (
                 <WelcomeScreen
-                    onContinue={() => {
-                        void openAccountPortal().catch((err) => {
-                            console.error('Could not open Clerk sign-in', err);
-                        });
+                    loading={oauthLoading}
+                    onGoogleSignIn={async () => {
+                        setOauthLoading(true);
+                        try {
+                            await startGoogleOAuth();
+                        } catch (err: any) {
+                            console.error('Could not start Google sign-in', err);
+                            toast.error(err?.message || 'Could not start Google sign in.');
+                        } finally {
+                            setOauthLoading(false);
+                        }
                     }}
+                    onEmailSignIn={() => setShowEmailAuth(true)}
                 />
             );
         }
@@ -1037,4 +1055,4 @@ const AppWithAuth: React.FC = () => {
     return <App />;
 };
 
-export default AppWithAuth;
+export default AppWithAuth;
