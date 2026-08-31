@@ -15,9 +15,9 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onBack }) => {
             <button
               type="button"
               onClick={onBack}
-              className="text-xs font-medium text-muted-foreground hover:text-foreground flex items-center gap-1.5 py-1 px-2 rounded-lg bg-card border border-border transition-colors"
+              className="text-xs font-medium text-muted-foreground hover:text-foreground flex items-center gap-1.5 py-1.5 px-3 rounded-lg bg-card border border-border transition-colors shadow-sm"
             >
-              ← Back to options
+              ← Back
             </button>
           </div>
         )}

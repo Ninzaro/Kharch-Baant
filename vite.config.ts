@@ -136,6 +136,9 @@ export default defineConfig(({ mode }) => {
         'import.meta.env.VITE_CLERK_PUBLISHABLE_KEY': JSON.stringify(
           env.VITE_CLERK_PUBLISHABLE_KEY || process.env.VITE_CLERK_PUBLISHABLE_KEY || ''
         ),
+        'import.meta.env.VITE_GOOGLE_WEB_CLIENT_ID': JSON.stringify(
+          env.VITE_GOOGLE_WEB_CLIENT_ID || process.env.VITE_GOOGLE_WEB_CLIENT_ID || ''
+        ),
         'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(
           env.VITE_SUPABASE_URL || process.env.VITE_SUPABASE_URL || ''
         ),

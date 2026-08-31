@@ -22,6 +22,8 @@ const config: CapacitorConfig = {
     allowNavigation: [
       '*.clerk.accounts.dev',
       '*.clerk.com',
+      'clerk.motamaati.in',
+      'accounts.motamaati.in',
     ],
     ...(devServerUrl
       ? { url: devServerUrl, cleartext: true }

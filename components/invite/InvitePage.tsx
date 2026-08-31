@@ -1,8 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../contexts/SupabaseAuthContext';
 import { SignIn } from '@clerk/clerk-react';
-import { Capacitor } from '@capacitor/core';
-import { useNativeOAuth } from '../../hooks/useNativeOAuth';
 import { validateInvite, acceptInvite } from '../../services/supabaseApiService';
 import { supabase } from '../../lib/supabase';
 import type { Group, Person } from '../../types';
@@ -16,8 +14,6 @@ type InviteStatus = 'loading' | 'invalid' | 'valid' | 'accepted' | 'error';
 
 const InvitePage: React.FC = () => {
   const { user, person, isSyncing } = useAuth();
-  const { startGoogleOAuth } = useNativeOAuth();
-  const [oauthLoading, setOauthLoading] = useState(false);
   const qc = useQueryClient();
   const setSelectedGroupId = useAppStore(s => s.setSelectedGroupId);
 
@@ -231,43 +227,12 @@ const InvitePage: React.FC = () => {
               {!user ? (
                 <div>
                   <div className="bg-overlay/20 border border-border rounded-xl p-4 flex flex-col items-center">
-                    {Capacitor.isNativePlatform() ? (
-                      <div className="w-full space-y-3">
-                        <button
-                          type="button"
-                          disabled={oauthLoading}
-                          onClick={async () => {
-                            setOauthLoading(true);
-                            try {
-                              await startGoogleOAuth();
-                            } catch (err: any) {
-                              console.error('Invite sign-in error:', err);
-                              toast.error(err?.message || 'Could not start Google sign in');
-                            } finally {
-                              setOauthLoading(false);
-                            }
-                          }}
-                          className="w-full py-3 px-4 rounded-xl bg-card border border-border text-foreground font-medium flex items-center justify-center gap-2 hover:bg-card/80 transition-colors disabled:opacity-50"
-                        >
-                          {oauthLoading ? (
-                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent" />
-                          ) : (
-                            <span>Continue with Google</span>
-                          )}
-                        </button>
-                        <SignIn
-                          routing="virtual"
-                          fallbackRedirectUrl={window.location.href}
-                          signUpFallbackRedirectUrl={window.location.href}
-                        />
-                      </div>
-                    ) : (
-                      <SignIn
-                        routing="virtual"
-                        fallbackRedirectUrl={window.location.href}
-                        signUpFallbackRedirectUrl={window.location.href}
-                      />
-                    )}
+                    <SignIn
+                      routing="virtual"
+                      fallbackRedirectUrl={window.location.href}
+                      signUpFallbackRedirectUrl={window.location.href}
+                    />
+
                   </div>
                 </div>
               ) : (

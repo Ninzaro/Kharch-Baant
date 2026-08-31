@@ -921,8 +921,7 @@ import toast from 'react-hot-toast';
 
 const AppWithAuth: React.FC = () => {
     const { user, loading, isSyncing } = useAuth();
-    const { isNative, startGoogleOAuth } = useNativeOAuth();
-    const [oauthLoading, setOauthLoading] = useState(false);
+    const { isNative } = useNativeOAuth();
     const [showEmailAuth, setShowEmailAuth] = useState(false);
     const [takingLong, setTakingLong] = useState(false);
     const [isSsoCallback, setIsSsoCallback] = useState(() => 
@@ -1033,19 +1032,7 @@ const AppWithAuth: React.FC = () => {
             }
             return (
                 <WelcomeScreen
-                    loading={oauthLoading}
-                    onGoogleSignIn={async () => {
-                        setOauthLoading(true);
-                        try {
-                            await startGoogleOAuth();
-                        } catch (err: any) {
-                            console.error('Could not start Google sign-in', err);
-                            toast.error(err?.message || 'Could not start Google sign in.');
-                        } finally {
-                            setOauthLoading(false);
-                        }
-                    }}
-                    onEmailSignIn={() => setShowEmailAuth(true)}
+                    onContinue={() => setShowEmailAuth(true)}
                 />
             );
         }
@@ -1054,5 +1041,6 @@ const AppWithAuth: React.FC = () => {
 
     return <App />;
 };
+
 
 export default AppWithAuth;

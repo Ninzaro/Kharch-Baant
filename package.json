@@ -32,6 +32,7 @@
     "@capacitor/keyboard": "^7.0.3",
     "@capacitor/splash-screen": "^7.0.3",
     "@capacitor/status-bar": "^7.0.3",
+    "@capgo/capacitor-social-login": "^7.20.0",
     "@clerk/clerk-react": "^5.61.9",
     "@sentry/react": "^10.48.0",
     "@supabase/supabase-js": "^2.58.0",
