@@ -911,11 +911,11 @@ const App: React.FC = () => {
 }
 
 // Show sign-in screen when not authenticated
-import { AuthenticateWithRedirectCallback } from '@clerk/clerk-react';
 import { Capacitor } from '@capacitor/core';
 import { App as CapacitorApp } from '@capacitor/app';
 import AuthScreen from './components/auth/AuthScreen';
 import WelcomeScreen from './components/auth/WelcomeScreen';
+import SsoFinish from './components/auth/SsoFinish';
 import { useNativeOAuth } from './hooks/useNativeOAuth';
 
 const AppWithAuth: React.FC = () => {
@@ -978,20 +978,15 @@ const AppWithAuth: React.FC = () => {
         return () => window.removeEventListener('popstate', syncFromLocation);
     }, []);
 
+    useEffect(() => {
+        if (user && isSsoCallback) {
+            window.history.replaceState({}, '', '/');
+            setIsSsoCallback(false);
+        }
+    }, [user, isSsoCallback]);
+
     if (isSsoCallback) {
-        return (
-            <div className="h-screen w-screen flex items-center justify-center bg-background text-foreground font-sans p-6">
-                <div className="text-center max-w-sm">
-                    <div className="animate-spin rounded-full h-12 w-12 border-2 border-primary border-t-transparent mx-auto mb-4" />
-                    <p className="text-foreground font-medium mb-1">Completing sign in...</p>
-                    <p className="text-xs text-muted-foreground">Please wait a moment</p>
-                    <AuthenticateWithRedirectCallback 
-                        signInFallbackRedirectUrl="/"
-                        signUpFallbackRedirectUrl="/"
-                    />
-                </div>
-            </div>
-        );
+        return <SsoFinish />;
     }
 
     if (loading) {

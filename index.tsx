@@ -80,9 +80,13 @@ const initCapacitor = async () => {
             const next = `/sso-callback${q}${hashOnly}`;
             if (/motamaati\.in$/i.test(window.location.hostname)) {
               window.location.replace('https://localhost' + next);
-            } else {
-              window.location.replace(next);
+              return;
             }
+            if (window.location.pathname + window.location.search + window.location.hash === next) {
+              return;
+            }
+            window.history.replaceState({}, '', next);
+            window.dispatchEvent(new PopStateEvent('popstate'));
           } catch (err) {
             console.error('Error handling SSO callback deep link:', err);
           }
