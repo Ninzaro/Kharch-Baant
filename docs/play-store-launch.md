@@ -28,7 +28,9 @@ Use this after Phase A/B security work. Code cannot finish Play Console or Clerk
 
 ## Native Google login (closed testing)
 
-Google returns **HTTP 400 malformed** if OAuth runs inside the Capacitor WebView. Closed-testing builds must:
+Google returns **HTTP 400 malformed** if OAuth runs inside the Capacitor WebView. Opening `clerk.motamaati.in` (Frontend API) in Chrome Custom Tabs returns JSON `authorization_invalid` — that host is not a web page. Native Google must use Clerk **Account Portal** (`https://accounts.motamaati.in/sign-in`) in Custom Tabs, then `kharchbaant://sso-callback`.
+
+Closed-testing builds must:
 
 1. Ship a build that **does not** list `accounts.google.com` in `capacitor.config.ts` `server.allowNavigation`.
 2. In **Clerk Dashboard (Production) → Configure → Paths**, add **Allowed redirect URLs**:
