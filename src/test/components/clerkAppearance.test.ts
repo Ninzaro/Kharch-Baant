@@ -3,8 +3,9 @@ import { nativeHideClerkSocials, NATIVE_SSO_REDIRECT } from '../../../components
 import { NATIVE_OAUTH_PROVIDERS } from '../../../hooks/useNativeOAuth';
 
 describe('native OAuth', () => {
-  it('hides Clerk social buttons on native so Custom Tabs can be used instead', () => {
-    expect(nativeHideClerkSocials.socialButtonsRoot.display).toBe('none');
+  it('hides Clerk provider buttons but not the whole social root (that breaks email)', () => {
+    expect(nativeHideClerkSocials.socialButtonsBlockButton__google.display).toBe('none');
+    expect(nativeHideClerkSocials).not.toHaveProperty('socialButtonsRoot');
     expect(NATIVE_SSO_REDIRECT).toBe('kharchbaant://sso-callback');
   });
 
