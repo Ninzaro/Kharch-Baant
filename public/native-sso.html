@@ -18,7 +18,7 @@
       padding: 24px;
     }
     a.btn {
-      display: block;
+      display: inline-block;
       margin-top: 24px;
       padding: 16px 24px;
       border-radius: 12px;
@@ -27,31 +27,100 @@
       font-weight: 600;
       text-decoration: none;
     }
+    .muted { color: #94a3b8; font-size: 14px; }
   </style>
+  <script
+    async
+    crossorigin="anonymous"
+    data-clerk-publishable-key="__CLERK_PUBLISHABLE_KEY__"
+    src="https://clerk.motamaati.in/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
+  ></script>
 </head>
 <body>
   <div>
-    <p>Sign-in complete.</p>
-    <a class="btn" id="open" href="kharchbaant://sso-callback">Open Kharch Baant</a>
+    <p id="msg">Finishing sign-in…</p>
+    <p class="muted" id="hint"></p>
+    <a class="btn" id="open" href="kharchbaant://sso-callback" style="display:none">Open Kharch Baant</a>
   </div>
   <script>
     (function () {
-      var q = window.location.search || '';
-      var hash = window.location.hash || '';
-      if (hash.indexOf('#Intent') === 0) hash = '';
-      var appUrl = 'kharchbaant://sso-callback' + q + hash;
-      var intentUrl =
-        'intent://sso-callback' +
-        q +
-        '#Intent;scheme=kharchbaant;package=com.kharchbaant.app;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end';
-      var link = document.getElementById('open');
-      link.href = intentUrl;
-      link.addEventListener('click', function (e) {
-        e.preventDefault();
-        window.location.href = intentUrl;
-        setTimeout(function () { window.location.href = appUrl; }, 400);
-      });
-      // Do not auto-redirect. That loops: app → Clerk portal → this page → app.
+      var open = document.getElementById('open');
+      var msg = document.getElementById('msg');
+      var hint = document.getElementById('hint');
+
+      function appLink(sessionId) {
+        var q = window.location.search || '';
+        if (sessionId) {
+          q += (q ? '&' : '?') + '__clerk_created_session=' + encodeURIComponent(sessionId);
+        }
+        return 'kharchbaant://sso-callback' + q;
+      }
+
+      function intentLink(sessionId) {
+        var q = window.location.search || '';
+        if (sessionId) {
+          q += (q ? '&' : '?') + '__clerk_created_session=' + encodeURIComponent(sessionId);
+        }
+        return (
+          'intent://sso-callback' +
+          q +
+          '#Intent;scheme=kharchbaant;package=com.kharchbaant.app;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end'
+        );
+      }
+
+      function showButton(sessionId) {
+        var app = appLink(sessionId);
+        var intent = intentLink(sessionId);
+        open.href = intent;
+        open.style.display = 'inline-block';
+        open.onclick = function (e) {
+          e.preventDefault();
+          window.location.href = intent;
+          setTimeout(function () { window.location.href = app; }, 400);
+        };
+        msg.textContent = 'Sign-in complete.';
+        hint.textContent = 'Tap the button if the app does not open.';
+        if (sessionId) {
+          window.location.href = intent;
+        }
+      }
+
+      function waitForClerk(attempt) {
+        if (window.Clerk && window.Clerk.load) {
+          window.Clerk.load()
+            .then(function () {
+              var session = window.Clerk.session;
+              if (session && session.id) {
+                showButton(session.id);
+                return;
+              }
+              window.Clerk.addListener(function (res) {
+                if (res.session && res.session.id) showButton(res.session.id);
+              });
+              msg.textContent = 'Waiting for Clerk session…';
+              hint.textContent = 'If this stays here, close Chrome and tap Get started again.';
+              setTimeout(function () {
+                if (window.Clerk.session && window.Clerk.session.id) {
+                  showButton(window.Clerk.session.id);
+                }
+              }, 2000);
+            })
+            .catch(function (err) {
+              console.error(err);
+              msg.textContent = 'Could not read the Clerk session.';
+              showButton(null);
+            });
+          return;
+        }
+        if (attempt > 50) {
+          msg.textContent = 'Clerk did not load.';
+          showButton(null);
+          return;
+        }
+        setTimeout(function () { waitForClerk(attempt + 1); }, 100);
+      }
+
+      waitForClerk(0);
     })();
   </script>
 </body>
