@@ -1,12 +1,16 @@
 import { Capacitor } from '@capacitor/core';
 import { SocialLogin } from '@capgo/capacitor-social-login';
 
+export const GOOGLE_WEB_CLIENT_ID =
+  import.meta.env.VITE_GOOGLE_WEB_CLIENT_ID ||
+  '1042927142025-7qtde6trtg8vm1rkb2j2pae02b0ri3f4.apps.googleusercontent.com';
+
 let isInitialized = false;
 
 export async function initNativeGoogleAuth(): Promise<void> {
   if (!Capacitor.isNativePlatform() || isInitialized) return;
 
-  const webClientId = import.meta.env.VITE_GOOGLE_WEB_CLIENT_ID || '';
+  const webClientId = GOOGLE_WEB_CLIENT_ID;
   if (!webClientId) {
     console.warn('VITE_GOOGLE_WEB_CLIENT_ID is not configured.');
     return;

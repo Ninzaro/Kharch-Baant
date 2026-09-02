@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { SignIn } from '@clerk/clerk-react';
+import { SignIn, useClerk } from '@clerk/clerk-react';
 import { Capacitor } from '@capacitor/core';
-import { openAccountPortal } from '../../hooks/useNativeOAuth';
+import { performNativeGoogleSignIn } from '../../services/nativeGoogleAuth';
+import toast from 'react-hot-toast';
 
 interface AuthScreenProps {
   onBack?: () => void;
@@ -28,17 +29,51 @@ const GoogleIcon: React.FC<{ className?: string }> = ({ className = 'w-5 h-5' })
   </svg>
 );
 
-/** Web Clerk sign-in & Native Email/Password fallback with Account Portal Google OAuth. */
+/** Web Clerk sign-in & Native Credential Manager Google Sign-In with in-app email fallback. */
 const AuthScreen: React.FC<AuthScreenProps> = ({ onBack }) => {
+  const clerk = useClerk();
   const isNative = Capacitor.isNativePlatform();
   const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleGoogleSignIn = async () => {
+    if (googleLoading) return;
     setGoogleLoading(true);
+
     try {
-      await openAccountPortal();
+      // 1. Native Google Sign-In via Credential Manager bottom sheet
+      const { idToken } = await performNativeGoogleSignIn();
+      if (!idToken) {
+        throw new Error('No Google ID token received.');
+      }
+
+      // 2. Pass ID token to Clerk Google One Tap handler
+      const signInOrUp = await (clerk as any).authenticateWithGoogleOneTap({
+        token: idToken,
+      });
+
+      // 3. Complete Clerk session activation
+      await (clerk as any).handleGoogleOneTapCallback(signInOrUp, {
+        signInFallbackRedirectUrl: '/',
+        signUpFallbackRedirectUrl: '/',
+      });
     } catch (err: any) {
-      console.error('Error opening Google Sign-In:', err);
+      console.error('Native Google Sign-In error:', err);
+      const msg = err?.message || String(err);
+      if (
+        msg.includes('cancel') ||
+        msg.includes('Abort') ||
+        msg.includes('NoCredentialException') ||
+        msg.includes('User cancelled')
+      ) {
+        console.log('Google sign-in was cancelled by user.');
+      } else {
+        toast.error(
+          err?.errors?.[0]?.longMessage ||
+          err?.errors?.[0]?.message ||
+          msg ||
+          'Google Sign-In failed'
+        );
+      }
     } finally {
       setGoogleLoading(false);
     }
@@ -79,8 +114,9 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onBack }) => {
               ) : (
                 <GoogleIcon className="w-5 h-5 shrink-0" />
               )}
-              <span>{googleLoading ? 'Opening browser...' : 'Continue with Google'}</span>
+              <span>{googleLoading ? 'Signing in with Google...' : 'Continue with Google'}</span>
             </button>
+
 
             <div className="relative w-full my-4 text-center">
               <div className="absolute inset-0 flex items-center">
