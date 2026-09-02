@@ -120,8 +120,19 @@
         setTimeout(function () { waitForClerk(attempt + 1); }, 100);
       }
 
-      waitForClerk(0);
+      var params = new URLSearchParams(window.location.search);
+      var querySessionId =
+        params.get('__clerk_created_session') ||
+        params.get('created_session_id') ||
+        params.get('session_id');
+
+      if (querySessionId) {
+        showButton(querySessionId);
+      } else {
+        waitForClerk(0);
+      }
     })();
   </script>
+
 </body>
 </html>

@@ -13,11 +13,14 @@ function sessionIdFromLocation(): string | null {
 
 /**
  * Finish OAuth inside the app.
- * Utilizes customNavigate to stay within the SPA without full page refreshes.
+ * If sessionId is present (from Chrome SSO callback), activate it directly.
+ * Only mount AuthenticateWithRedirectCallback if there is no direct sessionId.
  */
 const SsoFinish: React.FC = () => {
   const { setActive } = useClerk();
-  const [stuck, setStuck] = useState(false);
+  const [sessionId] = useState<string | null>(() => sessionIdFromLocation());
+  const [status, setStatus] = useState<'working' | 'error' | 'success'>('working');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleNavigate = useCallback((to: string) => {
     window.history.replaceState({}, '', to || '/');
@@ -25,39 +28,105 @@ const SsoFinish: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const sessionId = sessionIdFromLocation();
-    if (sessionId) {
-      void setActive({ session: sessionId }).catch((err) => {
-        console.warn('Direct setActive failed, letting AuthenticateWithRedirectCallback proceed:', err);
-      });
-    }
-    const timer = setTimeout(() => {
-      setStuck(true);
-    }, 12000);
-    return () => clearTimeout(timer);
-  }, [setActive]);
+    if (!sessionId) return;
 
+    let isMounted = true;
+    (async () => {
+      try {
+        console.log('Activating Clerk session from SSO callback:', sessionId);
+        await setActive({ session: sessionId });
+        if (isMounted) {
+          setStatus('success');
+          handleNavigate('/');
+        }
+      } catch (err: any) {
+        console.error('Error activating session:', err);
+        if (isMounted) {
+          setStatus('error');
+          setErrorMessage(
+            err?.errors?.[0]?.longMessage ||
+            err?.errors?.[0]?.message ||
+            err?.message ||
+            'Failed to complete sign in.'
+          );
+        }
+      }
+    })();
+
+    const timer = setTimeout(() => {
+      if (isMounted && status === 'working') {
+        setStatus('error');
+        setErrorMessage('Sign-in took longer than expected. Please try again.');
+      }
+    }, 15000);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, [sessionId, setActive, handleNavigate, status]);
+
+  if (sessionId) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-background text-foreground font-sans p-6 safe-area-top safe-area-bottom">
+        <div className="text-center max-w-sm">
+          {status === 'working' && (
+            <>
+              <div className="animate-spin rounded-full h-12 w-12 border-2 border-primary border-t-transparent mx-auto mb-4" />
+              <p className="text-foreground font-medium mb-1">Completing sign in...</p>
+              <p className="text-xs text-muted-foreground mb-4">Connecting your account, please wait</p>
+            </>
+          )}
+
+          {status === 'error' && (
+            <div className="p-6 bg-card border border-border rounded-2xl shadow-xl space-y-4">
+              <div className="text-3xl">⚠️</div>
+              <h3 className="text-base font-bold text-foreground">Could not complete sign in</h3>
+              <p className="text-xs text-muted-foreground">{errorMessage}</p>
+              <div className="flex flex-col gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStatus('working');
+                    setErrorMessage(null);
+                    void setActive({ session: sessionId })
+                      .then(() => handleNavigate('/'))
+                      .catch((err: any) => {
+                        setStatus('error');
+                        setErrorMessage(
+                          err?.errors?.[0]?.longMessage ||
+                          err?.errors?.[0]?.message ||
+                          err?.message ||
+                          'Retry failed.'
+                        );
+                      });
+                  }}
+                  className="w-full py-2.5 px-4 bg-primary text-primary-foreground rounded-xl font-medium text-xs hover:bg-primary/90 transition-colors shadow-sm"
+                >
+                  Retry
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleNavigate('/')}
+                  className="w-full py-2 px-4 bg-card border border-border text-foreground rounded-xl font-medium text-xs hover:bg-card/80 transition-colors shadow-sm"
+                >
+                  Back to Sign In
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback for direct redirects with __clerk_status params
   return (
-    <div className="h-screen w-screen flex items-center justify-center bg-background text-foreground font-sans p-6">
+    <div className="h-screen w-screen flex items-center justify-center bg-background text-foreground font-sans p-6 safe-area-top safe-area-bottom">
       <div className="text-center max-w-sm">
         <div className="animate-spin rounded-full h-12 w-12 border-2 border-primary border-t-transparent mx-auto mb-4" />
         <p className="text-foreground font-medium mb-1">Completing sign in...</p>
-        <p className="text-xs text-muted-foreground mb-4">
-          {stuck
-            ? 'Taking longer than expected. You can return to try again.'
-            : 'Please wait a moment'}
-        </p>
-
-        {stuck && (
-          <button
-            type="button"
-            onClick={() => handleNavigate('/')}
-            className="py-2 px-4 bg-primary text-primary-foreground rounded-lg font-medium text-xs hover:bg-primary/90 transition-colors shadow-sm"
-          >
-            Return to Sign In
-          </button>
-        )}
-
+        <p className="text-xs text-muted-foreground mb-4">Please wait a moment</p>
         <AuthenticateWithRedirectCallback
           signInUrl="/"
           signUpUrl="/"
@@ -74,4 +143,5 @@ const SsoFinish: React.FC = () => {
 };
 
 export default SsoFinish;
+
 
