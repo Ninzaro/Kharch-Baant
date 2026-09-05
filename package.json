@@ -17,14 +17,14 @@
     "test:e2e:auth": "playwright test --project=chromium-auth",
     "android:sync": "npm run build && npx cap sync android",
     "android:open": "npx cap open android",
-    "android:run": "powershell -Command \"$env:JAVA_HOME='E:\\Program Files\\Java\\jdk-21'; npm run android:sync; if ($?) { npx cap run android }\"",
-    "android:build": "powershell -Command \"$env:JAVA_HOME='E:\\Program Files\\Java\\jdk-21'; npm run build; npx cap sync android; cd android; .\\gradlew.bat assembleDebug\"",
+    "android:run": "powershell -Command \"$env:JAVA_HOME='C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.12.8-hotspot'; $env:ANDROID_HOME=\\\"$env:LOCALAPPDATA\\Android\\Sdk\\\"; $env:Path = \\\"$env:LOCALAPPDATA\\Android\\Sdk\\platform-tools;$env:Path\\\"; npm run android:sync; if ($?) { npx cap run android }\"",
+    "android:build": "powershell -Command \"$env:JAVA_HOME='C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.12.8-hotspot'; $env:ANDROID_HOME=\\\"$env:LOCALAPPDATA\\Android\\Sdk\\\"; $env:Path = \\\"$env:LOCALAPPDATA\\Android\\Sdk\\platform-tools;$env:Path\\\"; npm run build; npx cap sync android; cd android; .\\gradlew.bat assembleDebug\"",
     "android:keystore": "powershell -ExecutionPolicy Bypass -File scripts/create-release-keystore.ps1",
     "android:assert-release": "node scripts/assert-android-release.mjs",
     "android:build:release": "powershell -ExecutionPolicy Bypass -File scripts/android-release.ps1"
   },
   "dependencies": {
-    "@capacitor/android": "^7.4.4",
+    "@capacitor/android": "^7.6.9",
     "@capacitor/app": "^7.1.0",
     "@capacitor/browser": "^7.0.5",
     "@capacitor/cli": "^7.4.4",
@@ -56,8 +56,8 @@
     "@testing-library/user-event": "^14.5.2",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
-    "@vitest/coverage-v8": "^2.1.9",
-    "@vitest/ui": "^2.1.8",
+    "@vitest/coverage-v8": "^5.0.0",
+    "@vitest/ui": "^5.0.0",
     "autoprefixer": "^10.4.21",
     "jsdom": "^25.0.1",
     "madge": "^8.0.0",
@@ -67,7 +67,7 @@
     "terser": "^5.44.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0",
-    "vite-plugin-node-polyfills": "^0.24.0",
-    "vitest": "^2.1.8"
+    "vite-plugin-node-polyfills": "^0.2.0",
+    "vitest": "^5.0.0"
   }
 }

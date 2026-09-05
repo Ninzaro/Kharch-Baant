@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { NATIVE_SSO_REDIRECT, NATIVE_PORTAL_RETURN_URL } from '../../../components/auth/clerkAppearance';
+import { EMAIL_ONLY_CLERK_APPEARANCE, NATIVE_PORTAL_RETURN_URL } from '../../../components/auth/clerkAppearance';
 import {
   buildAccountPortalOAuthUrl,
   CLERK_ACCOUNT_PORTAL_SIGN_IN,
@@ -14,11 +14,19 @@ vi.mock('@capacitor/browser', () => ({
 }));
 
 describe('native OAuth', () => {
+  it('hides Clerk social SSO so only email/password remains', () => {
+    expect(EMAIL_ONLY_CLERK_APPEARANCE.elements.socialButtons.display).toBe('none');
+    expect(EMAIL_ONLY_CLERK_APPEARANCE.elements.socialButtonsBlockButton.display).toBe('none');
+    expect(EMAIL_ONLY_CLERK_APPEARANCE.elements.dividerRow.display).toBe('none');
+  });
+
   it('asks Clerk to return to the HTTPS bounce page, not the website home', () => {
     const url = buildAccountPortalOAuthUrl();
     expect(url.startsWith(CLERK_ACCOUNT_PORTAL_SIGN_IN)).toBe(true);
     expect(url).toContain(encodeURIComponent(NATIVE_PORTAL_RETURN_URL));
     expect(url).not.toContain('clerk.motamaati.in');
+    expect(url).not.toContain('sign_in_force_redirect_url');
+    expect(url).not.toContain('sign_up_force_redirect_url');
   });
 
   it('initiates Google OAuth via signIn.create and opens Browser with externalVerificationRedirectURL', async () => {
@@ -34,8 +42,8 @@ describe('native OAuth', () => {
 
     expect(mockSignIn.create).toHaveBeenCalledWith({
       strategy: 'oauth_google',
-      redirectUrl: NATIVE_SSO_REDIRECT,
-      actionCompleteRedirectUrl: NATIVE_SSO_REDIRECT,
+      redirectUrl: NATIVE_PORTAL_RETURN_URL,
+      actionCompleteRedirectUrl: NATIVE_PORTAL_RETURN_URL,
     });
     expect(Browser.open).toHaveBeenCalledWith({
       url: 'https://accounts.google.com/o/oauth2/v2/auth?test=1',
@@ -61,8 +69,8 @@ describe('native OAuth', () => {
     expect(mockSignIn.create).toHaveBeenCalled();
     expect(mockSignUp.create).toHaveBeenCalledWith({
       strategy: 'oauth_google',
-      redirectUrl: NATIVE_SSO_REDIRECT,
-      actionCompleteRedirectUrl: NATIVE_SSO_REDIRECT,
+      redirectUrl: NATIVE_PORTAL_RETURN_URL,
+      actionCompleteRedirectUrl: NATIVE_PORTAL_RETURN_URL,
     });
     expect(Browser.open).toHaveBeenCalledWith({
       url: 'https://accounts.google.com/o/oauth2/v2/auth?signup=1',

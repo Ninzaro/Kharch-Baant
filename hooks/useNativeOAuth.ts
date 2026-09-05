@@ -1,7 +1,7 @@
 import { Capacitor } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
 import { useSignIn, useSignUp } from '@clerk/clerk-react';
-import { NATIVE_SSO_REDIRECT, NATIVE_PORTAL_RETURN_URL } from '../components/auth/clerkAppearance';
+import { NATIVE_PORTAL_RETURN_URL } from '../components/auth/clerkAppearance';
 
 /** Clerk Account Portal (HTML). Never open clerk.motamaati.in (FAPI) in a browser tab. */
 export const CLERK_ACCOUNT_PORTAL_SIGN_IN = 'https://accounts.motamaati.in/sign-in';
@@ -11,8 +11,6 @@ export function buildAccountPortalOAuthUrl(): string {
   url.searchParams.set('redirect_url', NATIVE_PORTAL_RETURN_URL);
   url.searchParams.set('after_sign_in_url', NATIVE_PORTAL_RETURN_URL);
   url.searchParams.set('after_sign_up_url', NATIVE_PORTAL_RETURN_URL);
-  url.searchParams.set('sign_in_force_redirect_url', NATIVE_PORTAL_RETURN_URL);
-  url.searchParams.set('sign_up_force_redirect_url', NATIVE_PORTAL_RETURN_URL);
   return url.toString();
 }
 
@@ -38,8 +36,8 @@ export async function startNativeGoogleOAuth(
   try {
     const signInAttempt = await signIn.create({
       strategy: 'oauth_google',
-      redirectUrl: NATIVE_SSO_REDIRECT,
-      actionCompleteRedirectUrl: NATIVE_SSO_REDIRECT,
+      redirectUrl: NATIVE_PORTAL_RETURN_URL,
+      actionCompleteRedirectUrl: NATIVE_PORTAL_RETURN_URL,
     });
 
     const redirectUrlObj = signInAttempt.firstFactorVerification?.externalVerificationRedirectURL;
@@ -50,8 +48,8 @@ export async function startNativeGoogleOAuth(
       try {
         const signUpAttempt = await signUp.create({
           strategy: 'oauth_google',
-          redirectUrl: NATIVE_SSO_REDIRECT,
-          actionCompleteRedirectUrl: NATIVE_SSO_REDIRECT,
+          redirectUrl: NATIVE_PORTAL_RETURN_URL,
+          actionCompleteRedirectUrl: NATIVE_PORTAL_RETURN_URL,
         });
         const redirectUrlObj = signUpAttempt.verifications?.externalAccount?.externalVerificationRedirectURL;
         externalUrl = redirectUrlObj ? redirectUrlObj.toString() : undefined;

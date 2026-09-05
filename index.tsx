@@ -75,13 +75,9 @@ const initCapacitor = async () => {
             } else if (rawUrl.includes('#')) {
               hashOnly = rawUrl.substring(rawUrl.indexOf('#'));
             }
-            // Stay on the Capacitor origin (https://localhost). If the WebView
-            // already loaded motamaati.in, a relative URL would stay on the website.
+            // Stay on the Capacitor origin (hostname is www.motamaati.in for pk_live).
+            // Do not bounce to https://localhost — production Clerk keys reject that origin.
             const next = `/sso-callback${q}${hashOnly}`;
-            if (/motamaati\.in$/i.test(window.location.hostname)) {
-              window.location.replace('https://localhost' + next);
-              return;
-            }
             if (window.location.pathname + window.location.search + window.location.hash === next) {
               return;
             }

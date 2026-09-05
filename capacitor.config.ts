@@ -13,7 +13,9 @@ const config: CapacitorConfig = {
 
   server: {
     androidScheme: 'https',
-    hostname: 'localhost',
+    // pk_live only allows Origin under motamaati.in. `localhost` makes Clerk
+    // hang on "Connecting to authentication..." (origin_invalid).
+    hostname: 'www.motamaati.in',
     // Do NOT include accounts.google.com — Google OAuth inside the WebView
     // returns HTTP 400 "malformed". Let Google open in Chrome Custom Tabs.
     // Do not allow www.motamaati.in in the WebView. After Google, Clerk
@@ -38,7 +40,7 @@ const config: CapacitorConfig = {
 
   plugins: {
     CapacitorHttp: {
-      enabled: true
+      enabled: false
     },
     SplashScreen: {
       launchShowDuration: 2000,

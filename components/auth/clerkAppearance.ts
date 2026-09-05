@@ -1,3 +1,13 @@
+/** Hide Clerk social SSO (Google / Apple / Microsoft). Email + password only. */
+export const EMAIL_ONLY_CLERK_APPEARANCE = {
+  elements: {
+    socialButtons: { display: 'none' },
+    socialButtonsBlockButton: { display: 'none' },
+    socialButtonsRoot: { display: 'none' },
+    dividerRow: { display: 'none' },
+  },
+};
+
 /** Deep-link into the Android app after Clerk finishes in Chrome. */
 export const NATIVE_SSO_REDIRECT = 'kharchbaant://sso-callback';
 
