@@ -3,6 +3,7 @@ package com.kharchbaant.app
 import android.util.Log
 import com.clerk.api.Clerk
 import com.clerk.api.auth.types.IdTokenProvider
+import com.clerk.api.signin.SignIn
 import com.getcapacitor.JSObject
 import com.getcapacitor.Plugin
 import com.getcapacitor.PluginCall
@@ -53,7 +54,11 @@ class ClerkNativeAuthPlugin : Plugin() {
                 ret.put("token", jwt)
                 call.resolve(ret)
             } catch (e: Exception) {
-                Log.e(TAG, "Native Clerk authentication failed: ${e.javaClass.simpleName}")
+                Log.e(
+                    TAG,
+                    "Native Clerk authentication failed: ${e.javaClass.name}: ${e.message}",
+                    e
+                )
                 call.reject("Native Clerk authentication failed.")
             }
         }
@@ -65,20 +70,16 @@ class ClerkNativeAuthPlugin : Plugin() {
             Clerk.attachActivity(currentActivity)
         }
 
-        if (!Clerk.isInitialized.value) {
-            val key = if (publishableKeyFromJs.startsWith("pk_")) {
-                publishableKeyFromJs
-            } else {
-                currentActivity?.getString(R.string.clerk_publishable_key).orEmpty().trim()
-            }
-            if (!key.startsWith("pk_")) {
-                throw IllegalStateException("Missing Clerk publishable key for native initialization.")
-            }
-            val context = currentActivity ?: bridge.context
-            Clerk.initialize(context, key)
-            if (currentActivity != null) {
-                Clerk.attachActivity(currentActivity)
-            }
+        val key = if (publishableKeyFromJs.startsWith("pk_")) {
+            publishableKeyFromJs
+        } else {
+            currentActivity?.getString(R.string.clerk_publishable_key).orEmpty().trim()
+        }
+        val context = currentActivity ?: bridge.context
+        KharchBaantApp.initializeClerkOnce(context, key)
+
+        if (currentActivity != null) {
+            Clerk.attachActivity(currentActivity)
         }
 
         withTimeout(20_000) {
@@ -87,28 +88,82 @@ class ClerkNativeAuthPlugin : Plugin() {
     }
 
     private suspend fun authenticateNativeClerk(googleIdToken: String) {
-        val signInResult = Clerk.auth.signInWithIdToken {
-            token = googleIdToken
-            provider = IdTokenProvider.GOOGLE
-        }
-
-        val sessionId = if (ClerkResults.isSuccess(signInResult)) {
-            ClerkResults.sessionIdFromSuccess(signInResult)
-        } else {
-            val signUpResult = Clerk.auth.signUpWithIdToken(googleIdToken, IdTokenProvider.GOOGLE)
-            if (!ClerkResults.isSuccess(signUpResult)) {
-                throw IllegalStateException("Native Clerk authentication failed.")
+        try {
+            // Unified ID-token API: POST /v1/client/sign_ins strategy=google_one_tap + token.
+            val signInResult = Clerk.auth.signInWithIdToken {
+                token = googleIdToken
+                provider = IdTokenProvider.GOOGLE
             }
-            ClerkResults.sessionIdFromSuccess(signUpResult)
-        }
 
-        if (!sessionId.isNullOrBlank()) {
-            Clerk.auth.setActive(sessionId = sessionId)
-        }
+            val sessionId = if (ClerkResults.isSuccess(signInResult)) {
+                ClerkResults.sessionIdFromSuccess(signInResult)
+            } else {
+                val signInCode = ClerkResults.failureCode(signInResult)
+                Log.i(TAG, "Native Clerk sign-in with ID token did not complete: $signInCode")
 
-        if (Clerk.activeSession == null) {
-            throw IllegalStateException("Native Clerk authentication did not produce an active session.")
+                when {
+                    ClerkResults.isExternalAccountExists(signInCode) -> {
+                        transferExistingExternalAccount()
+                    }
+                    ClerkResults.isAccountNotFound(signInCode) -> {
+                        signUpOrTransferExisting(googleIdToken)
+                    }
+                    else -> {
+                        throw IllegalStateException(
+                            "Native Clerk authentication failed: ${ClerkResults.failureDetail(signInResult)}",
+                            ClerkResults.failureThrowable(signInResult)
+                        )
+                    }
+                }
+            }
+
+            if (!sessionId.isNullOrBlank()) {
+                Clerk.auth.setActive(sessionId = sessionId)
+            }
+
+            if (Clerk.activeSession == null) {
+                throw IllegalStateException(
+                    "Native Clerk authentication did not produce an active session."
+                )
+            }
+        } catch (e: Exception) {
+            if (e is IllegalStateException && e.message?.startsWith("Native Clerk authentication failed") == true) {
+                throw e
+            }
+            throw IllegalStateException("Native Clerk authentication failed: ${e.message}", e)
         }
+    }
+
+    /**
+     * New Google identities only. Returning users must not hit this path:
+     * sign-up with an existing Google external account returns external_account_exists.
+     */
+    private suspend fun signUpOrTransferExisting(googleIdToken: String): String? {
+        val signUpResult = Clerk.auth.signUpWithIdToken(googleIdToken, IdTokenProvider.GOOGLE)
+        if (ClerkResults.isSuccess(signUpResult)) {
+            return ClerkResults.sessionIdFromSuccess(signUpResult)
+        }
+        val signUpCode = ClerkResults.failureCode(signUpResult)
+        if (ClerkResults.isExternalAccountExists(signUpCode)) {
+            return transferExistingExternalAccount()
+        }
+        throw IllegalStateException(
+            "Native Clerk authentication failed: ${ClerkResults.failureDetail(signUpResult)}",
+            ClerkResults.failureThrowable(signUpResult)
+        )
+    }
+
+    /** Clerk transfer: existing Google external account on this Client → SignIn. */
+    private suspend fun transferExistingExternalAccount(): String? {
+        Log.i(TAG, "Native Clerk transferring existing Google external account")
+        val transferResult = SignIn.create(SignIn.CreateParams.Strategy.Transfer())
+        if (!ClerkResults.isSuccess(transferResult)) {
+            throw IllegalStateException(
+                "Native Clerk authentication failed: ${ClerkResults.failureDetail(transferResult)}",
+                ClerkResults.failureThrowable(transferResult)
+            )
+        }
+        return ClerkResults.sessionIdFromSuccess(transferResult)
     }
 
     companion object {
