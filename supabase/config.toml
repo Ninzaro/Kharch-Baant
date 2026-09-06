@@ -1,0 +1,5 @@
+# Native-bridge verifies Clerk session JWTs itself. Platform JWT checks
+# reject OPTIONS preflight (no Bearer) and native Clerk tokens (not HS256
+# anon keys) with 401, which the browser reports as a CORS failure.
+[functions.native-bridge]
+verify_jwt = false

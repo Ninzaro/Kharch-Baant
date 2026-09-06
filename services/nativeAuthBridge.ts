@@ -1,6 +1,5 @@
 import { Capacitor } from '@capacitor/core';
 import ClerkNativeAuth from './clerkNativeAuth';
-import { performNativeGoogleSignIn } from './nativeGoogleAuth';
 import { getEnvValue } from '../utils/env';
 
 export function isAndroidNativeApp(): boolean {
@@ -80,8 +79,8 @@ export async function exchangeNativeSessionForTicket(
 }
 
 /**
- * Android-only: Capgo Google ID token → clerk-android → backend Sign-in Token
- * → clerk-react ticket session.
+ * Android-only: clerk-android oauth_google (SSOManagerActivity) → native session
+ * JWT → backend Sign-in Token → clerk-react ticket session.
  */
 export async function completeNativeGoogleSignIn(params: {
   signIn: TicketSignIn;
@@ -93,11 +92,7 @@ export async function completeNativeGoogleSignIn(params: {
     throw new Error('Missing VITE_CLERK_PUBLISHABLE_KEY.');
   }
 
-  const googleUser = await performNativeGoogleSignIn();
-  console.log('Native Google authentication succeeded');
-
   const { token: nativeSessionToken } = await ClerkNativeAuth.signInWithGoogle({
-    googleIdToken: googleUser.idToken,
     publishableKey,
   });
 

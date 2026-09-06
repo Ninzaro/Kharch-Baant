@@ -17,9 +17,7 @@ vi.mock('../../../services/clerkNativeAuth', () => ({
   },
 }));
 
-vi.mock('../../../services/nativeGoogleAuth', () => ({
-  performNativeGoogleSignIn: vi.fn(),
-}));
+
 
 vi.mock('../../../utils/env', () => ({
   getEnvValue: vi.fn((key: string) => {
@@ -32,7 +30,6 @@ vi.mock('../../../utils/env', () => ({
 
 import { Capacitor } from '@capacitor/core';
 import ClerkNativeAuth from '../../../services/clerkNativeAuth';
-import { performNativeGoogleSignIn } from '../../../services/nativeGoogleAuth';
 import {
   completeNativeGoogleSignIn,
   consumeSignInTicket,
@@ -97,10 +94,7 @@ describe('nativeAuthBridge', () => {
     expect(setActive).not.toHaveBeenCalled();
   });
 
-  it('orchestrates Google → native Clerk → backend ticket → clerk-react', async () => {
-    vi.mocked(performNativeGoogleSignIn).mockResolvedValue({
-      idToken: 'google-id-token',
-    });
+  it('orchestrates native Clerk oauth_google → backend ticket → clerk-react', async () => {
     vi.mocked(ClerkNativeAuth.signInWithGoogle).mockResolvedValue({
       token: 'native-session-jwt',
     });
@@ -121,9 +115,7 @@ describe('nativeAuthBridge', () => {
 
     await completeNativeGoogleSignIn({ signIn, setActive });
 
-    expect(performNativeGoogleSignIn).toHaveBeenCalled();
     expect(ClerkNativeAuth.signInWithGoogle).toHaveBeenCalledWith({
-      googleIdToken: 'google-id-token',
       publishableKey: 'pk_live_test',
     });
     expect(fetchMock).toHaveBeenCalledWith(

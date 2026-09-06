@@ -22,23 +22,27 @@ final class ClerkResults {
         }
         ClerkResult.Failure<?> failure = (ClerkResult.Failure<?>) result;
         Throwable thrown = failure.getThrowable();
-        Object error = failure.getError();
-        Integer code = failure.getCode();
+        Integer httpCode = failure.getCode();
+        String clerkCode = failureCode(result);
+        String clerkMessage = firstErrorMessage(result);
         StringBuilder detail = new StringBuilder();
-        if (thrown != null && thrown.getMessage() != null) {
-            detail.append(thrown.getClass().getSimpleName()).append(": ").append(thrown.getMessage());
+        if (!clerkCode.isEmpty()) {
+            detail.append(clerkCode);
         }
-        if (error != null) {
+        if (clerkMessage != null && !clerkMessage.isEmpty()) {
+            if (detail.length() > 0) {
+                detail.append(": ");
+            }
+            detail.append(clerkMessage);
+        }
+        if (detail.length() == 0 && thrown != null) {
+            detail.append(thrown.getClass().getSimpleName());
+        }
+        if (httpCode != null) {
             if (detail.length() > 0) {
                 detail.append(" | ");
             }
-            detail.append(error.toString());
-        }
-        if (code != null) {
-            if (detail.length() > 0) {
-                detail.append(" | ");
-            }
-            detail.append("code=").append(code);
+            detail.append("code=").append(httpCode);
         }
         return detail.length() > 0 ? detail.toString() : "ClerkResult.Failure";
     }
@@ -73,6 +77,27 @@ final class ClerkResults {
 
     static boolean isExternalAccountExists(String code) {
         return "external_account_exists".equals(code);
+    }
+
+    /** Client already has an active session — reuse it; do not start another OAuth. */
+    static boolean isSessionExists(String code) {
+        return "session_exists".equals(code)
+                || "identifier_already_signed_in".equals(code);
+    }
+
+    static String firstErrorMessage(ClerkResult<?, ?> result) {
+        if (!(result instanceof ClerkResult.Failure)) {
+            return "";
+        }
+        Object error = ((ClerkResult.Failure<?>) result).getError();
+        Object errors = invokeNoArg(error, "getErrors");
+        if (errors instanceof List && !((List<?>) errors).isEmpty()) {
+            Object message = invokeNoArg(((List<?>) errors).get(0), "getMessage");
+            if (message instanceof String) {
+                return (String) message;
+            }
+        }
+        return "";
     }
 
     static String stringValue(ClerkResult<?, ?> result) {

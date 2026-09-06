@@ -114,7 +114,7 @@ StrictMode
 
 Invite deep-link is a special case (`components/invite/InvitePage.tsx`) via URL / localStorage.
 
-Native (Capacitor) unauthenticated launch is `WelcomeScreen` → **Get started** → `AuthScreen`. On Android, **Continue with Google** is Credential Manager (`@capgo/capacitor-social-login`) → `ClerkNativeAuthPlugin` (clerk-android `signInWithIdToken` + `getToken`) → Edge `native-bridge` → clerk-react `signIn.create({ strategy: 'ticket' })`. Email/password stays on `<SignIn />`. Web/desktop keep normal clerk-react (including Google). Do not add Google hosts to `allowNavigation`. Do not open `clerk.motamaati.in` in a browser tab (FAPI JSON `authorization_invalid`). Account Portal / `native-sso.html` / `kharchbaant://sso-callback` remain in the repo but must not be used by the Android Google button.
+Native (Capacitor) unauthenticated launch is `WelcomeScreen` → **Get started** → `AuthScreen`. On Android, **Continue with Google** is `ClerkNativeAuthPlugin` (clerk-android `signInWithOAuth(GOOGLE)` or reuse `session_exists`) → `getToken()` → Edge `native-bridge` (`verifyToken` + Sign-in Token) → clerk-react `signIn.create({ strategy: 'ticket' })`. Email/password stays on `<SignIn />`. Web/desktop keep normal clerk-react (including Google). Do not add Google hosts to `allowNavigation`. Do not open `clerk.motamaati.in` in a browser tab (FAPI JSON `authorization_invalid`). Account Portal / `native-sso.html` / `kharchbaant://sso-callback` remain in the repo but must not be used by the Android Google button. Full postmortem: [`docs/superpowers/specs/2026-09-06-native-android-google-auth.md`](./docs/superpowers/specs/2026-09-06-native-android-google-auth.md).
 
 ### Identity model
 

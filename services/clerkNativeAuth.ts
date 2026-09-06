@@ -2,7 +2,6 @@ import { registerPlugin, WebPlugin } from '@capacitor/core';
 
 export interface ClerkNativeAuthPlugin {
   signInWithGoogle(options: {
-    googleIdToken: string;
     publishableKey: string;
   }): Promise<{ token: string }>;
 }

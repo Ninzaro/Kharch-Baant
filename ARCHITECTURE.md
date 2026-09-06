@@ -414,7 +414,7 @@ Supabase Postgres. Schema in `supabase-schema.sql`; deltas in `migrations/` and 
 - `capacitor.config.ts` reads `CAPACITOR_DEV_SERVER_URL` from the environment. Set it in `.env.local` or your shell for live-reload dev. Leave it unset for production — Capacitor serves `dist/` natively.
 - `server.allowNavigation` must **not** include Google hosts. Android Google sign-in uses native Credential Manager + clerk-android, not Custom Tabs. Deep-link filters for `kharchbaant://sso-callback` remain in the manifest but are unused by the Google button.
 - Android `minSdk` is 24 (clerk-android requirement). Native Clerk is initialized in `KharchBaantApp` and `ClerkNativeAuthPlugin`.
-- Edge Function `native-bridge` (`POST ${VITE_SUPABASE_URL}/functions/v1/native-bridge`) verifies the native Clerk session JWT with `authenticateRequest()` and returns a one-time Sign-in Token. Secret `CLERK_SECRET_KEY` lives only as a Supabase function secret.
+- Edge Function `native-bridge` (`POST ${VITE_SUPABASE_URL}/functions/v1/native-bridge`) verifies the native Clerk session JWT with `verifyToken()` (not `authenticateRequest()`, which handshake-fails from the WebView) and returns a one-time Sign-in Token. Secret `CLERK_SECRET_KEY` lives only as a Supabase function secret. Postmortem and “do not revive” list: [`docs/superpowers/specs/2026-09-06-native-android-google-auth.md`](./docs/superpowers/specs/2026-09-06-native-android-google-auth.md).
 
 ### CI
 - GitHub Actions: `.github/workflows/playwright.yml` runs Playwright on push.
@@ -438,7 +438,7 @@ Reads come from three layers (any one may resolve a key):
 | `VITE_DEBUG_ENABLED`, `VITE_DEV_MODE` | optional | Surface in `envValidation.ts`; usage thin |
 | `CAPACITOR_DEV_SERVER_URL` | optional | Live-reload dev server URL (e.g. `http://192.168.1.10:3000`). Unset in production. Set in shell or `.env.local` — **never commit**. |
 | `CLERK_SECRET_KEY` | Edge Function only | Clerk Backend secret for `native-bridge`. Never `VITE_*`. |
-| `CLERK_PUBLISHABLE_KEY` | Edge Function | Required by Clerk `authenticateRequest()` on `native-bridge` (same value as `VITE_CLERK_PUBLISHABLE_KEY`). |
+| `CLERK_PUBLISHABLE_KEY` | Edge Function | Same instance as `VITE_CLERK_PUBLISHABLE_KEY`; used when creating the Sign-in Token client. |
 
 **Rule:** new env reads should go through `utils/env.ts` `getEnvValue()` for fallback support, **not** `import.meta.env.X` directly. Existing direct reads (in `index.tsx`, `vite.config.ts`, etc.) are tolerated as legacy.
 
