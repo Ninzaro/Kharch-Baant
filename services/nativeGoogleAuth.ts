@@ -12,7 +12,7 @@ import { SocialLogin } from '@capgo/capacitor-social-login';
  */
 export const GOOGLE_WEB_CLIENT_ID =
   import.meta.env.VITE_GOOGLE_WEB_CLIENT_ID ||
-  '1042927142025-7qtde6trtg8vm1rkb2j2pae02b0ri3f4.apps.googleusercontent.com';
+  '1042927142025-jgao2vnm15e32k9cfn71iq6tn23nqq29.apps.googleusercontent.com';
 
 let initialized = false;
 
@@ -63,12 +63,13 @@ export interface NativeGoogleUser {
 export async function performNativeGoogleSignIn(): Promise<NativeGoogleUser> {
   await initNativeGoogleAuth();
 
+  // Default Capgo path uses GetSignInWithGoogleOption (standard Google button
+  // dialog). `style: 'bottom'` uses GetGoogleIdOption and is what currently
+  // fails on Android 16 with [28444] before an ID token is returned.
+  // This matches the last known-working native Google login in this repo.
   const result = await SocialLogin.login({
     provider: 'google',
-    options: {
-      style: 'bottom',
-      filterByAuthorizedAccounts: false,
-    },
+    options: {},
   });
 
   const idToken = result.result?.idToken;
