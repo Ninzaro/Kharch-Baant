@@ -48,22 +48,23 @@
       var msg = document.getElementById('msg');
       var hint = document.getElementById('hint');
 
-      function appLink(sessionId) {
+      function suffixFromLocation(sessionId) {
         var q = window.location.search || '';
-        if (sessionId) {
+        var hash = window.location.hash || '';
+        if (sessionId && q.indexOf('__clerk_created_session=') === -1 && hash.indexOf('__clerk_created_session=') === -1) {
           q += (q ? '&' : '?') + '__clerk_created_session=' + encodeURIComponent(sessionId);
         }
-        return 'kharchbaant://sso-callback' + q;
+        return q + hash;
+      }
+
+      function appLink(sessionId) {
+        return 'kharchbaant://sso-callback' + suffixFromLocation(sessionId);
       }
 
       function intentLink(sessionId) {
-        var q = window.location.search || '';
-        if (sessionId) {
-          q += (q ? '&' : '?') + '__clerk_created_session=' + encodeURIComponent(sessionId);
-        }
         return (
           'intent://sso-callback' +
-          q +
+          suffixFromLocation(sessionId) +
           '#Intent;scheme=kharchbaant;package=com.kharchbaant.app;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end'
         );
       }
@@ -80,9 +81,11 @@
         };
         msg.textContent = 'Sign-in complete.';
         hint.textContent = 'Tap the button if the app does not open.';
-        if (sessionId) {
-          window.location.href = intent;
-        }
+        console.log('MY_SSO: bounce opening app', JSON.stringify({
+          hasSessionParam: Boolean(sessionId) || /__clerk_created_session=/.test(window.location.search + window.location.hash),
+          hasClerkStatus: /__clerk_status=/.test(window.location.search + window.location.hash),
+        }));
+        window.location.href = intent;
       }
 
       function waitForClerk(attempt) {

@@ -1,5 +1,9 @@
-/** Hide Clerk social SSO (Google / Apple / Microsoft). Email + password only. */
-export const EMAIL_ONLY_CLERK_APPEARANCE = {
+/**
+ * Hide Clerk social buttons inside the Capacitor Android WebView.
+ * Native Google uses ClerkNativeAuthPlugin (Credential Manager + clerk-android),
+ * not embedded <SignIn /> social buttons and not the Account Portal.
+ */
+export const NATIVE_HIDE_SOCIAL_CLERK_APPEARANCE = {
   elements: {
     socialButtons: { display: 'none' },
     socialButtonsBlockButton: { display: 'none' },

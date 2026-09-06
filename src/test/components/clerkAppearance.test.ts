@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { EMAIL_ONLY_CLERK_APPEARANCE, NATIVE_PORTAL_RETURN_URL } from '../../../components/auth/clerkAppearance';
+import { NATIVE_HIDE_SOCIAL_CLERK_APPEARANCE, NATIVE_PORTAL_RETURN_URL } from '../../../components/auth/clerkAppearance';
 import {
   buildAccountPortalOAuthUrl,
   CLERK_ACCOUNT_PORTAL_SIGN_IN,
@@ -14,10 +14,9 @@ vi.mock('@capacitor/browser', () => ({
 }));
 
 describe('native OAuth', () => {
-  it('hides Clerk social SSO so only email/password remains', () => {
-    expect(EMAIL_ONLY_CLERK_APPEARANCE.elements.socialButtons.display).toBe('none');
-    expect(EMAIL_ONLY_CLERK_APPEARANCE.elements.socialButtonsBlockButton.display).toBe('none');
-    expect(EMAIL_ONLY_CLERK_APPEARANCE.elements.dividerRow.display).toBe('none');
+  it('hides Clerk social buttons so WebView Google OAuth cannot start', () => {
+    expect(NATIVE_HIDE_SOCIAL_CLERK_APPEARANCE.elements.socialButtons.display).toBe('none');
+    expect(NATIVE_HIDE_SOCIAL_CLERK_APPEARANCE.elements.socialButtonsRoot.display).toBe('none');
   });
 
   it('asks Clerk to return to the HTTPS bounce page, not the website home', () => {

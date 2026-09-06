@@ -11,7 +11,7 @@ import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { App as CapacitorApp } from '@capacitor/app';
-import { Browser } from '@capacitor/browser';
+import { registerNativeDeepLinkListener } from './utils/nativeDeepLinks';
 
 import { ClerkProvider } from '@clerk/clerk-react';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -44,58 +44,8 @@ const initCapacitor = async () => {
       CapacitorApp.addListener('appStateChange', ({ isActive }) => {
         console.log('App state changed. Is active?', isActive);
       });
-      
-      const handleAppUrl = (rawUrl: string) => {
-        // Invite deep link
-        const inviteMatch = rawUrl.match(/invite\/([^/?#]+)/i);
-        if (inviteMatch) {
-          const token = decodeURIComponent(inviteMatch[1]);
-          const next = `/invite/${token}`;
-          if (window.location.pathname !== next) {
-            window.history.replaceState({}, '', next);
-            window.dispatchEvent(new PopStateEvent('popstate'));
-          }
-          return;
-        }
 
-        // SSO callback (kharchbaant://sso-callback, /native-sso.html, /sso-callback)
-        if (
-          rawUrl.includes('sso-callback') ||
-          rawUrl.includes('native-sso') ||
-          rawUrl.includes('__clerk_status')
-        ) {
-          try {
-            void Browser.close().catch(() => {});
-            let q = rawUrl.includes('?') ? rawUrl.substring(rawUrl.indexOf('?')) : '';
-            const hashIdx = q.indexOf('#');
-            let hashOnly = '';
-            if (hashIdx >= 0) {
-              hashOnly = q.substring(hashIdx);
-              q = q.substring(0, hashIdx);
-            } else if (rawUrl.includes('#')) {
-              hashOnly = rawUrl.substring(rawUrl.indexOf('#'));
-            }
-            // Stay on the Capacitor origin (hostname is www.motamaati.in for pk_live).
-            // Do not bounce to https://localhost — production Clerk keys reject that origin.
-            const next = `/sso-callback${q}${hashOnly}`;
-            if (window.location.pathname + window.location.search + window.location.hash === next) {
-              return;
-            }
-            window.history.replaceState({}, '', next);
-            window.dispatchEvent(new PopStateEvent('popstate'));
-          } catch (err) {
-            console.error('Error handling SSO callback deep link:', err);
-          }
-        }
-      };
-
-      CapacitorApp.addListener('appUrlOpen', ({ url }) => {
-        handleAppUrl(url);
-      });
-      const launchUrl = await CapacitorApp.getLaunchUrl();
-      if (launchUrl?.url) {
-        handleAppUrl(launchUrl.url);
-      }
+      await registerNativeDeepLinkListener();
     } catch (error) {
       console.error('Error initializing Capacitor plugins:', error);
     }

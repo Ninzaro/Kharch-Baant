@@ -65,7 +65,7 @@ Adding a dependency outside this list requires updating this section *first*.
 | Auth | Clerk (`@clerk/clerk-react`) | Permanent IdP. Supabase Auth disabled. |
 | AI | Keywords + optional Edge `suggest-tag` (Gemini server secret) | Category suggestions — no client API key |
 | Email | Edge `send-email` (MailerSend server secret) | Transactional mail — no client API key |
-| Mobile | Capacitor 7 (Android only) | Plugins: App, Browser, Keyboard, SplashScreen, StatusBar. Native Google OAuth uses Chrome Custom Tabs (`@capacitor/browser`) + `kharchbaant://sso-callback` — Google must **not** run in the WebView. |
+| Mobile | Capacitor 7 (Android only) | Plugins: App, Browser, Keyboard, SplashScreen, StatusBar, `@capgo/capacitor-social-login`, custom `ClerkNativeAuth`. Android Google: Credential Manager → clerk-android → Edge `native-bridge` Sign-in Token → clerk-react `strategy: 'ticket'`. Web/desktop keep `<SignIn />`. |
 | Notifications | `react-hot-toast` | |
 | Icons | `lucide-react` + `components/Icons.tsx` | |
 | Image export | `html2canvas` | |
@@ -261,7 +261,7 @@ Responsibilities (today, not ideal):
 ### Routing
 **No router.** Navigation is state-driven via `appStore.selectedGroupId`. The invite flow (`InvitePage.tsx`) is a special case keyed off URL params / localStorage. Introducing real URL routes (e.g. `react-router`, TanStack Router) would require updating this section.
 
-Unauthenticated native launch: `WelcomeScreen` → Get started opens Clerk Account Portal in Chrome Custom Tabs. Web still mounts Clerk `<SignIn>` immediately so Playwright and the PWA keep a single-step gate. `/sso-callback` (including `kharchbaant://sso-callback` rewritten in `index.tsx`) mounts `<AuthenticateWithRedirectCallback />`.
+Unauthenticated native launch: `WelcomeScreen` → Get started → `AuthScreen`. On **Android**, Continue with Google runs Credential Manager + `ClerkNativeAuthPlugin` + Edge `native-bridge` + clerk-react ticket; email/password stays on `<SignIn />` with social buttons hidden. Web/desktop/iPhone keep normal `@clerk/clerk-react` `<SignIn />` (including Google). Account Portal / `kharchbaant://sso-callback` remain in the tree but are not used by the Android Google button.
 
 ---
 
@@ -412,7 +412,9 @@ Supabase Postgres. Schema in `supabase-schema.sql`; deltas in `migrations/` and 
 - `npm run android:build:release` — produce AAB.
 - App ID: `com.kharchbaant.app`, web dir `dist/`.
 - `capacitor.config.ts` reads `CAPACITOR_DEV_SERVER_URL` from the environment. Set it in `.env.local` or your shell for live-reload dev. Leave it unset for production — Capacitor serves `dist/` natively.
-- `server.allowNavigation` must **not** include Google hosts. Native Google OAuth opens `@capacitor/browser` (Custom Tabs) and returns on `kharchbaant://sso-callback`. Clerk dashboard must allowlist that URL.
+- `server.allowNavigation` must **not** include Google hosts. Android Google sign-in uses native Credential Manager + clerk-android, not Custom Tabs. Deep-link filters for `kharchbaant://sso-callback` remain in the manifest but are unused by the Google button.
+- Android `minSdk` is 24 (clerk-android requirement). Native Clerk is initialized in `KharchBaantApp` and `ClerkNativeAuthPlugin`.
+- Edge Function `native-bridge` (`POST ${VITE_SUPABASE_URL}/functions/v1/native-bridge`) verifies the native Clerk session JWT with `authenticateRequest()` and returns a one-time Sign-in Token. Secret `CLERK_SECRET_KEY` lives only as a Supabase function secret.
 
 ### CI
 - GitHub Actions: `.github/workflows/playwright.yml` runs Playwright on push.
@@ -435,6 +437,8 @@ Reads come from three layers (any one may resolve a key):
 | ~~`VITE_MAILERSEND_*`~~ | **removed** | Use Edge secrets `MAILERSEND_API_KEY` / `MAILERSEND_FROM_EMAIL` |
 | `VITE_DEBUG_ENABLED`, `VITE_DEV_MODE` | optional | Surface in `envValidation.ts`; usage thin |
 | `CAPACITOR_DEV_SERVER_URL` | optional | Live-reload dev server URL (e.g. `http://192.168.1.10:3000`). Unset in production. Set in shell or `.env.local` — **never commit**. |
+| `CLERK_SECRET_KEY` | Edge Function only | Clerk Backend secret for `native-bridge`. Never `VITE_*`. |
+| `CLERK_PUBLISHABLE_KEY` | Edge Function | Required by Clerk `authenticateRequest()` on `native-bridge` (same value as `VITE_CLERK_PUBLISHABLE_KEY`). |
 
 **Rule:** new env reads should go through `utils/env.ts` `getEnvValue()` for fallback support, **not** `import.meta.env.X` directly. Existing direct reads (in `index.tsx`, `vite.config.ts`, etc.) are tolerated as legacy.
 

@@ -114,7 +114,7 @@ StrictMode
 
 Invite deep-link is a special case (`components/invite/InvitePage.tsx`) via URL / localStorage.
 
-Native (Capacitor) unauthenticated launch is `WelcomeScreen` → **Get started** opens Clerk Account Portal (`https://accounts.motamaati.in/sign-in`) in Chrome Custom Tabs. Clerk then hits `https://www.motamaati.in/native-sso.html`, which deep-links to `kharchbaant://sso-callback` so the **app** (not Chrome) gets the session. Web still shows Clerk `<SignIn>` immediately. Do not add Google hosts to `allowNavigation`. Do not open `clerk.motamaati.in` in a browser tab (FAPI JSON `authorization_invalid`).
+Native (Capacitor) unauthenticated launch is `WelcomeScreen` → **Get started** → `AuthScreen`. On Android, **Continue with Google** is Credential Manager (`@capgo/capacitor-social-login`) → `ClerkNativeAuthPlugin` (clerk-android `signInWithIdToken` + `getToken`) → Edge `native-bridge` → clerk-react `signIn.create({ strategy: 'ticket' })`. Email/password stays on `<SignIn />`. Web/desktop keep normal clerk-react (including Google). Do not add Google hosts to `allowNavigation`. Do not open `clerk.motamaati.in` in a browser tab (FAPI JSON `authorization_invalid`). Account Portal / `native-sso.html` / `kharchbaant://sso-callback` remain in the repo but must not be used by the Android Google button.
 
 ### Identity model
 

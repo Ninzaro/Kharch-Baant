@@ -56,32 +56,6 @@ export interface NativeGoogleUser {
 }
 
 /**
- * Decode a JWT payload for debugging only.
- *
- * DO NOT use this decoded payload as proof of authentication.
- * The ID token itself is sent to Clerk, which validates it server-side.
- */
-function decodeJwtPayload(token: string): Record<string, unknown> | null {
-  try {
-    const payload = token.split('.')[1];
-
-    if (!payload) {
-      return null;
-    }
-
-    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
-    const padded = normalized.padEnd(
-      normalized.length + ((4 - (normalized.length % 4)) % 4),
-      '='
-    );
-
-    return JSON.parse(atob(padded)) as Record<string, unknown>;
-  } catch {
-    return null;
-  }
-}
-
-/**
  * Perform native Google authentication through Android Credential Manager.
  *
  * This gets a Google ID token from the native Android side.
@@ -104,18 +78,6 @@ export async function performNativeGoogleSignIn(): Promise<NativeGoogleUser> {
       'Google authentication succeeded, but Google did not return an ID token.'
     );
   }
-
-  // Debug information only. Never log the actual token.
-  const payload = decodeJwtPayload(idToken);
-
-  console.log('========== GOOGLE ID TOKEN ==========');
-  console.log('iss:', payload?.iss);
-  console.log('aud:', payload?.aud);
-  console.log('azp:', payload?.azp);
-  console.log('sub:', payload?.sub);
-  console.log('email_verified:', payload?.email_verified);
-  console.log('payload claims:', payload ? Object.keys(payload) : []);
-  console.log('MY_DEBUG_TOKEN: present');
 
   return {
     idToken,

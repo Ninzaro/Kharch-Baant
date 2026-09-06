@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 
 def keystorePropertiesFile = rootProject.file("keystore.properties")
 def keystoreProperties = new Properties()
@@ -9,12 +10,21 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace "com.kharchbaant.app"
     compileSdk rootProject.ext.compileSdkVersion
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
+    }
+    kotlinOptions {
+        jvmTarget = '21'
+    }
     defaultConfig {
         applicationId "com.kharchbaant.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode project.hasProperty('versionCode') ? project.property('versionCode').toInteger() : 7
         versionName project.hasProperty('versionName') ? project.property('versionName') : "1.0.6"
+        def clerkPublishableKey = System.getenv("VITE_CLERK_PUBLISHABLE_KEY") ?: ""
+        resValue "string", "clerk_publishable_key", clerkPublishableKey.replace("\\", "\\\\").replace("\"", "\\\"")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -60,6 +70,9 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.4.10'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0'
+    implementation 'com.clerk:clerk-android-api:1.1.5'
 }
 
 configurations.all {

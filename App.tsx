@@ -917,6 +917,7 @@ import AuthScreen from './components/auth/AuthScreen';
 import WelcomeScreen from './components/auth/WelcomeScreen';
 import SsoFinish from './components/auth/SsoFinish';
 import { useNativeOAuth } from './hooks/useNativeOAuth';
+import { isSsoFlowPending } from './utils/nativeDeepLinks';
 import toast from 'react-hot-toast';
 
 const AppWithAuth: React.FC = () => {
@@ -929,7 +930,9 @@ const AppWithAuth: React.FC = () => {
             window.location.pathname.startsWith('/sso-callback') ||
             window.location.pathname.includes('native-sso') ||
             window.location.search.includes('__clerk_status') ||
-            window.location.hash.includes('__clerk_status')
+            window.location.hash.includes('__clerk_status') ||
+            window.location.search.includes('__clerk_created_session') ||
+            isSsoFlowPending()
         )
     );
 
@@ -976,7 +979,9 @@ const AppWithAuth: React.FC = () => {
                 window.location.pathname.startsWith('/sso-callback') ||
                 window.location.pathname.includes('native-sso') ||
                 window.location.search.includes('__clerk_status') ||
-                window.location.hash.includes('__clerk_status')
+                window.location.hash.includes('__clerk_status') ||
+                window.location.search.includes('__clerk_created_session') ||
+                isSsoFlowPending()
             );
         };
         syncFromLocation();

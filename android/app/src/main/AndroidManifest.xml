@@ -2,6 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <application
+        android:name=".KharchBaantApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -24,12 +25,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- Custom-scheme deep links (invite, sso-callback, etc.) -->
+            <!-- Custom-scheme deep links (invite and other kharchbaant:// hosts). -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="kharchbaant" />
+            </intent-filter>
+
+            <!-- Explicit host so Chrome intent://sso-callback matches this activity. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="kharchbaant"
+                    android:host="sso-callback" />
             </intent-filter>
 
             <!-- HTTPS App Links for invites / sso-callback. Do NOT claim native-sso.html —

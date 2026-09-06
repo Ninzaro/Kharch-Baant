@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../contexts/SupabaseAuthContext';
 import { SignIn } from '@clerk/clerk-react';
-import { EMAIL_ONLY_CLERK_APPEARANCE } from '../auth/clerkAppearance';
+import { NATIVE_HIDE_SOCIAL_CLERK_APPEARANCE } from '../auth/clerkAppearance';
+import { useNativeGoogleSignIn } from '../../hooks/useNativeGoogleSignIn';
+import { isAndroidNativeApp } from '../../services/nativeAuthBridge';
 import { validateInvite, acceptInvite } from '../../services/supabaseApiService';
 import { supabase } from '../../lib/supabase';
 import type { Group, Person } from '../../types';
@@ -15,6 +17,11 @@ type InviteStatus = 'loading' | 'invalid' | 'valid' | 'accepted' | 'error';
 
 const InvitePage: React.FC = () => {
   const { user, person, isSyncing } = useAuth();
+  const {
+    signInWithGoogle,
+    busy: googleBusy,
+    isLoaded: googleLoaded,
+  } = useNativeGoogleSignIn();
   const qc = useQueryClient();
   const setSelectedGroupId = useAppStore(s => s.setSelectedGroupId);
 
@@ -227,11 +234,25 @@ const InvitePage: React.FC = () => {
               {!user ? (
                 <div>
                   <div className="bg-overlay/20 border border-border rounded-xl p-4 flex flex-col items-center">
+                    {isAndroidNativeApp() && (
+                      <button
+                        type="button"
+                        disabled={googleBusy || !googleLoaded}
+                        onClick={() => { void signInWithGoogle(); }}
+                        className="w-full max-w-sm mb-3 py-2.5 px-4 rounded-xl bg-card border border-border text-foreground font-medium hover:bg-card/80 transition-colors shadow-sm disabled:opacity-60"
+                      >
+                        {googleBusy ? 'Signing in…' : 'Continue with Google'}
+                      </button>
+                    )}
                     <SignIn
                       routing="virtual"
                       fallbackRedirectUrl={window.location.href}
                       signUpFallbackRedirectUrl={window.location.href}
-                      appearance={EMAIL_ONLY_CLERK_APPEARANCE}
+                      appearance={
+                        isAndroidNativeApp()
+                          ? NATIVE_HIDE_SOCIAL_CLERK_APPEARANCE
+                          : undefined
+                      }
                     />
                   </div>
                 </div>

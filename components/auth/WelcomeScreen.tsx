@@ -41,7 +41,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onContinue }) => {
           Get started
         </button>
         <p className="text-center text-xs text-muted-foreground">
-          Sign in with email to continue.
+          Sign in with Google or email to continue.
         </p>
       </div>
     </div>
