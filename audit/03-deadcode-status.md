@@ -18,7 +18,7 @@ Process: the parent implements a finding **only** after the user names an ID and
 | D-10 | P2 | `MULTI_USER_EXPERIENCE.md` states the app has no data privacy between users | completed | Deleted `MULTI_USER_EXPERIENCE.md` (false “no auth / no privacy” claim). Clerk + RLS unchanged. |
 | D-11 | P2 | `SETTLEMENT_RULES_AND_BALANCES.md` has settlement direction inverted | completed | Deleted inverted doc. Code unchanged. |
 | D-12 | P2 | Five documents instruct putting API secrets in `VITE_*` variables | completed | README/ENV_SETUP/DEPLOYMENT/MIGRATION corrected; three MAILERSEND howtos deleted. |
-| D-13 | P2 | PWA update prompt was never built; users pinned to a stale build | completed | B: `PwaUpdatePrompt` + `registerSW`; Refresh calls `updateSW(true)`. Icons/empty manifest **not** in this change. |
+| D-13 | P2 | PWA update prompt was never built; users pinned to a stale build | completed | B: prompt + `updateSW(true)`. Icons: PNG 192/512 + apple-touch 180 from existing SVG; deleted 0-byte `manifest.webmanifest`; `includeAssets` only real files. Runtime-cache supabase host still unused (mention-only). |
 | D-14 | P2 | Settings “Import Data” reports success and does nothing | pending | skipped this pass |
 | D-15 | P2 | `InvitePage` signed-in half is unreachable; two accept paths | completed | Removed dead signed-in/auto-accept. Guest SignIn + `App.tsx` accept remain. |
 | D-16 | P2 | `deleteGroup` vs `approveGroupDeletion`; approval audit write is a no-op | completed | `approveGroupDeletion` already removed in D-05 B. |
