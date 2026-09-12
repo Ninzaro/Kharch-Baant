@@ -25,6 +25,7 @@ CREATE TABLE groups (
         (group_type IN ('trip', 'family_trip') AND trip_start_date IS NOT NULL AND trip_end_date IS NOT NULL AND trip_start_date <= trip_end_date)
         OR (group_type NOT IN ('trip', 'family_trip') AND trip_start_date IS NULL AND trip_end_date IS NULL)
     ),
+    created_by UUID NOT NULL REFERENCES people(id) ON DELETE RESTRICT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -122,10 +123,10 @@ INSERT INTO people (id, name, avatar_url) VALUES
     ('00000000-0000-0000-0000-000000000005', 'Diana', '');
 
 -- Insert groups with specific UUIDs
-INSERT INTO groups (id, name, currency, group_type, trip_start_date, trip_end_date) VALUES
-    ('10000000-0000-0000-0000-000000000001', 'Trip to Bali', 'INR', 'trip', '2024-07-09', '2024-07-15'),
-    ('10000000-0000-0000-0000-000000000002', 'Apartment Bills', 'EUR', 'flat_sharing', NULL, NULL),
-    ('10000000-0000-0000-0000-000000000003', 'Weekend Getaway', 'USD', 'family_trip', '2024-07-14', '2024-07-16');
+INSERT INTO groups (id, name, currency, group_type, trip_start_date, trip_end_date, created_by) VALUES
+    ('10000000-0000-0000-0000-000000000001', 'Trip to Bali', 'INR', 'trip', '2024-07-09', '2024-07-15', '00000000-0000-0000-0000-000000000001'),
+    ('10000000-0000-0000-0000-000000000002', 'Apartment Bills', 'EUR', 'flat_sharing', NULL, NULL, '00000000-0000-0000-0000-000000000001'),
+    ('10000000-0000-0000-0000-000000000003', 'Weekend Getaway', 'USD', 'family_trip', '2024-07-14', '2024-07-16', '00000000-0000-0000-0000-000000000001');
 
 -- Insert group members using the UUIDs
 INSERT INTO group_members (group_id, person_id) VALUES
@@ -168,4 +169,5 @@ ALTER TABLE payment_sources ENABLE ROW LEVEL SECURITY;
 --   20260412000006_fix_requesting_user_id.sql
 --   20260412000007_fix_group_members_visibility.sql
 --   20260728000000_phase_a_rls_people_visibility.sql
+--   20260912000000_groups_created_by_person_fk.sql
 -- Fresh installs: run those migrations after this schema file.

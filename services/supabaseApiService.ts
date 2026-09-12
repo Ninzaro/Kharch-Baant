@@ -166,7 +166,9 @@ export const getGroups = async (personId?: string): Promise<Group[]> => {
 };
 
 export const addGroup = async (groupData: Omit<Group, 'id'>, personId?: string): Promise<Group> => {
-  // Insert the group; set created_by to the creator if available
+  if (!personId) {
+    throw new Error('Cannot create a group without a creator person id.');
+  }
   const insertPayload: any = {
     name: groupData.name,
     currency: groupData.currency,
@@ -174,8 +176,8 @@ export const addGroup = async (groupData: Omit<Group, 'id'>, personId?: string):
     trip_start_date: groupData.tripStartDate || null,
     trip_end_date: groupData.tripEndDate || null,
     enable_cute_icons: groupData.enableCuteIcons ?? true,
+    created_by: personId,
   };
-  if (personId) insertPayload.created_by = personId;
 
   const { data: groupResult, error: groupError } = await supabase
     .from('groups')

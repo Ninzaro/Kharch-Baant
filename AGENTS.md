@@ -123,7 +123,7 @@ Native (Capacitor) unauthenticated launch is `WelcomeScreen` → **Get started**
 | Login identity | Clerk user id |
 | Domain person row | Supabase `people.id` (UUID) — used in membership, balances, query keys |
 | `Person.authUserId` | Clerk user id on claimed people |
-| `Group.createdBy` | Clerk user id |
+| `Group.createdBy` | `people.id` (person UUID); RLS resolves JWT `sub` via `people.clerk_user_id` |
 | RLS | Expects Clerk JWT in `Authorization` (template `supabase`) |
 
 HTTP: every Supabase request gets the Clerk JWT via a custom `fetch` in `lib/supabase.ts`.  

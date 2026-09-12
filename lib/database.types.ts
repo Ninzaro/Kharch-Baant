@@ -254,7 +254,7 @@ export type Database = {
       groups: {
         Row: {
           created_at: string | null
-          created_by: string | null
+          created_by: string
           currency: string
           enable_cute_icons: boolean
           group_type: string
@@ -267,7 +267,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
-          created_by?: string | null
+          created_by: string
           currency?: string
           enable_cute_icons?: boolean
           group_type: string
@@ -280,7 +280,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
-          created_by?: string | null
+          created_by?: string
           currency?: string
           enable_cute_icons?: boolean
           group_type?: string
@@ -291,7 +291,15 @@ export type Database = {
           trip_start_date?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "groups_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payment_sources: {
         Row: {

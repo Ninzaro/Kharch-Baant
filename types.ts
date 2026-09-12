@@ -208,7 +208,7 @@ export type Group = {
     groupType: GroupType;
     tripStartDate?: string; // YYYY-MM-DD when groupType is a trip
     tripEndDate?: string;   // YYYY-MM-DD when groupType is a trip
-    createdBy?: string; // user id of creator/owner
+    createdBy?: string; // people.id of the creator/owner
     isArchived?: boolean;
     enableCuteIcons?: boolean; // Whether to auto-append emojis to transaction descriptions
 };

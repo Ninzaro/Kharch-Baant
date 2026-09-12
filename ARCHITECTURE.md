@@ -336,7 +336,7 @@ Owns all server state. Components and hooks read via the hooks in `services/quer
 ### Identity model
 
 - `Person.authUserId` = Clerk user ID.
-- `Group.createdBy` = Clerk user ID.
+- `Group.createdBy` = `people.id` (person UUID). `i_created_group` is true iff that row’s `clerk_user_id` equals the JWT `sub`.
 - All RLS policies assume the Clerk JWT in the `Authorization` header.
 
 ### Migration target
