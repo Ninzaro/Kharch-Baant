@@ -11,7 +11,7 @@ BEGIN
   SELECT count(*) INTO bad
   FROM groups g
   WHERE g.created_by IS NOT NULL
-    AND NOT EXISTS (SELECT 1 FROM people p WHERE p.id::text = g.created_by);
+    AND NOT EXISTS (SELECT 1 FROM people p WHERE p.id::text = g.created_by::text);
 
   IF bad > 0 THEN
     RAISE EXCEPTION 'D-03 abort: % groups.created_by value(s) are not people.id; fix data before FK', bad;
