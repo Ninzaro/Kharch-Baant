@@ -911,14 +911,12 @@ const App: React.FC = () => {
 }
 
 // Show sign-in screen when not authenticated
-import { Capacitor } from '@capacitor/core';
 import { App as CapacitorApp } from '@capacitor/app';
 import AuthScreen from './components/auth/AuthScreen';
 import WelcomeScreen from './components/auth/WelcomeScreen';
 import SsoFinish from './components/auth/SsoFinish';
 import { useNativeOAuth } from './hooks/useNativeOAuth';
 import { isSsoFlowPending } from './utils/nativeDeepLinks';
-import toast from 'react-hot-toast';
 
 const AppWithAuth: React.FC = () => {
     const { user, loading, isSyncing } = useAuth();
