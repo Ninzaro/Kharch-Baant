@@ -39,6 +39,7 @@ import { useGroupsQuery, useTransactionsQuery, usePaymentSourcesQuery, usePeople
 import { useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from './store/appStore';
 import { useBackButton } from './hooks/useBackButton';
+import { resumeAfterBackground } from './lib/resumeSync';
 
 const App: React.FC = () => {
     if (import.meta.env.DEV) {
@@ -72,6 +73,26 @@ const App: React.FC = () => {
             preloadSettleUp();
         });
         return () => cancelIdleCallback(id);
+    }, []);
+
+    useEffect(() => {
+        let running = false;
+        const onResume = async () => {
+            if (document.visibilityState !== 'visible') return;
+            if (running) return;
+            running = true;
+            try {
+                await resumeAfterBackground();
+            } finally {
+                running = false;
+            }
+        };
+        document.addEventListener('visibilitychange', onResume);
+        window.addEventListener('online', onResume);
+        return () => {
+            document.removeEventListener('visibilitychange', onResume);
+            window.removeEventListener('online', onResume);
+        };
     }, []);
 
     // Realtime bridges

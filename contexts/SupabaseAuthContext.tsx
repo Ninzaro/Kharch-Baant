@@ -39,7 +39,7 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setClerkTokenGetter(null);
       return undefined;
     }
-    setClerkTokenGetter(() => session.getToken());
+    setClerkTokenGetter((opts) => session.getToken({ skipCache: opts?.skipCache }));
     return () => setClerkTokenGetter(null);
   }, [session]);
 

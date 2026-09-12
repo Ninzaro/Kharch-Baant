@@ -1,40 +1,38 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 
+const DATA_TOPIC_FRAGMENTS = [
+  'public:groups',
+  'public:transactions',
+  'public:payment_sources',
+  'public:people',
+  'public:group_members',
+];
+
+function dataChannelsStatus(): 'connecting' | 'connected' | 'disconnected' {
+  const channels = supabase.getChannels();
+  const data = DATA_TOPIC_FRAGMENTS.map((frag) =>
+    channels.find((c) => (c.topic || '').includes(frag))
+  );
+  if (data.some((c) => !c)) return 'connecting';
+  if (data.every((c) => c && c.state === 'joined')) return 'connected';
+  return 'disconnected';
+}
+
 export const RealtimeStatus: React.FC = () => {
   const [status, setStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
 
   useEffect(() => {
-    console.log('🔌 Initializing Realtime connection monitor...');
-    
-    // Monitor connection status
-    const channel = supabase.channel('heartbeat')
-      .subscribe((status, err) => {
-        console.log(`🔌 Realtime status change: ${status}`, err || '');
-        
-        if (status === 'SUBSCRIBED') {
-          setStatus('connected');
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error('❌ Realtime Channel Error. This often means the table is not in the supabase_realtime publication or RLS is blocking the connection.');
-          setStatus('disconnected');
-        } else if (status === 'TIMED_OUT') {
-          console.error('❌ Realtime Timeout. Check your internet connection or if the Supabase project is paused.');
-          setStatus('disconnected');
-        } else if (status === 'CLOSED') {
-          setStatus('disconnected');
-        }
-      });
-
-    return () => {
-      console.log('🔌 Unsubscribing from Realtime monitor');
-      channel.unsubscribe();
-    };
+    const tick = () => setStatus(dataChannelsStatus());
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
   }, []);
 
   if (status === 'connected') {
     return (
       <div 
-        title="Realtime connected"
+        title="Data channels joined"
         className="fixed top-3.5 right-32 md:right-36 bg-success/20 text-success border border-success/30 px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider z-[60] opacity-80 hover:opacity-100 transition-opacity cursor-default select-none pointer-events-none"
       >
         <div className="w-1.5 h-1.5 bg-success rounded-full animate-pulse"></div>
@@ -46,7 +44,7 @@ export const RealtimeStatus: React.FC = () => {
   if (status === 'disconnected') {
     return (
       <div 
-        title="Realtime disconnected. Changes will require refresh."
+        title="Data channels not joined. Changes may require refresh."
         className="fixed top-3.5 right-32 md:right-36 bg-destructive/20 text-destructive border border-destructive/30 px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider z-[60] pointer-events-none"
       >
         <div className="w-1.5 h-1.5 bg-destructive rounded-full"></div>

@@ -30,7 +30,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
  * provider in the Supabase dashboard. `sub` remains the Clerk user id
  * (`requesting_user_id()`).
  */
-type ClerkTokenGetter = () => Promise<string | null | undefined>;
+export type ClerkTokenOpts = { skipCache?: boolean };
+
+type ClerkTokenGetter = (opts?: ClerkTokenOpts) => Promise<string | null | undefined>;
 
 let clerkTokenGetter: ClerkTokenGetter | null = null;
 
@@ -39,14 +41,14 @@ export const setClerkTokenGetter = (getter: ClerkTokenGetter | null): void => {
   clerkTokenGetter = getter;
 };
 
-export const getClerkSupabaseToken = async (): Promise<string> => {
+export const getClerkSupabaseToken = async (opts?: ClerkTokenOpts): Promise<string> => {
   try {
     if (clerkTokenGetter) {
-      const fromSession = await clerkTokenGetter();
+      const fromSession = await clerkTokenGetter(opts);
       if (fromSession) return fromSession;
     }
     const clerk = (window as any).Clerk;
-    const fromWindow = await clerk?.session?.getToken?.();
+    const fromWindow = await clerk?.session?.getToken?.(opts?.skipCache ? { skipCache: true } : undefined);
     if (fromWindow) return fromWindow;
   } catch (e) {
     console.warn('Failed to get Clerk session token:', e);

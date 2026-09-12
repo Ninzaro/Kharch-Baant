@@ -7,6 +7,7 @@ import { SupabaseAuthProvider } from './contexts/SupabaseAuthContext';
 import ToastProvider from './components/ToastProvider';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
+import { resumeAfterBackground } from './lib/resumeSync';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
@@ -42,7 +43,9 @@ const initCapacitor = async () => {
       
       // Handle app state changes
       CapacitorApp.addListener('appStateChange', ({ isActive }) => {
-        console.log('App state changed. Is active?', isActive);
+        if (isActive) {
+          void resumeAfterBackground();
+        }
       });
 
       await registerNativeDeepLinkListener();
