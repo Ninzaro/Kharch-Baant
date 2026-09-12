@@ -243,7 +243,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
                 description={<span className="text-muted-foreground text-sm">Configure group details and manage members.</span>}
                 footer={
                     <>
-                        {/* Delete/Archive/Request Delete: only show if editing existing group */}
+                        {/* Delete (creator) / Archive (member): only when editing an existing group */}
                         {group && (
                             <div className="flex flex-col gap-2 mb-2">
                                 {group.createdBy === currentUserId ? (
@@ -257,26 +257,15 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
                                         {isProcessingGroupAction ? 'Deleting...' : 'Delete Group'}
                                     </button>
                                 ) : (
-                                    <div className="flex flex-col gap-2">
-                                        <button
-                                            type="button"
-                                            className="px-3 py-2 bg-destructive/80 hover:bg-destructive text-destructive-foreground text-sm rounded-md disabled:opacity-50"
-                                            disabled={!allSettled || isProcessingGroupAction}
-                                            title={!allSettled ? 'All balances must be settled to request deletion.' : ''}
-                                            onClick={onDeleteGroup}
-                                        >
-                                            {isProcessingGroupAction ? 'Requesting…' : 'Request Delete (ask admin)'}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="px-3 py-2 bg-warning/90 hover:bg-warning text-warning-foreground text-sm rounded-md disabled:opacity-50"
-                                            disabled={!userSettled || !allSettled || isProcessingGroupAction}
-                                            title={!userSettled || !allSettled ? 'You must settle your balance and all balances must be settled to archive.' : ''}
-                                            onClick={onArchiveGroup}
-                                        >
-                                            {isProcessingGroupAction ? 'Archiving...' : 'Archive Group'}
-                                        </button>
-                                    </div>
+                                    <button
+                                        type="button"
+                                        className="px-3 py-2 bg-warning/90 hover:bg-warning text-warning-foreground text-sm rounded-md disabled:opacity-50"
+                                        disabled={!userSettled || !allSettled || isProcessingGroupAction}
+                                        title={!userSettled || !allSettled ? 'You must settle your balance and all balances must be settled to archive.' : ''}
+                                        onClick={onArchiveGroup}
+                                    >
+                                        {isProcessingGroupAction ? 'Archiving...' : 'Archive Group'}
+                                    </button>
                                 )}
                             </div>
                         )}

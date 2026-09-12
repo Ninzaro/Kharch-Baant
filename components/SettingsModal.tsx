@@ -6,7 +6,6 @@ import ThemeToggle from './ThemeToggle';
 import DataExport from './DataExport';
 import DangerZone from './DangerZone';
 import AboutSection from './AboutSection';
-import AdminDeletionRequestsPanel from './AdminDeletionRequestsPanel';
 import Avatar, { isStockAvatarUrl } from './Avatar';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
 import * as api from '../services/apiService';
@@ -244,16 +243,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
               </div>
             </div>
-          )}
-
-          {/* Admin Panel - Deletion Requests */}
-          {currentUserId && (
-            <AdminDeletionRequestsPanel
-              currentUserId={currentUserId}
-              onRequestProcessed={() => {
-                // Optionally refresh groups or show notification
-              }}
-            />
           )}
 
           {/* Archived Groups Button */}

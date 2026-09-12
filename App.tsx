@@ -10,7 +10,7 @@ import HomeScreen from './components/HomeScreen';
 import ModalShell from './components/ModalShell';
 import BaseModal from './components/BaseModal';
 import { preloadComponent } from './utils/preload';
-import { deleteGroup, archiveGroup, validateInvite, acceptInvite, requestGroupDeletion } from './services/supabaseApiService';
+import { deleteGroup, archiveGroup, validateInvite, acceptInvite } from './services/supabaseApiService';
 import { assertSupabaseEnvironment } from './services/apiService';
 import { SettingsIcon } from './components/icons/Icons';
 import { useAuth } from './contexts/SupabaseAuthContext';
@@ -541,18 +541,15 @@ const App: React.FC = () => {
         if (!editingGroup) return;
         setIsProcessingGroupAction(true);
         try {
-            const isAdmin = editingGroup.createdBy === currentUserId;
-            if (isAdmin) {
-                await deleteGroup(editingGroup.id, currentUserId, true, allSettled);
-                qc.setQueryData<Group[]>(qk.groups(currentUserId), (prev = []) => prev.filter(g => g.id !== editingGroup.id));
-                setIsConfirmDeleteModalOpen(false);
-                setIsGroupModalOpen(false);
-                setSelectedGroupId(null);
-            } else {
-                const res = await requestGroupDeletion(editingGroup.id, currentUserId);
-                toast.success(res.message || 'Deletion request sent to the group admin.');
-                setIsConfirmDeleteModalOpen(false);
+            if (editingGroup.createdBy !== currentUserId) {
+                toast.error('Only the group creator can delete this group.');
+                return;
             }
+            await deleteGroup(editingGroup.id, currentUserId, true, allSettled);
+            qc.setQueryData<Group[]>(qk.groups(currentUserId), (prev = []) => prev.filter(g => g.id !== editingGroup.id));
+            setIsConfirmDeleteModalOpen(false);
+            setIsGroupModalOpen(false);
+            setSelectedGroupId(null);
         } catch (e) {
             toast.error(e.message || 'Failed to delete group.');
         } finally {
