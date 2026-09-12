@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Group, Transaction, Person } from '../types';
-import { calculateShares } from '../utils/calculations';
+import { calculateShares, calculateGroupBalances } from '../utils/calculations';
 import { X } from 'lucide-react';
 
 interface GroupBalancesModalProps {
@@ -21,31 +21,7 @@ const GroupBalancesModal: React.FC<GroupBalancesModalProps> = ({
   onClose
 }) => {
   const balanceData = useMemo(() => {
-    const balances: { [key: string]: number } = {};
-    people.forEach(p => balances[p.id] = 0);
-
-    transactions.forEach(transaction => {
-        if (transaction.type === 'settlement') {
-            const payerId = transaction.paidById;
-            const recipientParticipant = transaction.split.participants.find(p => p.personId !== payerId);
-            if (recipientParticipant) {
-                const recipientId = recipientParticipant.personId;
-                // Payer's balance increases (owes less), Receiver's balance decreases (is owed less)
-                balances[payerId] += transaction.amount;
-                balances[recipientId] -= transaction.amount;
-            }
-        } else { // expense
-            if (transaction.split) {
-                const shares = calculateShares(transaction);
-                balances[transaction.paidById] += transaction.amount;
-                shares.forEach((share, personId) => {
-                    balances[personId] -= share;
-                });
-            }
-        }
-    });
-
-    const currentUserBalance = balances[currentUserId] || 0;
+    const currentUserBalance = calculateGroupBalances(transactions).get(currentUserId) ?? 0;
 
     const totalGroupSpending = transactions
         .filter(t => t.type === 'expense')

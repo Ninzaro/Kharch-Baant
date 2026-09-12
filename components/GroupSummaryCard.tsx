@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Group, Transaction, Person, GROUP_TYPES } from '../types';
 import Avatar from './Avatar';
-import { calculateShares } from '../utils/calculations';
+import { calculateGroupBalances } from '../utils/calculations';
 
 interface GroupSummaryCardProps {
     group: Group;
@@ -14,18 +14,8 @@ interface GroupSummaryCardProps {
 const GroupSummaryCard: React.FC<GroupSummaryCardProps> = ({ group, transactions, people, currentUserId, onSelectGroup }) => {
     
     const { userBalance } = useMemo(() => {
-        let balance = 0;
-        transactions.forEach(t => {
-            const shares = calculateShares(t);
-            const userShare = shares.get(currentUserId) || 0;
-            
-            if (t.paidById === currentUserId) {
-                balance += (t.amount - userShare);
-            } else {
-                balance -= userShare;
-            }
-        });
-        return { userBalance: balance };
+        const balances = calculateGroupBalances(transactions);
+        return { userBalance: balances.get(currentUserId) ?? 0 };
     }, [transactions, currentUserId]);
 
     const formatCurrency = (amount: number) => {
