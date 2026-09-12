@@ -24,8 +24,8 @@ Process: the parent implements a finding **only** after the user names an ID and
 | D-16 | P2 | `deleteGroup` vs `approveGroupDeletion`; approval audit write is a no-op | completed | `approveGroupDeletion` already removed in D-05 B. |
 | D-17 | P2 | Seven `formatCurrency` implementations; expense list rounds money away | completed | `TransactionItem` now 2 fraction digits. Other formatters left. |
 | D-18 | P2 | Client validation and persistence disagree in `shares` mode | completed | Shares persist `p.value` (0 stays 0). |
-| D-19 | P2 | `email_invites UNIQUE(group_id, email)` blocks re-inviting anyone forever | pending | §9 / §8.9 |
-| D-20 | P2 | `group_deletion_requests UNIQUE(group_id)` bricks the feature after one request | pending | §9 |
+| D-19 | P2 | `email_invites UNIQUE(group_id, email)` blocks re-inviting anyone forever | completed | Migration `20260912000003`: unique is `(group_invite_id, email)`. Apply in dashboard. |
+| D-20 | P2 | `group_deletion_requests UNIQUE(group_id)` bricks the feature after one request | completed | Same migration: partial unique pending-only. Request UI still gone (D-05). Apply in dashboard. |
 | D-21 | P2 | CI never exports the Clerk key into the Gradle step | pending | §9 |
 | D-22 | P2 | `assetlinks.json` does not exist, so Android App Links cannot verify | pending | §9 / §6.1 |
 | D-23 | P2 | `numeric(12,2)` silently doubles sub-paisa amounts | pending | §9 / §8.11 |

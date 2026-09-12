@@ -171,4 +171,5 @@ ALTER TABLE payment_sources ENABLE ROW LEVEL SECURITY;
 --   20260728000000_phase_a_rls_people_visibility.sql
 --   20260912000000_groups_created_by_person_fk.sql
 --   20260912000002_people_email_normalize.sql
+--   20260912000003_invite_and_deletion_uniques.sql
 -- Fresh installs: run those migrations after this schema file.
