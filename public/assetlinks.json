@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.kharchbaant.app",
+      "sha256_cert_fingerprints": [
+        "EE:D1:27:3C:A2:73:41:FC:0F:3D:63:CD:A4:22:CE:56:28:FD:A4:AC:84:28:C7:E0:E8:67:13:E9:77:34:52:3E",
+        "C3:F4:0D:8A:ED:A8:AA:95:2F:74:03:D8:92:7E:47:B5:D2:9B:CF:A8:15:62:5F:0B:58:2D:DE:5D:D0:65:C7:82"
+      ]
+    }
+  }
+]

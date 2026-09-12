@@ -13,6 +13,10 @@
       "destination": "/native-sso.html"
     },
     {
+      "source": "/.well-known/assetlinks.json",
+      "destination": "/assetlinks.json"
+    },
+    {
       "source": "/privacy.html",
       "destination": "/privacy.html"
     },
@@ -57,6 +61,15 @@
     },
     {
       "source": "/.well-known/assetlinks.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "source": "/assetlinks.json",
       "headers": [
         {
           "key": "Content-Type",
