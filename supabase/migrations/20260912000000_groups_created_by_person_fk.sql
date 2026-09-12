@@ -23,6 +23,10 @@ BEGIN
   END IF;
 END $$;
 
+-- Policies that mention created_by block ALTER TYPE (0A000).
+DROP POLICY IF EXISTS "Users can insert groups" ON groups;
+DROP POLICY IF EXISTS "Users can view their groups" ON groups;
+
 ALTER TABLE groups
   ALTER COLUMN created_by TYPE uuid USING created_by::uuid;
 
