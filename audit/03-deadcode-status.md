@@ -27,7 +27,7 @@ Process: the parent implements a finding **only** after the user names an ID and
 | D-19 | P2 | `email_invites UNIQUE(group_id, email)` blocks re-inviting anyone forever | completed | Migration `20260912000003`: unique is `(group_invite_id, email)`. Apply in dashboard. |
 | D-20 | P2 | `group_deletion_requests UNIQUE(group_id)` bricks the feature after one request | completed | Same migration: partial unique pending-only. Request UI still gone (D-05). Apply in dashboard. |
 | D-21 | P2 | CI never exports the Clerk key into the Gradle step | completed | `bundleRelease` now gets `VITE_CLERK_PUBLISHABLE_KEY`. Local `android-release.ps1` still relies on the shell env. |
-| D-22 | P2 | `assetlinks.json` does not exist, so Android App Links cannot verify | pending | §9 / §6.1 |
+| D-22 | P2 | `assetlinks.json` does not exist, so Android App Links cannot verify | completed | File + Play+upload SHA-256. Apex host dropped from manifest (redirect). Verify after Vercel deploy: Google statements:list on www; Content-Type application/json. |
 | D-23 | P2 | `numeric(12,2)` silently doubles sub-paisa amounts | pending | §9 / §8.11 |
 | D-24 | P2 | Duplicate Supabase auth-token injection (`accessToken` + `global.fetch`) | pending | §9 / §2.10 |
 | D-25 | P2 | Playwright can write to production with no guard | pending | §9 / §6.10 |

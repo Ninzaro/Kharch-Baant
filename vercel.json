@@ -13,10 +13,6 @@
       "destination": "/native-sso.html"
     },
     {
-      "source": "/.well-known/assetlinks.json",
-      "destination": "/.well-known/assetlinks.json"
-    },
-    {
       "source": "/privacy.html",
       "destination": "/privacy.html"
     },
