@@ -42,3 +42,42 @@ PDF/Excel likely need new libraries (`jspdf`, SheetJS/ExcelJS). That is a major-
 ### Status
 
 Not started. Resume only when the user names this feature (not a D-xx id).
+
+---
+
+## Consent before adding a claimed person to a group
+
+**Origin:** after D-06 discussion. Today any member can attach any person (including a claimed account found by email) to a group with no confirmation (audit **R-14**). That exposes their name, expenses, and balances to the group, and exposes the group’s ledger to them.
+
+**Intent:** Typing someone’s email must **not** instantly join them. They must **approve** first. Same rule on Android, iOS web, and desktop web.
+
+### MVP (email — start here)
+
+1. User types an email to add someone.
+2. If that email is a **claimed** person (or even if not yet signed up): create a **pending invite**, do **not** insert `group_members`.
+3. Send email: “{Name} is trying to add you to {Group}.” Link to accept/decline (reuse `send-email` + invite token flow; tighten so the URL is only our origin).
+4. Only on **accept** (signed-in, matching email) insert membership.
+
+Unclaimed placeholders (people who have never signed up) can stay as today’s “add by name/email” **or** wait until they sign up and accept — decide at design time. Default recommendation: **claimed users always require accept**; placeholders stay local until they claim and then get the same email.
+
+### Later: push notifications
+
+- Android app: native push (FCM) when a pending add exists.
+- Web / iOS Safari: Web Push (and iOS needs the PWA installed + permission). This is a second project: device tokens, Edge function, permission UX.
+
+Do **not** block the MVP on push. Email is the safety gate.
+
+### Existing pieces
+
+- `createGroupInvite` / `email_invites` / `sendGroupInviteEmail` / `accept_group_invite`
+- Member add today: `addPersonToGroup` inserts `group_members` immediately
+- Audit R-08 (`find_person_by_email` too much PII) and R-02 (claim-by-email) should be considered in the same design so an attacker cannot harvest emails and force-join
+
+### Effort (rough)
+
+- Email consent for claimed users, using existing invite RPCs: **~2–4 days**
+- Push (FCM + Web Push): **~1–2 weeks** extra, new infra
+
+### Status
+
+Not started. Resume only when the user names this feature.
