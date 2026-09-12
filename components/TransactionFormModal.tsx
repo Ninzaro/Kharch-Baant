@@ -309,7 +309,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
         if (splitMode === 'equal') {
             participants = splitParticipants.map(personId => ({ personId, value: 1 }));
         } else if (splitMode === 'shares') {
-            participants = baseParticipants.map(p => ({ ...p, value: p.value || 1 }));
+            participants = baseParticipants.map(p => ({ ...p, value: p.value }));
         } else {
             participants = baseParticipants;
         }

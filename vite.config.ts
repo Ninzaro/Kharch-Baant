@@ -38,9 +38,8 @@ export default defineConfig(({ mode }) => {
         VitePWA({
           // Dev: do not register SW (stale caches caused blank screens + old CDN html2canvas)
           devOptions: { enabled: false },
-          // Avoid unexpected auto-refreshes by not forcing immediate activation
-          // We'll switch to a prompt-based update flow
           registerType: 'prompt',
+          injectRegister: false,
           includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
           manifest: {
             name: 'Kharch Baant - Expense Tracker',

@@ -16,14 +16,14 @@ Process: the parent implements a finding **only** after the user names an ID and
 | D-08 | P2 | `ARCHITECTURE.md` tells the next assistant to delete a live `ErrorBoundary` | completed | Docs: custom `ErrorBoundary` is the live `index.tsx` wrapper. Do not delete. |
 | D-09 | P2 | Two documents give opposite orders about RLS | completed | Deleted `GROUP_CREATION_ERROR_FIX.md`, `AUTH_IMPLEMENTATION_SUMMARY.md`, `AUTH_IMPLEMENTATION_PLAN.md`. AGENTS: never run disable-RLS / supabase-auth-setup SQL. `play-store-launch.md` Google path still stale. |
 | D-10 | P2 | `MULTI_USER_EXPERIENCE.md` states the app has no data privacy between users | completed | Deleted `MULTI_USER_EXPERIENCE.md` (false “no auth / no privacy” claim). Clerk + RLS unchanged. |
-| D-11 | P2 | `SETTLEMENT_RULES_AND_BALANCES.md` has settlement direction inverted | pending | §9 |
-| D-12 | P2 | Five documents instruct putting API secrets in `VITE_*` variables | pending | §9 (seven docs listed) |
-| D-13 | P2 | PWA update prompt was never built; users pinned to a stale build | pending | §9 / §4.2 |
-| D-14 | P2 | Settings “Import Data” reports success and does nothing | pending | §9 |
-| D-15 | P2 | `InvitePage` signed-in half is unreachable; two accept paths | pending | §9 / §2.18 |
-| D-16 | P2 | `deleteGroup` vs `approveGroupDeletion`; approval audit write is a no-op | pending | §9 / §2.4 |
-| D-17 | P2 | Seven `formatCurrency` implementations; expense list rounds money away | pending | §9 / §2.8 |
-| D-18 | P2 | Client validation and persistence disagree in `shares` mode | pending | §9 / §2.6 |
+| D-11 | P2 | `SETTLEMENT_RULES_AND_BALANCES.md` has settlement direction inverted | completed | Deleted inverted doc. Code unchanged. |
+| D-12 | P2 | Five documents instruct putting API secrets in `VITE_*` variables | completed | README/ENV_SETUP/DEPLOYMENT/MIGRATION corrected; three MAILERSEND howtos deleted. |
+| D-13 | P2 | PWA update prompt was never built; users pinned to a stale build | completed | B: `PwaUpdatePrompt` + `registerSW`; Refresh calls `updateSW(true)`. Icons/empty manifest **not** in this change. |
+| D-14 | P2 | Settings “Import Data” reports success and does nothing | pending | skipped this pass |
+| D-15 | P2 | `InvitePage` signed-in half is unreachable; two accept paths | completed | Removed dead signed-in/auto-accept. Guest SignIn + `App.tsx` accept remain. |
+| D-16 | P2 | `deleteGroup` vs `approveGroupDeletion`; approval audit write is a no-op | completed | `approveGroupDeletion` already removed in D-05 B. |
+| D-17 | P2 | Seven `formatCurrency` implementations; expense list rounds money away | completed | `TransactionItem` now 2 fraction digits. Other formatters left. |
+| D-18 | P2 | Client validation and persistence disagree in `shares` mode | completed | Shares persist `p.value` (0 stays 0). |
 | D-19 | P2 | `email_invites UNIQUE(group_id, email)` blocks re-inviting anyone forever | pending | §9 / §8.9 |
 | D-20 | P2 | `group_deletion_requests UNIQUE(group_id)` bricks the feature after one request | pending | §9 |
 | D-21 | P2 | CI never exports the Clerk key into the Gradle step | pending | §9 |

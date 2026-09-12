@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Toaster } from 'react-hot-toast';
+import PwaUpdatePrompt from './PwaUpdatePrompt';
 
 const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
@@ -36,6 +37,7 @@ const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           },
         }}
       />
+      <PwaUpdatePrompt />
     </>
   );
 };

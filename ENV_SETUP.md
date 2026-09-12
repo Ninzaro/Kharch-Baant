@@ -13,25 +13,16 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 # API Mode (always 'supabase' for production)
 VITE_API_MODE=supabase
 
-# Google Gemini AI (Optional - for expense category suggestions)
-VITE_GEMINI_API_KEY=your_gemini_api_key_here
-
 # App URL (for invite links and email redirects)
 VITE_APP_URL=http://localhost:3000
 
-# MailerSend Configuration (for email notifications)
-VITE_MAILERSEND_API_KEY=your_mailersend_api_key_here
-VITE_MAILERSEND_FROM_EMAIL=noreply@your-verified-domain.com
-
-# MailerSend Template IDs (optional - will use default HTML if not provided)
-VITE_MAILERSEND_TEMPLATE_WELCOME=
-VITE_MAILERSEND_TEMPLATE_GROUP_INVITE=
-VITE_MAILERSEND_TEMPLATE_MEMBER_ADDED=
-VITE_MAILERSEND_TEMPLATE_SETTLE_UP=
-VITE_MAILERSEND_TEMPLATE_NEW_EXPENSE=
+# MailerSend / Gemini: Edge secrets only (MAILERSEND_API_KEY, GEMINI_API_KEY).
+# Never VITE_* — Vite inlines those into the browser bundle. See .env.example.
 ```
 
 ## How to Get These Values
+
+Canonical list: `.env.example`. MailerSend/Gemini go in **Supabase → Edge Functions → Secrets**, not `.env.local` `VITE_*`.
 
 ### MailerSend API Key
 1. Go to [MailerSend](https://www.mailersend.com/)
@@ -39,7 +30,7 @@ VITE_MAILERSEND_TEMPLATE_NEW_EXPENSE=
 3. Verify your domain or use their sandbox
 4. Go to **Settings** → **API Tokens**
 5. Create a new token with "Full Access"
-6. Copy the token to `VITE_MAILERSEND_API_KEY`
+6. Set `MAILERSEND_API_KEY` as an Edge secret (not `VITE_MAILERSEND_API_KEY`)
 
 ### From Email Address
 1. In MailerSend dashboard, go to **Domains**
@@ -53,5 +44,5 @@ The app includes beautiful default HTML templates, so you don't need to create t
 If you want to use MailerSend's template editor:
 1. Go to **Email** → **Templates** in MailerSend dashboard
 2. Create templates for each notification type
-3. Copy template IDs to the env vars above
+3. If you use MailerSend templates, set those IDs as Edge secrets (not `VITE_*`)
 

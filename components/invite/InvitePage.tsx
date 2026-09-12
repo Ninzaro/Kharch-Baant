@@ -1,29 +1,21 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useAuth } from '../../contexts/SupabaseAuthContext';
 import { SignIn } from '@clerk/clerk-react';
 import { NATIVE_HIDE_SOCIAL_CLERK_APPEARANCE } from '../auth/clerkAppearance';
 import { useNativeGoogleSignIn } from '../../hooks/useNativeGoogleSignIn';
 import { isAndroidNativeApp } from '../../services/nativeAuthBridge';
-import { validateInvite, acceptInvite } from '../../services/supabaseApiService';
+import { validateInvite } from '../../services/supabaseApiService';
 import { supabase } from '../../lib/supabase';
 import type { Group, Person } from '../../types';
 import Avatar from '../Avatar';
-import toast from 'react-hot-toast';
-import { useQueryClient } from '@tanstack/react-query';
-import { qk } from '../../services/queries';
-import { useAppStore } from '../../store/appStore';
 
 type InviteStatus = 'loading' | 'invalid' | 'valid' | 'accepted' | 'error';
 
 const InvitePage: React.FC = () => {
-  const { user, person, isSyncing } = useAuth();
   const {
     signInWithGoogle,
     busy: googleBusy,
     isLoaded: googleLoaded,
   } = useNativeGoogleSignIn();
-  const qc = useQueryClient();
-  const setSelectedGroupId = useAppStore(s => s.setSelectedGroupId);
 
   const [status, setStatus] = useState<InviteStatus>('loading');
   const [errorMsg, setErrorMsg] = useState<string>('');
@@ -33,8 +25,7 @@ const InvitePage: React.FC = () => {
   const [members, setMembers] = useState<Person[]>([]);
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
   const [usage, setUsage] = useState<{ current: number; max: number | null } | null>(null);
-  const [emailInvites, setEmailInvites] = useState<{ email: string }[]>([]);
-  const [emailInvitesLoaded, setEmailInvitesLoaded] = useState(false);
+
 
   // Parse token from URL
   useEffect(() => {
@@ -76,8 +67,6 @@ const InvitePage: React.FC = () => {
             avatarUrl: result.inviter.avatarUrl || '',
           });
         }
-        setEmailInvites(result.emailInvites || []);
-        setEmailInvitesLoaded(true);
         // Members preview (may be empty pre-auth under RLS — invite still valid)
         try {
           const { data: membersRows } = await supabase
@@ -103,44 +92,6 @@ const InvitePage: React.FC = () => {
     };
     run();
   }, [token]);
-
-  // Determine if logged-in user's email matches any targeted email invites
-  const emailMatch = useMemo(() => {
-    const userEmail = user?.email?.toLowerCase().trim();
-    if (!userEmail) return false;
-    if (!emailInvitesLoaded) return false;
-    if (emailInvites.length === 0) return false; // Only auto-join when specific emails were invited
-    return emailInvites.some(e => e.email === userEmail);
-  }, [user, emailInvites, emailInvitesLoaded]);
-
-  // Auto-accept only if email matches a targeted email invite
-  useEffect(() => {
-    const acceptIfReady = async () => {
-      if (!token || status !== 'valid') return;
-      if (!user || !person || isSyncing) return;
-      if (!emailInvitesLoaded || !emailMatch) return; // Gate auto-join
-      try {
-        // Also leave a breadcrumb for legacy flow
-        localStorage.setItem('pendingInviteToken', token);
-        const res = await acceptInvite({ inviteToken: token, personId: person.id });
-        if (res.success) {
-          toast.success(`Joined group "${res.group?.name || group?.name || ''}"`);
-          // Refresh groups and select joined group
-          await qc.invalidateQueries({ queryKey: qk.groups(person.id) });
-          const gid = res.group?.id || group?.id;
-          if (gid) setSelectedGroupId(gid);
-          setStatus('accepted');
-          // Clean URL
-          window.history.replaceState({}, '', '/');
-        } else {
-          toast.error(res.error || 'Failed to join group');
-        }
-      } catch (e: any) {
-        toast.error(e?.message || 'Failed to accept invite');
-      }
-    };
-    acceptIfReady();
-  }, [user, person, isSyncing, status, token, qc, group, setSelectedGroupId, emailMatch, emailInvitesLoaded]);
 
   const expiresText = useMemo(() => {
     if (!expiresAt) return null;
@@ -229,74 +180,30 @@ const InvitePage: React.FC = () => {
               )}
             </div>
 
-            {/* Auth / Join */}
+            {/* Guest sign-in only. Signed-in accept is App.tsx (localStorage token). */}
             <div>
-              {!user ? (
-                <div>
-                  <div className="bg-overlay/20 border border-border rounded-xl p-4 flex flex-col items-center">
-                    {isAndroidNativeApp() && (
-                      <button
-                        type="button"
-                        disabled={googleBusy || !googleLoaded}
-                        onClick={() => { void signInWithGoogle(); }}
-                        className="w-full max-w-sm mb-3 py-2.5 px-4 rounded-xl bg-card border border-border text-foreground font-medium hover:bg-card/80 transition-colors shadow-sm disabled:opacity-60"
-                      >
-                        {googleBusy ? 'Signing in…' : 'Continue with Google'}
-                      </button>
-                    )}
-                    <SignIn
-                      routing="virtual"
-                      fallbackRedirectUrl={window.location.href}
-                      signUpFallbackRedirectUrl={window.location.href}
-                      appearance={
-                        isAndroidNativeApp()
-                          ? NATIVE_HIDE_SOCIAL_CLERK_APPEARANCE
-                          : undefined
-                      }
-                    />
-                  </div>
-                </div>
-              ) : (
-
-                <div className="bg-overlay/20 border border-border rounded-xl p-4">
-                  <div className="text-muted-foreground mb-3">Signed in as <span className="text-foreground font-medium">{user?.email || 'you'}</span></div>
-                  {emailInvitesLoaded && emailInvites.length > 0 && emailMatch && status !== 'accepted' && (
-                    <div className="text-xs text-success mb-3">Your email matches this invite. Joining automatically...</div>
-                  )}
-                  {emailInvitesLoaded && emailInvites.length > 0 && !emailMatch && status !== 'accepted' && (
-                    <div className="text-xs text-amber-300 mb-3">This link was sent to specific emails; your email is not on the list. You can still request to join using the button below.</div>
-                  )}
-                  {!emailMatch && (
-                    <button
-                      disabled={status !== 'valid' || status === 'accepted'}
-                      onClick={async () => {
-                        if (!person || !token) return;
-                        try {
-                          const res = await acceptInvite({ inviteToken: token, personId: person.id });
-                          if (res.success) {
-                            toast.success('Joined group');
-                            await qc.invalidateQueries({ queryKey: qk.groups(person.id) });
-                            const gid = res.group?.id || group?.id;
-                            if (gid) setSelectedGroupId(gid);
-                            setStatus('accepted');
-                            window.history.replaceState({}, '', '/');
-                          } else {
-                            toast.error(res.error || 'Failed to join');
-                          }
-                        } catch (e: any) {
-                          toast.error(e?.message || 'Failed to join');
-                        }
-                      }}
-                      className="w-full px-4 py-2 bg-gradient-to-br from-success to-success hover:from-success/90 hover:to-success/80 text-success-foreground rounded-lg font-medium"
-                    >
-                      {status === 'accepted' ? 'Joined' : 'Join Group'}
-                    </button>
-                  )}
-                  {emailMatch && status === 'accepted' && (
-                    <div className="text-xs text-success">Successfully joined.</div>
-                  )}
-                </div>
-              )}
+              <div className="bg-overlay/20 border border-border rounded-xl p-4 flex flex-col items-center">
+                {isAndroidNativeApp() && (
+                  <button
+                    type="button"
+                    disabled={googleBusy || !googleLoaded}
+                    onClick={() => { void signInWithGoogle(); }}
+                    className="w-full max-w-sm mb-3 py-2.5 px-4 rounded-xl bg-card border border-border text-foreground font-medium hover:bg-card/80 transition-colors shadow-sm disabled:opacity-60"
+                  >
+                    {googleBusy ? 'Signing in…' : 'Continue with Google'}
+                  </button>
+                )}
+                <SignIn
+                  routing="virtual"
+                  fallbackRedirectUrl={window.location.href}
+                  signUpFallbackRedirectUrl={window.location.href}
+                  appearance={
+                    isAndroidNativeApp()
+                      ? NATIVE_HIDE_SOCIAL_CLERK_APPEARANCE
+                      : undefined
+                  }
+                />
+              </div>
             </div>
           </div>
         )}

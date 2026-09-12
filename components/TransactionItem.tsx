@@ -35,7 +35,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, peopleMa
     const { month, day } = formatDate(transaction.date);
 
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-IN', { style: 'currency', currency: currency, maximumFractionDigits: 0 }).format(amount);
+        return new Intl.NumberFormat('en-IN', { style: 'currency', currency: currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
     };
 
     // Clean up description for display

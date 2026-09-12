@@ -36,9 +36,9 @@ vercel --prod
 ### 3. Set Environment Variables in Vercel
 In your Vercel dashboard, add these environment variables:
 - `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY` 
-- `VITE_API_MODE=supabase`
-- `VITE_GEMINI_API_KEY` (optional)
+- `VITE_SUPABASE_ANON_KEY`
+- `VITE_CLERK_PUBLISHABLE_KEY`
+- Do **not** set `VITE_GEMINI_API_KEY` / `VITE_MAILERSEND_*` (inlined into the browser). Use Edge secrets `GEMINI_API_KEY` / `MAILERSEND_API_KEY` in the Supabase dashboard.
 
 ## Monitoring & Maintenance
 
