@@ -1,0 +1,113 @@
+
+========================================================================
+1. amount 100, equal, 3 ways  (utils/calculations.ts:41 — amount/participants.length)
+========================================================================
+raw shares            : A=33.333333333333336  B=33.333333333333336  C=33.333333333333336
+shares sum            : 100
+sum - amount          : 0
+balances              : A=66.66666666666666  B=-33.333333333333336  C=-33.333333333333336
+Σ balances            : -1.4210854715202004e-14
+MemberBalances shows  : A ₹66.67   B -₹33.33   C -₹33.33
+  -> B and C each read -₹33.33, A reads ₹66.67; 33.33+33.33 = 66.66 ≠ 66.67 (a cent is invisible)
+materializeSplit would: A=33.34  B=33.33  C=33.33  <-- NOT CALLED BY ANY APP CODE
+
+========================================================================
+2. amount 10, equal, 3 ways  (the classic non-terminating case)
+========================================================================
+balances              : A=6.666666666666666  B=-3.3333333333333335  C=-3.3333333333333335
+Σ balances            : -8.881784197001252e-16
+MemberBalances shows  : A ₹6.67   B -₹3.33   C -₹3.33
+simplifyGroupDebts    : B->A 3.33  C->A 3.33
+transfers sum         : 6.66 (A is owed 6.666666666666666 )
+
+========================================================================
+3. percentage 33.33 / 33.33 / 33.34 of 100  (client validation passes: |100-100|<0.01)
+========================================================================
+raw shares            : A=33.33  B=33.33  C=33.34
+shares sum            : 100
+sum - amount          : 0
+Σ balances            : 0
+
+========================================================================
+4. shares 1:1:1 of amount 1  (₹1 split three ways)
+========================================================================
+balances              : A=0.6666666666666667  B=-0.3333333333333333  C=-0.3333333333333333
+MemberBalances shows  : A ₹0.67   B -₹0.33   C -₹0.33
+TransactionItem shows : ₹1  <-- maximumFractionDigits:0 on the amount itself
+simplifyGroupDebts    : B->A 0.33  C->A 0.33
+  -> Dashboard "Total Balance" for A = ₹0.00 while MemberBalances shows ₹0.67
+
+========================================================================
+5. ten separate ₹0.10 expenses, A pays, split A+B  (float accumulation)
+========================================================================
+A balance             : 0.5000000000000002
+B balance             : -0.49999999999999994
+Σ balances            : 2.7755575615628914e-16
+exact answer          : A=+0.5  B=-0.5
+A error               : 2.220446049250313e-16
+MemberBalances shows  : A ₹0.50   B -₹0.50
+Dashboard transfer    : B->A 0.5
+
+========================================================================
+6. ZERO-SUM RESIDUE — 40 equal 3-way expenses of ₹100
+========================================================================
+balances              : A=66.66666666666666  B=-33.33333333333335  C=-33.33333333333336
+Σ balances            : -4.973799150320701e-14  (exact answer: 0)
+|Σ| in cents          : 4.973799150320701e-12
+App.tsx:138 allSettled: false
+
+========================================================================
+7. THE EPSILON HOLE — allSettled is per-person, so the loss scales with member count
+========================================================================
+20-person group, ten ₹0.01 expenses; every |balance| = 0.005
+App.tsx:138 allSettled: true  <-- TRUE
+real credit outstanding: 0.0500 (each creditor rounds UP to ₹0.01 on screen)
+MemberBalances shows  : C0 ₹0.01  D0 -₹0.01
+=> deleteGroup(..., allSettled=true) is permitted (supabaseApiService.ts:8-10)
+   and it hard-deletes every transaction row (supabaseApiService.ts:11-17).
+Bound on this hole    : (members/2) x 0.00999 per group. Small on its own;
+   the *large* version of the same gate is the empty-cache case — see zero-sum.mts Z8.
+
+========================================================================
+8. SURFACE DISAGREEMENT — same data, four different numbers
+========================================================================
+raw balances          : A=33.33333333333332  B=33.33333333333332  C=-66.66666666666667
+MemberBalances (A)    : ₹33.33    raw 33.33333333333332
+Dashboard "you are owed" (A): ₹33.33   raw 33.33
+HomeScreen totalOwedToUser  : 33.33  raw 33.33
+BalanceBreakdown lines      : C 33.33
+GroupSummaryCard (A)  : 33.33333333333332
+transfers             : C->A 33.33  C->B 33.33
+Σ transfers into A    : 33.33  vs A balance 33.33333333333332  delta -0.0033333333333231963
+
+========================================================================
+9. simplifyGroupDebts rounding: 1 creditor of 100, 3 debtors of 33.333…
+========================================================================
+balances              : A=100  B=-33.333333333333336  C=-33.333333333333336  D=-33.333333333333336
+transfers             : B->A 33.33  C->A 33.33  D->A 33.33
+Σ transfers           : 99.99  vs creditor balance 100
+creditor SHORT by     : 0.0100 (each transfer rounded to cents at calculations.ts:192)
+Dashboard shows A owed: ₹99.99  but MemberBalances shows ₹100.00
+If all three debtors pay exactly what the app tells them (33.33 each),
+A receives 99.99 and the ledger still says A is owed 0.0100
+
+========================================================================
+10. LOCALE SPLIT-BRAIN — the same total, two different digit groupings
+========================================================================
+HomeScreen  card  (en-US, no currency): 100,000.50
+BalanceBreakdown  (en-IN, no currency): 1,00,000.50
+MemberBalances (en-US, INR)          : ₹100,000.50
+SettleUpModal  (en-IN, INR)          : ₹1,00,000.5
+TransactionItem(en-IN, INR, 0 dp)    : ₹1,00,001
+GroupBalancesModal (.toFixed(2)+code): 100000.50 INR
+
+========================================================================
+11. numeric(12,2) round-trip — what Postgres stores vs what the client believed
+========================================================================
+typed 0.005     JS toFixed(2)=0.01  stored≈0.01  delta=0.0050
+typed 33.335    JS toFixed(2)=33.34  stored≈33.34  delta=0.0050
+typed 2.675     JS toFixed(2)=2.67  stored≈2.68  delta=0.0050
+typed 1.005     JS toFixed(2)=1.00  stored≈1.00  delta=-0.0050
+typed 100.555   JS toFixed(2)=100.56  stored≈100.56  delta=0.0050
+note: 2.675.toFixed(2) = 2.67 (JS says 2.67, Postgres numeric says 2.68)
+=> a client-side preview and the stored row can differ by a cent before any split maths.

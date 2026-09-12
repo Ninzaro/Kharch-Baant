@@ -1,0 +1,214 @@
+
+==========================================================================
+Z1. MULTI-PAYER: payers[] sum != amount  (TransactionFormModal.tsx:286 never checks isPayerValid)
+==========================================================================
+Reachable UI steps:
+  Add Expense -> Amount 1000 -> "Multiple Payers?" -> type A=400, B=100 -> Save.
+  The form renders "Total: Rs 500.00 / Rs 1000.00" in red (TransactionFormModal.tsx:470-471)
+  but the Save button's disabled test is only  !isSplitValid || !description || !amount
+  (:687) and handleSubmit's guard (:286) also omits isPayerValid. The row is written.
+Stored row: amount=1000, payers=[{A,400},{B,100}], split equal over A,B,C.
+calculateGroupBalances (calculations.ts:8-19) credits payers[].amount and debits amount/3.
+  balances : A=66.66666666666669  B=-233.33333333333331  C=-333.3333333333333
+  Σ        : -499.99999999999994
+  VERDICT  : ZERO-SUM BROKEN by -500.00 (money DESTROYED)
+  allSettled (App.tsx:138): false
+
+==========================================================================
+Z1b. Same bug via EDIT (most natural path of all)
+==========================================================================
+  Existing multi-payer expense: amount 1000, payers A=600 B=400. Correct.
+  User opens Edit and changes only the Amount to 2000. payerMode is seeded to
+  'multiple' from the row (TransactionFormModal.tsx:146-150); customPayerValues
+  still sum to 1000. isSplitValid is TRUE (equal mode). Save is enabled. Saved.
+  BEFORE (amount 1000, payers 1000):
+  balances : A=100  B=-100
+  Σ        : 0
+  VERDICT  : zero-sum HOLDS
+  allSettled (App.tsx:138): false
+  AFTER  (amount 2000, payers still 1000):
+  balances : A=-400  B=-600
+  Σ        : -1000
+  VERDICT  : ZERO-SUM BROKEN by -1000.00 (money DESTROYED)
+  allSettled (App.tsx:138): false
+
+==========================================================================
+Z1c. Negative payer amount is silently DROPPED, not rejected
+==========================================================================
+  TransactionFormModal.tsx:481-490 has no min= on the payer input; :325 keeps
+  only  val && val > 0. Type A=1500, B=-500 with amount 1000:
+  payersTotal = 1000 so the form shows GREEN "Total: Rs 1000.00", yet the row
+  written is payers=[{A,1500}] — B's -500 is filtered out of activePayers.
+  balances : A=1000  B=-500
+  Σ        : 500
+  VERDICT  : ZERO-SUM BROKEN by +500.00 (money CREATED)
+  allSettled (App.tsx:138): false
+
+==========================================================================
+Z2. NEGATIVE SHARE via unequal split (no min= on the split input, :564-572)
+==========================================================================
+  Amount 100, mode "Unequally", type A = -50, B = 150.
+  isSplitValid: |(-50+150) - 100| = 0 < 0.01 -> PASSES (:194).
+  Server: split_participants is unconstrained JSONB.
+  Result: A is CREDITED 50 by a debit of -50 (calculations.ts:48-51).
+  balances : B=-50  A=50
+  Σ        : 0
+  VERDICT  : zero-sum HOLDS
+  allSettled (App.tsx:138): false
+  (zero-sum holds — but A owes MINUS fifty, i.e. B now owes A 50 on a bill B paid.)
+
+==========================================================================
+Z2b. NEGATIVE PERCENTAGE — same trick, -50% / 150%
+==========================================================================
+  isSplitValid: |(-50+150) - 100| = 0 < 0.01 -> PASSES (:198).
+  balances : B=-50  A=50
+  Σ        : 0
+  VERDICT  : zero-sum HOLDS
+  allSettled (App.tsx:138): false
+
+==========================================================================
+Z3. EPSILON DRIFT — unequal split allowed to miss by up to 0.00999 per row
+==========================================================================
+  Amount 100, unequal 33.334 / 33.334 / 33.334 -> sum 100.002, |delta| = 0.002 < 0.01 -> PASSES.
+  balances : A=66.666  B=-33.334  C=-33.334
+  Σ        : -0.0020000000000095497
+  VERDICT  : ZERO-SUM BROKEN by -0.00 (money DESTROYED)
+  allSettled (App.tsx:138): false
+  500 such rows (a year of a busy flat-share):
+  balances : A=33333.00000000017  B=-16667.000000000146  C=-16667.000000000146
+  Σ        : -1.0000000001236913
+  VERDICT  : ZERO-SUM BROKEN by -1.00 (money DESTROYED)
+  allSettled (App.tsx:138): false
+  Percentage variant: 33.33 / 33.33 / 33.33 = 99.99, |99.99-100| = 0.01 -> BLOCKED (strict <).
+  Percentage variant: 33.331 / 33.331 / 33.331 = 99.993 -> |0.007| < 0.01 -> PASSES:
+  balances : A=66.669  B=-33.331  C=-33.331
+  Σ        : 0.006999999999990791
+  VERDICT  : ZERO-SUM BROKEN by +0.01 (money CREATED)
+  allSettled (App.tsx:138): false
+
+==========================================================================
+Z4. STORED ROWS THAT VIOLATE THE INVARIANT (modified client / direct PostgREST; server has no CHECK)
+==========================================================================
+  unequal shares summing to 99 on a 100 expense:
+  balances : A=50  B=-49
+  Σ        : 1
+  VERDICT  : ZERO-SUM BROKEN by +1.00 (money CREATED)
+  allSettled (App.tsx:138): false
+  percentages summing to 110:
+  balances : A=44.99999999999999  B=-55.00000000000001
+  Σ        : -10.000000000000014
+  VERDICT  : ZERO-SUM BROKEN by -10.00 (money DESTROYED)
+  allSettled (App.tsx:138): false
+  EMPTY participants array (calculations.ts:35 returns early; payer still credited):
+  balances : A=100
+  Σ        : 100
+  VERDICT  : ZERO-SUM BROKEN by +100.00 (money CREATED)
+  allSettled (App.tsx:138): false
+  shares mode with every value 0 (calculations.ts:62 breaks out; payer still credited):
+  balances : A=100
+  Σ        : 100
+  VERDICT  : ZERO-SUM BROKEN by +100.00 (money CREATED)
+  allSettled (App.tsx:138): false
+  participant who is NOT a group member (no FK, no CHECK on split_participants):
+  balances : A=50  STRANGER=-50
+  Σ        : 0
+  VERDICT  : zero-sum HOLDS
+  allSettled (App.tsx:138): false
+
+==========================================================================
+Z5. SETTLEMENT OVER-PAYMENT — no check against the outstanding balance
+==========================================================================
+  Before: B owes A 50.
+  balances : A=50  B=-50
+  Σ        : 0
+  VERDICT  : zero-sum HOLDS
+  allSettled (App.tsx:138): false
+  B records a Rs 500 settlement to A (SettleUpModal.tsx:139-160 checks only
+  payer && receiver && payer!=receiver && amount>0 — never the balance):
+  balances : A=-450  B=450
+  Σ        : 0
+  VERDICT  : zero-sum HOLDS
+  allSettled (App.tsx:138): false
+  A now owes B 450. No warning, no confirmation, no cap.
+
+==========================================================================
+Z6. DOUBLE SETTLEMENT — two devices settle the same debt (no idempotency, no version)
+==========================================================================
+  B settles 50 on the phone; A, whose cache has not yet received it, also
+  records the same 50 on the laptop. Two rows, no unique constraint:
+  balances : A=-50  B=50
+  Σ        : 0
+  VERDICT  : zero-sum HOLDS
+  allSettled (App.tsx:138): false
+  A is now the debtor for the 50 that was already paid.
+
+==========================================================================
+Z7. STALE-BALANCE SETTLEMENT — device B settles against a balance that is already wrong
+==========================================================================
+  Device B sees only e1: B owes A 50. B settles 50 -> B thinks it is square.
+  balances : A=0  B=0
+  Σ        : 0
+  VERDICT  : zero-sum HOLDS
+  allSettled (App.tsx:138): true
+  Meanwhile A had already added e2 (200, split A+B) that B had not received:
+  balances : A=100  B=-100
+  Σ        : 0
+  VERDICT  : zero-sum HOLDS
+  allSettled (App.tsx:138): false
+  B still owes 100. Nothing told B the number moved between reading it and paying.
+
+==========================================================================
+Z8. THE allSettled GATE — an empty transactions cache reads as "fully settled"
+==========================================================================
+  App.tsx:131-139:
+    groupBalances = Object.fromEntries(calculateGroupBalances(groupTxs))
+    allSettled    = Object.values(groupBalances).every(b => Math.abs(b) < 0.01)
+  With groupTxs = [] -> groupBalances = {} -> allSettled = true  <-- Array.prototype.every on [] is TRUE
+
+  Three ways groupTxs is [] while real debts exist:
+   (a) FIRST PAINT. App.tsx:578 gates the loading screen on  isLoading || groupsLoading.
+       isLoading (App.tsx:85,246-278) tracks only the invite-acceptance effect, and
+       useTransactionsQuery's own isLoading is DISCARDED (App.tsx:53). So the group
+       screen renders with transactions = [] until the transactions query resolves.
+   (b) TRANSIENT FETCH FAILURE. getTransactions (supabaseApiService.ts:506-512) swallows
+       a group_members error with console.warn and returns [].
+   (c) RLS/REALTIME GAP. Balances are per-device; a device missing rows is silently wrong.
+
+  Consequence: GroupFormModal.tsx:253 enables "Delete Group" (disabled={!allSettled}),
+  App.tsx:546 calls deleteGroup(id, uid, true, allSettled=true), and
+  supabaseApiService.ts:8-18 then DELETEs every group_members row, every transactions
+  row, and the group. Unrecoverable: no soft delete, no audit table, no backup path.
+
+==========================================================================
+Z9. AGGREGATE EPSILON LOSS — everybody under 0.01, real money outstanding
+==========================================================================
+  20-person group, ten Rs 0.01 expenses. Every |balance| = 0.005:
+  allSettled : true
+  real credit outstanding: 0.0500 (each creditor rounds up to Rs 0.01 on screen)
+  Upper bound on this hole: (members/2) x 0.00999 per group, deleted without trace.
+
+==========================================================================
+Z10. ORPHANED MONEY — a member removed while owing
+==========================================================================
+  A paid 300 split three ways with B and GONE. Then the creator opens Group
+  Settings and removes GONE (GroupFormModal.tsx:115-118 — no balance check),
+  and updateGroup (supabaseApiService.ts:349-369) DELETEs all group_members
+  and re-inserts without GONE. The transaction row is untouched.
+  balances (App.tsx:131-135, from transactions): A=200.00  B=-100.00  GONE=-100.00
+  allSettled: false -> Delete/Archive stay disabled FOREVER
+  MemberBalances (components/MemberBalances.tsx:34-35) is fed people=groupMembers,
+  so peopleMap.get("GONE") is undefined and the row RETURNS NULL — the -100 line
+  is invisible. getPeople (supabaseApiService.ts:765-810) also stops returning
+  GONE because it derives `people` from group_members alone.
+  Visible balances only : A=200.00  B=-100.00  -> Σ = 100.00
+  The user sees A owed 200 and B owing 100 and no reason why "not settled".
+
+==========================================================================
+SUMMARY
+==========================================================================
+  Nothing in the client, in PostgREST, in a CHECK constraint, in a trigger or in
+  an RPC ever asserts that Sum(balances) = 0 for a group, that Sum(payers[].amount) =
+  amount, that Sum(split_participants[].value) = amount / 100 / >0, that a
+  participant's value is non-negative, or that a participant is a group member.
+  grep -rn "payers" over every .sql in the repo returns nothing: the column was
+  added to production by hand and has no constraint at all.
