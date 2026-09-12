@@ -32,7 +32,7 @@ export const archivePaymentSource = async (paymentSourceId: string): Promise<{ s
 // PEOPLE
 export const getPeople = async (personId?: string): Promise<Person[]> => supabaseApi.getPeople(personId);
 export const addPerson = async (personData: Omit<Person, 'id'>): Promise<Person> => supabaseApi.addPerson(personData);
-export { findPersonByEmail, updatePerson, mergePersonByEmail } from './supabaseApiService';
+export { findPersonByEmail, updatePerson } from './supabaseApiService';
 
 // USER MANAGEMENT
 export const ensureUserExists = async (userId: string, userName: string, userEmail: string): Promise<Person> => supabaseApi.ensureUserExists(userId, userName, userEmail);
@@ -72,21 +72,11 @@ export const addPersonToGroup = async (
   return person;
 };
 
-// Utility: simple health check (returns true if groups query works)
-export const checkConnection = async (): Promise<boolean> => {
-  try {
-    await supabaseApi.getGroups();
-    return true;
-  } catch {
-    return false;
-  }
-};
-
 // Warning helper: can be invoked at app bootstrap to ensure envs are present.
 export const assertSupabaseEnvironment = () => {
   const missing: string[] = [];
-  if (!import.meta.env.VITE_SUPABASE_URL && !process.env.VITE_SUPABASE_URL) missing.push('VITE_SUPABASE_URL');
-  if (!import.meta.env.VITE_SUPABASE_ANON_KEY && !process.env.VITE_SUPABASE_ANON_KEY) missing.push('VITE_SUPABASE_ANON_KEY');
+  if (!import.meta.env.VITE_SUPABASE_URL) missing.push('VITE_SUPABASE_URL');
+  if (!import.meta.env.VITE_SUPABASE_ANON_KEY) missing.push('VITE_SUPABASE_ANON_KEY');
   if (missing.length) {
     // eslint-disable-next-line no-console
     console.warn('[Supabase] Missing environment variables:', missing.join(', '));

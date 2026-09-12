@@ -11,49 +11,12 @@ import { supabase } from '../lib/supabase';
 // TYPE DEFINITIONS
 // ============================================================================
 
-export interface WelcomeEmailData {
-  userName: string;
-  userEmail: string;
-  loginMethod: 'email' | 'google' | 'other';
-  appUrl?: string;
-}
-
 export interface GroupInviteEmailData {
   inviteeEmail: string;
   inviterName: string;
   groupName: string;
   inviteUrl: string;
   expiresInDays: number;
-}
-
-export interface MemberAddedEmailData {
-  memberEmail: string;
-  memberName: string;
-  groupName: string;
-  addedByName: string;
-  groupUrl: string;
-}
-
-export interface SettleUpEmailData {
-  payerEmail: string;
-  payerName: string;
-  receiverEmail: string;
-  receiverName: string;
-  amount: number;
-  currency: string;
-  groupName: string;
-  settledByName: string;
-}
-
-export interface NewExpenseEmailData {
-  memberEmails: string[];
-  groupName: string;
-  description: string;
-  amount: number;
-  currency: string;
-  paidByName: string;
-  splitWithNames: string[];
-  expenseUrl: string;
 }
 
 export interface EmailResult {
@@ -112,25 +75,6 @@ async function invokeSendEmail(type: EmailType, data: unknown): Promise<EmailRes
 // PUBLIC SENDERS
 // ============================================================================
 
-export const sendWelcomeEmail = async (data: WelcomeEmailData): Promise<EmailResult> => {
-  return invokeSendEmail('welcome', {
-    ...data,
-    appUrl: data.appUrl || (typeof window !== 'undefined' ? window.location.origin : undefined),
-  });
-};
-
 export const sendGroupInviteEmail = async (data: GroupInviteEmailData): Promise<EmailResult> => {
   return invokeSendEmail('group_invite', data);
-};
-
-export const sendMemberAddedEmail = async (data: MemberAddedEmailData): Promise<EmailResult> => {
-  return invokeSendEmail('member_added', data);
-};
-
-export const sendSettleUpEmail = async (data: SettleUpEmailData): Promise<EmailResult> => {
-  return invokeSendEmail('settle_up', data);
-};
-
-export const sendNewExpenseEmail = async (data: NewExpenseEmailData): Promise<EmailResult> => {
-  return invokeSendEmail('new_expense', data);
 };

@@ -3,7 +3,6 @@ import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
-import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 function injectNativeSsoClerkKey(publishableKey: string) {
   return {
@@ -31,10 +30,6 @@ export default defineConfig(({ mode }) => {
       plugins: [
         injectNativeSsoClerkKey(clerkPk),
         react(),
-        nodePolyfills({
-          // Whether to polyfill `node:` protocol imports.
-          protocolImports: true,
-        }),
         VitePWA({
           // Dev: do not register SW (stale caches caused blank screens + old CDN html2canvas)
           devOptions: { enabled: false },

@@ -512,9 +512,6 @@ export type Database = {
           isSetofReturn: true
         }
       }
-      cleanup_expired_invites: { Args: never; Returns: number }
-      debug_auth_check: { Args: never; Returns: Json }
-      generate_invite_token: { Args: never; Returns: string }
       get_current_user_person_id: { Args: never; Returns: string }
       /** Exact-token invite preview (anon + authenticated). Phase B. */
       get_invite_preview: { Args: { p_token: string }; Returns: Json }

@@ -383,8 +383,9 @@ Supabase Postgres. Schema in `supabase-schema.sql`; deltas in `migrations/` and 
 | Smoke | Custom Node script | `scripts/smoke-test.mjs` |
 
 ### Coverage thresholds (`vitest.config.ts`, verified)
-- Lines / functions / statements: **85%**
-- Branches: **70%**
+- Lines / statements: **8%**
+- Branches: **65%**
+- Functions: **28%**
 - Provider: v8
 
 ### Conventions

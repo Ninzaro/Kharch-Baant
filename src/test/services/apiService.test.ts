@@ -335,23 +335,6 @@ describe('apiService', () => {
   })
 
   describe('Utility Functions', () => {
-    it('should check connection successfully', async () => {
-      vi.mocked(supabaseApi.getGroups).mockResolvedValue([])
-      
-      const result = await apiService.checkConnection()
-      
-      expect(result).toBe(true)
-      expect(supabaseApi.getGroups).toHaveBeenCalledOnce()
-    })
-
-    it('should check connection with error', async () => {
-      vi.mocked(supabaseApi.getGroups).mockRejectedValue(new Error('Connection failed'))
-      
-      const result = await apiService.checkConnection()
-      
-      expect(result).toBe(false)
-    })
-
     it('should assert Supabase environment with missing variables', () => {
       // assertSupabaseEnvironment falls back to process.env when import.meta.env
       // is empty, so we have to stub both sources. Otherwise the test-setup env

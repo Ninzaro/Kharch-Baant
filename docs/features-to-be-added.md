@@ -81,3 +81,13 @@ Do **not** block the MVP on push. Email is the safety gate.
 ### Status
 
 Not started. Resume only when the user names this feature.
+
+---
+
+## Revoke / deactivate an invite link
+
+**Origin:** D-28. `deactivateInvite` exists in `supabaseApiService.ts` and is never called. Invite links cannot be turned off from the UI.
+
+**Intent:** Group creator (or members) can deactivate a live invite token so the link stops working.
+
+**Status:** Client helper already exists; no UI. Not started.

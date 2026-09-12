@@ -464,62 +464,6 @@ export const addTransaction = async (
   // Notify other group members via broadcast (bypasses postgres_changes RLS filtering)
   _broadcastTxChange(groupId)
 
-  // Send email notifications (async, don't block)
-  if (emailService.isEmailServiceEnabled()) {
-    // Get group info
-    const { data: groupData } = await supabase
-      .from('groups')
-      .select('name, currency')
-      .eq('id', groupId)
-      .single();
-
-    // Get payer info
-    const { data: payerData } = await supabase
-      .from('people')
-      .select('name, email, clerk_user_id')
-      .eq('id', transactionData.paidById)
-      .single();
-
-    if (groupData && payerData) {
-      // Handle settlement email (type='settlement')
-      if (transactionData.type === 'settlement' && transactionData.split.participants.length > 0) {
-        const receiverId = transactionData.split.participants[0].personId;
-        const { data: receiverData } = await supabase
-          .from('people')
-          .select('name, email, clerk_user_id')
-          .eq('id', receiverId)
-          .single();
-
-        if (receiverData) {
-
-          // Note: Email addresses are now available in the people table
-          // Can send emails using payerData.email and receiverData.email
-          // emailService.sendSettleUpEmail({...})
-        }
-      }
-
-      // Handle expense email (type='expense')
-      if (transactionData.type === 'expense') {
-        // Get all participant info
-        const participantIds = transactionData.split.participants.map(p => p.personId);
-        const { data: participantsData } = await supabase
-          .from('people')
-          .select('name, email, clerk_user_id')
-          .in('id', participantIds);
-
-        if (participantsData && participantsData.length > 0) {
-          const splitWithNames = participantsData.map(p => p.name);
-          const expenseUrl = `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}`;
-
-
-          // Note: Email addresses are now available in the people table
-          // Can send emails using participantsData[].email
-          // emailService.sendNewExpenseEmail({...})
-        }
-      }
-    }
-  }
-
   return transaction;
 };
 
@@ -1106,21 +1050,6 @@ export const acceptInvite = async (request: AcceptInviteRequest): Promise<Accept
 };
 
 /**
- * Get all invites for a group (for management purposes)
- */
-export const getGroupInvites = async (groupId: string): Promise<GroupInvite[]> => {
-  const { data, error } = await supabase
-    .from('group_invites')
-    .select('*')
-    .eq('group_id', groupId)
-    .eq('is_active', true)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return (data || []).map(transformDbInviteToAppInvite);
-};
-
-/**
  * Deactivate an invite
  */
 export const deactivateInvite = async (inviteId: string): Promise<{ success: boolean }> => {
@@ -1134,15 +1063,6 @@ export const deactivateInvite = async (inviteId: string): Promise<{ success: boo
 
   if (error) throw error;
   return { success: true };
-};
-
-/**
- * Clean up expired invites (utility function)
- */
-export const cleanupExpiredInvites = async (): Promise<number> => {
-  const { data, error } = await supabase.rpc('cleanup_expired_invites');
-  if (error) throw error;
-  return data || 0;
 };
 
 // Update user avatar
@@ -1173,37 +1093,6 @@ export const updatePerson = async (personId: string, updates: Partial<Person>): 
     .single();
 
   if (error) throw error;
-  return transformDbPersonToAppPerson(data);
-};
-
-/**
- * Merge an unclaimed dummy person (found by email) into the current authenticated user.
- * Called during the claim flow after sign-up when a dummy with the same email exists.
- * The dummy's UUID is preserved — all existing transactions and group memberships remain intact.
- */
-export const mergePersonByEmail = async (email: string, clerkUserId: string): Promise<Person | null> => {
-  const normalizedEmail = email.trim().toLowerCase();
-
-  // Find an unclaimed dummy with this email
-  const { data: existing, error: findError } = await supabase
-    .from('people')
-    .select('*')
-    .eq('email', normalizedEmail)
-    .eq('is_claimed', false)
-    .maybeSingle();
-
-  if (findError) throw findError;
-  if (!existing) return null;
-
-  // Claim it — set clerk_user_id and mark as claimed
-  const { data, error: updateError } = await supabase
-    .from('people')
-    .update({ clerk_user_id: clerkUserId, is_claimed: true })
-    .eq('id', existing.id)
-    .select()
-    .single();
-
-  if (updateError) throw updateError;
   return transformDbPersonToAppPerson(data);
 };
 

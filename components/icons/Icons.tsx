@@ -76,18 +76,6 @@ export const SettingsIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-export const SortAscIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...iconProps} {...props}>
-    <path d="M3 4h18M3 8h12M3 12h9M3 16h6M18 20l3-3-3-3" />
-  </svg>
-);
-
-export const SortDescIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...iconProps} {...props}>
-    <path d="M3 4h6M3 8h9M3 12h12M3 16h18M18 4l3 3-3 3" />
-  </svg>
-);
-
 export const CalendarIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg {...iconProps} {...props}>
     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>

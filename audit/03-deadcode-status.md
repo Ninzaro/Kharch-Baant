@@ -32,9 +32,9 @@ Process: the parent implements a finding **only** after the user names an ID and
 | D-24 | P2 | Duplicate Supabase auth-token injection (`accessToken` + `global.fetch`) | completed | Removed `global.fetch`. REST uses `accessToken` + fetchWithAuth. Test asserts Bearer once. |
 | D-25 | P2 | Playwright can write to production with no guard | completed | Blocklist: www.motamaati.in, motamaati.in, kharch-baant.vercel.app only. |
 | D-26 | P2 | No typecheck, no lint, and unit tests never run in CI | completed | `unit.yml` runs `vitest`. `typecheck` script exists, not in CI. |
-| D-27 | P3 | 2,961 LOC of orphaned code, 1,009 of it tests for dead code | pending | §9 / §1.1 |
-| D-28 | P3 | 19 dead exports inside live files | pending | §9 / §1.3 |
-| D-29 | P3 | 55 lines of dead email logic cost 3 DB reads on every expense | pending | §9 / §2.7 |
-| D-30 | P3 | Dead dependencies and misplaced prod deps | pending | §9 / §5.1–§5.4 |
-| D-31 | P3 | Dead DB objects and duplicated indexes | pending | §9 / §1.4, §8.10 |
-| D-32 | P3 | 20 of 46 root markdown files actively contradict the code | pending | §9 |
+| D-27 | P3 | 2,961 LOC of orphaned code, 1,009 of it tests for dead code | completed | Deleted confirmed orphans (useModals already D-07). |
+| D-28 | P3 | 19 dead exports inside live files | completed | Removed unused exports. Kept `unarchiveGroup` (UI) and `deactivateInvite` (parked). Kept `materializeSplit`. |
+| D-29 | P3 | 55 lines of dead email logic cost 3 DB reads on every expense | completed | Removed dead addTransaction email queries. |
+| D-30 | P3 | Dead dependencies and misplaced prod deps | completed | Dropped madge/terser/node-polyfills. Moved cli/dotenv/playwright/pwa/workbox to devDeps. Left capgo/keyboard. |
+| D-31 | P3 | Dead DB objects and duplicated indexes | completed | Migration drops cleanup_expired_invites, debug_auth_check, generate_invite_token. Apply in dashboard. |
+| D-32 | P3 | 20 of 46 root markdown files actively contradict the code | completed | ARCHITECTURE coverage 8/65/28/8. No mass root-md delete. |
