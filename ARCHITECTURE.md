@@ -88,7 +88,7 @@ The repo is **flat**, not split into `/backend /frontend /common`. Source folder
 ├── constants.ts           # App-wide constants
 │
 ├── components/            # 49 React components (see §7)
-├── hooks/                 # Custom hooks (useModals, useBackButton)
+├── hooks/                 # Custom hooks (useBackButton)
 ├── contexts/              # SupabaseAuthContext (Clerk → Supabase glue)
 ├── store/                 # Zustand stores (appStore.ts)
 ├── services/              # API façade + integrations (see §4)
@@ -119,7 +119,7 @@ The repo is **flat**, not split into `/backend /frontend /common`. Source folder
 - Path alias: `@/*` → repo root (`vite.config.ts` + `tsconfig.json paths`).
 - File naming:
   - Components: `PascalCase.tsx` (`GroupList.tsx`)
-  - Hooks: `useCamelCase.ts` (`useModals.ts`)
+  - Hooks: `useCamelCase.ts` (`useBackButton.ts`)
   - Services / utils / stores: `camelCase.ts` (`apiService.ts`)
   - SQL migrations: `YYYYMMDDHHMMSS_description.sql` (mostly — some legacy files break this)
 - **Markdown filenames** at the root use `SCREAMING_SNAKE_CASE` (legacy, not renamed). **New docs** go in `kebab-case.md`.
@@ -255,7 +255,7 @@ Responsibilities (today, not ideal):
 - Reads auth via `useAuth()` from `SupabaseAuthContext`.
 - Calls all four `use*Query` hooks + mounts all five realtime bridges.
 - Owns the manual view switch: `selectedGroupId == null ? <HomeScreen/> : <GroupView/>`.
-- Modal state is managed by `useModals()` hook, provided via `ModalContext.Provider` wrapping the JSX return. Child components call `useModalContext()` directly — no prop-drilling.
+- Modal open/close is `useState` in `App.tsx` (plus a few local flags in `GroupView`). There is no `ModalContext`.
 - `appStore` retains only `selectedGroupId` and `theme` (modal slice removed 2026-04-25).
 
 ### Routing
@@ -271,7 +271,7 @@ Unauthenticated native launch: `WelcomeScreen` → Get started → `AuthScreen`.
 
 | Family | Examples | Notes |
 |---|---|---|
-| **Modals** | `TransactionFormModal`, `GroupFormModal`, `SettleUpModal`, `BalanceBreakdownModal`, `MemberInviteModal`, `ConfirmDeleteModal`, `ArchivePromptModal`, `CalendarModal`, `DateFilterModal`, `ShareModal`, `PaymentSourceFormModal`, `PaymentSourceManageModal`, `SettingsModal`, `AddActionModal`, `ArchivedGroupsModal`, `GroupSummaryModal`, `GroupBalancesModal`, `TransactionDetailModal` | All extend `BaseModal` (assumed; not yet verified). State *should* be governed by `appStore.openModals` but that enum doesn't cover all of them — see §8. |
+| **Modals** | `TransactionFormModal`, `GroupFormModal`, `SettleUpModal`, `BalanceBreakdownModal`, `MemberInviteModal`, `ConfirmDeleteModal`, `ArchivePromptModal`, `CalendarModal`, `DateFilterModal`, `ShareModal`, `PaymentSourceFormModal`, `PaymentSourceManageModal`, `SettingsModal`, `AddActionModal`, `ArchivedGroupsModal`, `GroupSummaryModal`, `GroupBalancesModal`, `TransactionDetailModal` | Prefer `BaseModal`. Open flags live in `App.tsx` `useState`. |
 | **Lists / Views** | `HomeScreen`, `GroupView`, `GroupList`, `GroupSelectionList`, `GroupSummaryCard`, `TransactionList`, `TransactionItem`, `MemberBalances` | Top-level containers vs row primitives — keep them split. |
 | **Layout / chrome** | `Dashboard`, `BaseModal`, `ErrorBoundary`, `ToastProvider`, `RealtimeStatus` | `ErrorBoundary` may be dead (see §6). |
 | **Forms / inputs** | `FilterBar`, `CurrencySelector`, `LanguageSelector`, `ThemeToggle`, `DataExport` | Pure-ish leaf components. |
@@ -293,7 +293,7 @@ UI-only state. Persisted to `localStorage` under key `app-ui` (v1). DevTools ena
 | `selectedGroupId` | Current group view (drives top-level navigation) |
 | `theme` | `'light' \| 'dark' \| 'system'` |
 
-**Note:** The former `openModals`/`ModalName`/`openModal`/`closeModal` slice was removed 2026-04-25. Modal state is now entirely owned by `useModals()` in `App.tsx`, exposed via `ModalContext`. See `hooks/useModals.ts` and `contexts/ModalContext.tsx`.
+**Note:** The former `openModals`/`ModalName` slice was removed 2026-04-25. An unused `useModals` + `ModalContext` was never mounted and was deleted (D-07). Live modal flags stay in `App.tsx` `useState`.
 
 ### Context — `contexts/SupabaseAuthContext.tsx` (107 LOC)
 Bridges Clerk → Supabase. Exposes `useAuth()` returning:
@@ -494,7 +494,7 @@ These are real and worth flagging in any PR that touches nearby code. Items grou
 ### Architecture / size
 4. **`App.tsx` is 912 LOC.** Manages auth, queries, realtime, view switching, and 15 modal `useState`s. Should split into `AppContainer` / `MainLayout` / `ModalRoot`.
 5. **`services/supabaseApiService.ts` is 1343 LOC.** Should split by domain (groups / transactions / invites / deletion-requests / people).
-6. ~~**Modal state is bifurcated**~~ — **Resolved 2026-04-25.** `appStore.openModals`/`ModalName` removed; `App.tsx` now uses `useModals()` + `ModalContext.Provider`; leaf components call `useModalContext()` directly.
+6. **Modal state lives in `App.tsx` `useState`.** Zustand modal slice was removed 2026-04-25. `useModals`/`ModalContext` were never wired and were deleted (D-07). Splitting `App.tsx` remains debt §15.4.
 7. **TypeScript is not strict.** `tsconfig.json` lacks `strict: true`. §13's standards are aspirational.
 8. **No `.prettierrc` / `.eslintrc`** committed. Style is enforced by convention only.
 

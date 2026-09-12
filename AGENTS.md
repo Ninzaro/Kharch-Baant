@@ -83,7 +83,7 @@ Do not add major dependencies outside this list without updating `ARCHITECTURE.m
 │                (client + Clerk JWT fetch interceptor)│
 │                                                      │
 │  Zustand store  ◄── UI only (nav + theme)            │
-│  ModalContext   ◄── useModals (modal open/close)     │
+│  App.tsx        ◄── modal open/close (useState)      │
 └──────────────────────────────┼───────────────────────┘
                                │
             ┌──────────────────┼──────────────────┐
@@ -210,13 +210,10 @@ Kharch-baant/
 │   └── …
 │
 ├── hooks/
-│   ├── useModals.ts          # All modal open/close state + actions
-│   ├── useModals.test.ts
 │   └── useBackButton.ts      # Android / browser back handling
 │
 ├── contexts/
-│   ├── SupabaseAuthContext.tsx   # Clerk → person sync + Realtime auth
-│   └── ModalContext.tsx          # Provides useModals to the tree
+│   └── SupabaseAuthContext.tsx   # Clerk → person sync + Realtime auth
 │
 ├── store/
 │   └── appStore.ts           # Zustand: selectedGroupId, theme (persisted)
@@ -294,9 +291,8 @@ Kharch-baant/
 | `App.tsx` | Loads auth person, mounts Query hooks + realtime bridges, switches Home/Group, owns modal JSX | Large; prefer extracting rather than growing further |
 | `components/` | All visual UI | Subdir when a family hits ~6 files (`auth/`, `invite/` pattern) |
 | `components/BaseModal.tsx` | Shared accessible modal chrome | New modals should compose this |
-| `hooks/` | Reusable React logic without JSX ownership of app data | `useModals` is the modal state machine |
+| `hooks/` | Reusable React logic without JSX ownership of app data | `useBackButton` (Android / browser back) |
 | `contexts/SupabaseAuthContext.tsx` | Bridges Clerk session → `Person` + Realtime JWT | Exposes `useAuth()` |
-| `contexts/ModalContext.tsx` | Provides `{ modals, actions }` from `useModals` | Children call `useModalContext()` — no modal prop drilling |
 | `store/appStore.ts` | UI-only: selected group + theme | Never store server entities or modal flags here |
 | `services/apiService.ts` | Stable public API for data ops | Prefer importing from here in app code |
 | `services/supabaseApiService.ts` | Implementation of all Supabase CRUD/subscribe + transforms | Only place for DB↔domain mapping |
@@ -325,7 +321,7 @@ Kharch-baant/
    Implement in `supabaseApiService.ts` → re-export from `apiService.ts` → add/adjust TanStack Query hooks or cache updates in `queries.ts` as needed.
 
 4. **Modals**  
-   - Open/close via `useModalContext()` actions.  
+   - Open/close via `useState` in `App.tsx` (and a few local flags in `GroupView`). There is no `ModalContext` / `useModals`.  
    - Render/modal data wiring stays in `App.tsx` (it has the query data).  
    - Prefer `React.lazy` + `<Suspense fallback={<ModalShell />}>`.  
    - Build UI on `BaseModal`.  
@@ -364,7 +360,7 @@ These mix **what the codebase already does** with **what new code should do**. T
 | Kind | Convention | Example |
 |---|---|---|
 | Components | `PascalCase.tsx` | `GroupList.tsx` |
-| Hooks | `useCamelCase.ts` | `useModals.ts` |
+| Hooks | `useCamelCase.ts` | `useBackButton.ts` |
 | Services / utils / store | `camelCase.ts` | `apiService.ts` |
 | Types / interfaces | `PascalCase` | `PaymentSource` |
 | Constants | `SCREAMING_SNAKE_CASE` | in `constants.ts` |
@@ -407,7 +403,7 @@ These mix **what the codebase already does** with **what new code should do**. T
 
 | Layer | Tool | Location |
 |---|---|---|
-| Unit / component | Vitest + Testing Library | `src/test/**`, or co-located `*.test.ts(x)` (e.g. `hooks/useModals.test.ts`) |
+| Unit / component | Vitest + Testing Library | `src/test/**`, or co-located `*.test.ts(x)` |
 | E2E | Playwright | `tests/` |
 | Smoke | Node script | `npm run test:smoke` |
 
@@ -485,13 +481,13 @@ Also accepted in places: `REACT_APP_SUPABASE_*` fallbacks via `getEnvValue`.
 
 - Root `*_FIX.md`, `INVITE_*.md`, `USER_FLOW_*.md`, one-off analysis notes
 - `SUPABASE_AUTH_MIGRATION_PLAN.md` — **stale**; Clerk is permanent
-- Older checklists that predate modal context unification and lazy modal chunks
+- Older checklists that claim `useModals` / `ModalContext` is wired (it was never mounted; files removed)
 
 ---
 
 ## Quick reality checks (as of this doc)
 
-- Modal state: **`useModals` + `ModalContext`** (Zustand modal slice removed).
+- Modal state: **`useState` in `App.tsx`** (Zustand modal slice removed; unused `useModals`/`ModalContext` deleted).
 - Bundle: **vendor `manualChunks` + several lazy modals** in `App.tsx` (performance work partially landed).
 - Member claim: migrations + `claim_person_by_email` RPC + related tests present.
 - Mock/in-memory API mode: **removed**; Supabase-only façade remains.
