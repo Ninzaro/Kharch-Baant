@@ -72,6 +72,8 @@ jobs:
       # 7. Build signed AAB with auto-incremented versionCode
       - name: Build Release AAB
         working-directory: android
+        env:
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
         run: |
           ./gradlew bundleRelease \
             -PversionCode=${{ github.run_number }} \
