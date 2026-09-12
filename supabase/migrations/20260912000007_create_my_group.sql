@@ -1,6 +1,31 @@
 -- Create group + creator membership in one definer function.
 -- PostgREST insert().select() was 403: SELECT RLS requires membership, which
 -- is written only after the insert. Bypass that chicken-and-egg.
+--
+-- Identity MUST match live i_created_group (D-03 C1): created_by = people.id
+-- and people.clerk_user_id = requesting_user_id(). Abort otherwise.
+-- Membership insert uses WHERE NOT EXISTS, not ON CONFLICT (no unique required).
+
+DO $$
+DECLARE
+  src text;
+BEGIN
+  SELECT prosrc INTO src
+  FROM pg_proc
+  WHERE proname = 'i_created_group'
+  LIMIT 1;
+
+  IF src IS NULL THEN
+    RAISE EXCEPTION 'create_my_group abort: i_created_group is missing; apply D-03 C1 first';
+  END IF;
+
+  IF src NOT ILIKE '%clerk_user_id%'
+     OR src NOT ILIKE '%created_by%' THEN
+    RAISE EXCEPTION
+      'create_my_group abort: i_created_group is not C1 (people.id + clerk_user_id). Do not apply this RPC until D-03 is live. Body: %',
+      src;
+  END IF;
+END $$;
 
 CREATE OR REPLACE FUNCTION create_my_group(
   p_name text,
