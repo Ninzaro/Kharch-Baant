@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useUser, useClerk, useSession } from '@clerk/clerk-react';
 import { ensureUserExists } from '../services/supabaseApiService';
-import { getClerkSupabaseToken, setRealtimeAuth } from '../lib/supabase';
+import { getClerkSupabaseToken, setRealtimeAuth, setClerkTokenGetter } from '../lib/supabase';
 import { Person } from '../types';
 
 /**
@@ -33,6 +33,15 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [isSyncing, setIsSyncing] = useState(false);
   
   const loading = !isUserLoaded || !isSessionLoaded;
+
+  useEffect(() => {
+    if (!session) {
+      setClerkTokenGetter(null);
+      return undefined;
+    }
+    setClerkTokenGetter(() => session.getToken());
+    return () => setClerkTokenGetter(null);
+  }, [session]);
 
   useEffect(() => {
     let cancelled = false;

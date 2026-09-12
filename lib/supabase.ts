@@ -30,12 +30,24 @@ if (!supabaseUrl || !supabaseAnonKey) {
  * provider in the Supabase dashboard. `sub` remains the Clerk user id
  * (`requesting_user_id()`).
  */
+type ClerkTokenGetter = () => Promise<string | null | undefined>;
+
+let clerkTokenGetter: ClerkTokenGetter | null = null;
+
+/** Register Clerk `session.getToken` from React so REST/Realtime do not depend on `window.Clerk`. */
+export const setClerkTokenGetter = (getter: ClerkTokenGetter | null): void => {
+  clerkTokenGetter = getter;
+};
+
 export const getClerkSupabaseToken = async (): Promise<string> => {
-  const clerk = (window as any).Clerk;
-  if (!clerk?.session) return '';
   try {
-    const sessionToken = await clerk.session.getToken();
-    if (sessionToken) return sessionToken;
+    if (clerkTokenGetter) {
+      const fromSession = await clerkTokenGetter();
+      if (fromSession) return fromSession;
+    }
+    const clerk = (window as any).Clerk;
+    const fromWindow = await clerk?.session?.getToken?.();
+    if (fromWindow) return fromWindow;
   } catch (e) {
     console.warn('Failed to get Clerk session token:', e);
   }
