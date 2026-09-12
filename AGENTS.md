@@ -482,6 +482,7 @@ Also accepted in places: `REACT_APP_SUPABASE_*` fallbacks via `getEnvValue`.
 - Root `*_FIX.md`, `INVITE_*.md`, `USER_FLOW_*.md`, one-off analysis notes
 - `SUPABASE_AUTH_MIGRATION_PLAN.md` — **stale**; Clerk is permanent
 - Older checklists that claim `useModals` / `ModalContext` is wired (it was never mounted; files removed)
+- **Never run** `DATABASE_FIX_DISABLE_RLS.sql`, `COMPLETE_RLS_FIX.sql`, or `supabase-auth-setup.sql` — they disable RLS or reinstall `auth.uid()` policies. Clerk RLS lives in `supabase/migrations/` and `docs/security-phase-a.md`.
 
 ---
 
