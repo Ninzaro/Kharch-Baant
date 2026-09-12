@@ -7,6 +7,29 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.test'), override: true }
 
 const hasAuthCreds = Boolean(process.env.TEST_USER_EMAIL && process.env.TEST_USER_PASSWORD);
 
+const PLAYWRIGHT_PROD_HOSTS = new Set([
+  'www.motamaati.in',
+  'motamaati.in',
+  'kharch-baant.vercel.app',
+]);
+
+function assertSafePlaywrightBaseUrl(raw: string | undefined): void {
+  if (!raw) return;
+  let hostname: string;
+  try {
+    hostname = new URL(raw).hostname;
+  } catch {
+    throw new Error(`PLAYWRIGHT_BASE_URL is not a valid URL: ${raw}`);
+  }
+  if (PLAYWRIGHT_PROD_HOSTS.has(hostname)) {
+    throw new Error(
+      `Playwright refuses production host ${hostname}. Use localhost or a Vercel preview URL.`
+    );
+  }
+}
+
+assertSafePlaywrightBaseUrl(process.env.PLAYWRIGHT_BASE_URL);
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */

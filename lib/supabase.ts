@@ -52,17 +52,6 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     const token = await getClerkSupabaseToken();
     return token || null;
   },
-  global: {
-    fetch: async (url, options = {}) => {
-      const token = await getClerkSupabaseToken();
-      const headers = new Headers((options as RequestInit).headers);
-      if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
-      }
-      headers.set('apikey', supabaseAnonKey);
-      return fetch(url, { ...(options as RequestInit), headers });
-    },
-  },
   realtime: {
     params: {
       apikey: supabaseAnonKey,
@@ -75,9 +64,9 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
  * depend on `auth.jwt()` can see the authenticated user. Pass `null` on sign-out
  * to drop back to anonymous.
  *
- * The HTTP path is handled separately by the `global.fetch` override above —
- * this helper only exists because Realtime maintains a long-lived connection
- * that needs its auth context refreshed independently of per-request headers.
+ * The HTTP path uses supabase-js `accessToken` + fetchWithAuth (Authorization
+ * once per request). This helper exists because Realtime is a long-lived
+ * WebSocket that needs JWT refresh independently of REST.
  *
  * Invoked from `contexts/SupabaseAuthContext.tsx` on session load, on a 50s
  * refresh interval (Clerk JWT TTL is 60s by default), and on sign-out.

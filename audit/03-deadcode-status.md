@@ -28,10 +28,10 @@ Process: the parent implements a finding **only** after the user names an ID and
 | D-20 | P2 | `group_deletion_requests UNIQUE(group_id)` bricks the feature after one request | completed | Same migration: partial unique pending-only. Request UI still gone (D-05). Apply in dashboard. |
 | D-21 | P2 | CI never exports the Clerk key into the Gradle step | completed | `bundleRelease` now gets `VITE_CLERK_PUBLISHABLE_KEY`. Local `android-release.ps1` still relies on the shell env. |
 | D-22 | P2 | `assetlinks.json` does not exist, so Android App Links cannot verify | completed | File + Play+upload SHA-256. Apex host dropped from manifest (redirect). Verify after Vercel deploy: Google statements:list on www; Content-Type application/json. |
-| D-23 | P2 | `numeric(12,2)` silently doubles sub-paisa amounts | pending | §9 / §8.11 |
-| D-24 | P2 | Duplicate Supabase auth-token injection (`accessToken` + `global.fetch`) | pending | §9 / §2.10 |
-| D-25 | P2 | Playwright can write to production with no guard | pending | §9 / §6.10 |
-| D-26 | P2 | No typecheck, no lint, and unit tests never run in CI | pending | §9 / §6.5 |
+| D-23 | P2 | `numeric(12,2)` silently doubles sub-paisa amounts | completed | `roundToCents` string-exponent; shared on add/update + payers; last-payer remainder. No SQL type change. |
+| D-24 | P2 | Duplicate Supabase auth-token injection (`accessToken` + `global.fetch`) | completed | Removed `global.fetch`. REST uses `accessToken` + fetchWithAuth. Test asserts Bearer once. |
+| D-25 | P2 | Playwright can write to production with no guard | completed | Blocklist: www.motamaati.in, motamaati.in, kharch-baant.vercel.app only. |
+| D-26 | P2 | No typecheck, no lint, and unit tests never run in CI | completed | `unit.yml` runs `vitest`. `typecheck` script exists, not in CI. |
 | D-27 | P3 | 2,961 LOC of orphaned code, 1,009 of it tests for dead code | pending | §9 / §1.1 |
 | D-28 | P3 | 19 dead exports inside live files | pending | §9 / §1.3 |
 | D-29 | P3 | 55 lines of dead email logic cost 3 DB reads on every expense | pending | §9 / §2.7 |

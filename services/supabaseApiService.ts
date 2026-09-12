@@ -49,6 +49,7 @@ import { supabase } from '../lib/supabase';
 import { Group, Transaction, PaymentSource, Person, GroupType, SplitParticipant, Payer } from '../types';
 import type { DbGroup, DbTransaction, DbPaymentSource, DbPerson } from '../lib/supabase';
 import * as emailService from './emailService';
+import { roundMoneyFields, roundToCents } from '../utils/money';
 
 // Helper function to transform database group to app group
 const transformDbGroupToAppGroup = async (dbGroup: DbGroup): Promise<Group> => {
@@ -433,14 +434,18 @@ export const addTransaction = async (
   groupId: string,
   transactionData: Omit<Transaction, 'id' | 'groupId'>
 ): Promise<Transaction> => {
+  const { amount, payers } = roundMoneyFields(transactionData.amount, transactionData.payers);
+  if (!(amount > 0)) {
+    throw new Error('Amount must be at least 0.01 after rounding to cents.');
+  }
   const { data, error } = await supabase
     .from('transactions')
     .insert({
       group_id: groupId,
       description: transactionData.description,
-      amount: transactionData.amount,
+      amount,
       paid_by_id: transactionData.paidById, // Still required for FK
-      payers: transactionData.payers, // New JSONB column
+      payers, // New JSONB column
       date: transactionData.date,
       tag: transactionData.tag,
       payment_source_id: transactionData.paymentSourceId || null,
@@ -525,9 +530,26 @@ export const updateTransaction = async (
   const updateData: any = {};
 
   if (transactionData.description !== undefined) updateData.description = transactionData.description;
-  if (transactionData.amount !== undefined) updateData.amount = transactionData.amount;
+  if (transactionData.amount !== undefined && transactionData.payers !== undefined) {
+    const { amount, payers } = roundMoneyFields(transactionData.amount, transactionData.payers);
+    if (!(amount > 0)) {
+      throw new Error('Amount must be at least 0.01 after rounding to cents.');
+    }
+    updateData.amount = amount;
+    updateData.payers = payers;
+  } else if (transactionData.amount !== undefined) {
+    const amount = roundToCents(transactionData.amount);
+    if (!(amount > 0)) {
+      throw new Error('Amount must be at least 0.01 after rounding to cents.');
+    }
+    updateData.amount = amount;
+  } else if (transactionData.payers !== undefined) {
+    updateData.payers = transactionData.payers.map((p) => ({
+      ...p,
+      amount: roundToCents(p.amount),
+    }));
+  }
   if (transactionData.paidById !== undefined) updateData.paid_by_id = transactionData.paidById;
-  if (transactionData.payers !== undefined) updateData.payers = transactionData.payers; // New JSONB update
   if (transactionData.date !== undefined) updateData.date = transactionData.date;
   if (transactionData.tag !== undefined) updateData.tag = transactionData.tag;
   if (transactionData.paymentSourceId !== undefined) {

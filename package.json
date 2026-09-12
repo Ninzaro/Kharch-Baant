@@ -11,6 +11,7 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
+    "typecheck": "tsc --noEmit",
     "test:coverage": "vitest run --coverage",
     "test:smoke": "node scripts/smoke-test.mjs",
     "test:e2e": "playwright test",
