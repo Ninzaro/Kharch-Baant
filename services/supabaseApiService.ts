@@ -170,23 +170,21 @@ export const addGroup = async (groupData: Omit<Group, 'id'>, personId?: string):
   if (!personId) {
     throw new Error('Cannot create a group without a creator person id.');
   }
-  const insertPayload: any = {
-    name: groupData.name,
-    currency: groupData.currency,
-    group_type: groupData.groupType,
-    trip_start_date: groupData.tripStartDate || null,
-    trip_end_date: groupData.tripEndDate || null,
-    enable_cute_icons: groupData.enableCuteIcons ?? true,
-    created_by: personId,
-  };
 
-  const { data: groupResult, error: groupError } = await supabase
-    .from('groups')
-    .insert(insertPayload)
-    .select()
-    .single();
+  const { data: groupResult, error: groupError } = await supabase.rpc('create_my_group', {
+    p_name: groupData.name,
+    p_currency: groupData.currency,
+    p_group_type: groupData.groupType,
+    p_trip_start: groupData.tripStartDate || null,
+    p_trip_end: groupData.tripEndDate || null,
+    p_enable_cute_icons: groupData.enableCuteIcons ?? true,
+  });
 
   if (groupError) throw groupError;
+  const created = Array.isArray(groupResult) ? groupResult[0] : groupResult;
+  if (!created?.id) {
+    throw new Error('Group was not created.');
+  }
 
   // Include the creator as a member and other members
   const membersToAdd = [...groupData.members];
@@ -195,14 +193,16 @@ export const addGroup = async (groupData: Omit<Group, 'id'>, personId?: string):
   }
 
   // Insert group members - Filter out empty/invalid UUIDs
-  const validMembers = membersToAdd.filter(memberId => memberId && memberId.trim() !== '');
+  const validMembers = membersToAdd.filter(
+    memberId => memberId && memberId.trim() !== '' && memberId !== personId
+  );
 
   if (validMembers.length > 0) {
     const { error: membersError } = await supabase
       .from('group_members')
       .insert(
         validMembers.map(memberId => ({
-          group_id: groupResult.id,
+          group_id: created.id,
           person_id: memberId,
         }))
       );
@@ -216,7 +216,7 @@ export const addGroup = async (groupData: Omit<Group, 'id'>, personId?: string):
     console.warn('⚠️ No members to add to group!');
   }
 
-  return await transformDbGroupToAppGroup(groupResult);
+  return await transformDbGroupToAppGroup(created);
 };
 
 export const updateGroup = async (groupId: string, groupData: Omit<Group, 'id'>): Promise<Group> => {

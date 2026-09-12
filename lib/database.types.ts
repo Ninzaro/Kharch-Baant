@@ -512,6 +512,17 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      create_my_group: {
+        Args: {
+          p_name: string
+          p_currency: string
+          p_group_type: string
+          p_trip_start?: string | null
+          p_trip_end?: string | null
+          p_enable_cute_icons?: boolean
+        }
+        Returns: unknown
+      }
       get_current_user_person_id: { Args: never; Returns: string }
       /** Exact-token invite preview (anon + authenticated). Phase B. */
       get_invite_preview: { Args: { p_token: string }; Returns: Json }

@@ -174,4 +174,5 @@ ALTER TABLE payment_sources ENABLE ROW LEVEL SECURITY;
 --   20260912000003_invite_and_deletion_uniques.sql
 --   20260912000004_drop_unused_functions.sql
 --   20260912000005_groups_insert_own_person.sql
+--   20260912000007_create_my_group.sql
 -- Fresh installs: run those migrations after this schema file.
