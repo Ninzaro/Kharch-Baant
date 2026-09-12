@@ -235,7 +235,7 @@ Source of truth for shared types. Always import from here; never redeclare. DB-r
 
 ```
 React.StrictMode
-  └─ Sentry.ErrorBoundary           (fallback: <p>Something went wrong.</p> — debt §15)
+  └─ ErrorBoundary                  (components/ErrorBoundary.tsx — reports to Sentry)
        └─ ClerkProvider             (publishableKey from VITE_CLERK_PUBLISHABLE_KEY; throws if missing)
             └─ QueryClientProvider  (queryClient from lib/queryClient.ts)
                  └─ SupabaseAuthProvider
@@ -247,7 +247,7 @@ React.StrictMode
 - Initializes Sentry with a **hardcoded DSN** (debt §15).
 - Calls `initCapacitor()` before render — sets status bar style, hides splash, registers Android back-button handler.
 
-`components/ErrorBoundary.tsx` exists but is **not** in this stack. Likely dead at the top level — verify before deletion (debt §15).
+`components/ErrorBoundary.tsx` **is** this wrapper. Do not delete it.
 
 ### `App.tsx` (912 LOC — **debt §15**)
 
@@ -273,7 +273,7 @@ Unauthenticated native launch: `WelcomeScreen` → Get started → `AuthScreen`.
 |---|---|---|
 | **Modals** | `TransactionFormModal`, `GroupFormModal`, `SettleUpModal`, `BalanceBreakdownModal`, `MemberInviteModal`, `ConfirmDeleteModal`, `ArchivePromptModal`, `CalendarModal`, `DateFilterModal`, `ShareModal`, `PaymentSourceFormModal`, `PaymentSourceManageModal`, `SettingsModal`, `AddActionModal`, `ArchivedGroupsModal`, `GroupSummaryModal`, `GroupBalancesModal`, `TransactionDetailModal` | Prefer `BaseModal`. Open flags live in `App.tsx` `useState`. |
 | **Lists / Views** | `HomeScreen`, `GroupView`, `GroupList`, `GroupSelectionList`, `GroupSummaryCard`, `TransactionList`, `TransactionItem`, `MemberBalances` | Top-level containers vs row primitives — keep them split. |
-| **Layout / chrome** | `Dashboard`, `BaseModal`, `ErrorBoundary`, `ToastProvider`, `RealtimeStatus` | `ErrorBoundary` may be dead (see §6). |
+| **Layout / chrome** | `Dashboard`, `BaseModal`, `ErrorBoundary`, `ToastProvider`, `RealtimeStatus` | `ErrorBoundary` wraps the tree in `index.tsx`. |
 | **Forms / inputs** | `FilterBar`, `CurrencySelector`, `LanguageSelector`, `ThemeToggle`, `DataExport` | Pure-ish leaf components. |
 | **Auth** | `auth/UserMenu`, `auth/UserProfile`, `auth/AuthLayout`, `auth/SimpleAuth` | Subdirectory pattern — follow this when a family grows. |
 | **Utilities** | `Avatar`, `ApiStatusIndicator`, `AboutSection` | |
@@ -457,7 +457,7 @@ Reads come from three layers (any one may resolve a key):
 - **Function size:** prefer < 50 lines. If a component renders > 200 lines, split it.
 - **Naming:** `camelCase` for functions/vars, `PascalCase` for components/types, `SCREAMING_SNAKE_CASE` for constants. The system-prompt template's claim about "kebab-case files" does **not** apply here.
 - **Imports:** use the `@/` alias for cross-folder imports; relative paths for siblings only.
-- **Errors:** every async boundary has a `try / catch` that either toasts via `react-hot-toast` or bubbles to `Sentry.ErrorBoundary`. No silent failures.
+- **Errors:** every async boundary has a `try / catch` that either toasts via `react-hot-toast` or bubbles to `ErrorBoundary` (which reports to Sentry). No silent failures.
 - **Logging:** Sentry for errors. `console.*` only behind a `DEBUG` flag.
 - **Secrets:** never hardcoded. Currently violated by the Sentry DSN in `index.tsx` (debt §15).
 - **Comments:** JSDoc on every exported function in `services/`, `utils/`, `hooks/`. Inline comments only for non-obvious logic.

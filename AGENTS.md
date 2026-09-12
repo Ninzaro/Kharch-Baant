@@ -97,7 +97,7 @@ Do not add major dependencies outside this list without updating `ARCHITECTURE.m
 
 ```
 StrictMode
-  └─ Sentry.ErrorBoundary
+  └─ ErrorBoundary              (components/ErrorBoundary.tsx; reports to Sentry)
        └─ ClerkProvider
             └─ QueryClientProvider
                  └─ SupabaseAuthProvider

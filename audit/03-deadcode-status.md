@@ -13,7 +13,7 @@ Process: the parent implements a finding **only** after the user names an ID and
 | D-05 | P1 | `group_deletion_requests`: RLS on, zero policies, six call sites, JS-only admin check | completed | Option B: request/approve UI and client APIs removed. Creator-only Delete Group. Table left in DB. Group report parked in `docs/features-to-be-added.md`. |
 | D-06 | P1 | Email normalisation asymmetry creates permanently unclaimable duplicate people | completed | Live: 0 mixed-case / 0 collisions. Migration `20260912000002` (both-sides match + trigger + unique on lower(trim(email))); fallback insert lowercases. Apply SQL in dashboard. |
 | D-07 | P2 | Canonical docs describe a modal system (`useModals` + `ModalContext`) with zero importers | completed | Option B: deleted `useModals.ts`, `useModals.test.ts`, `ModalContext.tsx`. AGENTS.md + ARCHITECTURE.md now describe App.tsx `useState`. |
-| D-08 | P2 | `ARCHITECTURE.md` tells the next assistant to delete a live `ErrorBoundary` | pending | §9 |
+| D-08 | P2 | `ARCHITECTURE.md` tells the next assistant to delete a live `ErrorBoundary` | completed | Docs: custom `ErrorBoundary` is the live `index.tsx` wrapper. Do not delete. |
 | D-09 | P2 | Two documents give opposite orders about RLS | pending | §9 |
 | D-10 | P2 | `MULTI_USER_EXPERIENCE.md` states the app has no data privacy between users | pending | §9 |
 | D-11 | P2 | `SETTLEMENT_RULES_AND_BALANCES.md` has settlement direction inverted | pending | §9 |
