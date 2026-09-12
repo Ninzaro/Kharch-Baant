@@ -784,7 +784,7 @@ export const ensureUserExists = async (authUserId: string, userName: string, use
       clerk_user_id: authUserId,
       user_id: authUserId,
       avatar_url: '',
-      email: userEmail || null,
+      email: userEmail ? userEmail.trim().toLowerCase() : null,
       is_claimed: true,
       source: 'self',
     })
