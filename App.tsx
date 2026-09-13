@@ -372,13 +372,17 @@ const App: React.FC = () => {
                 const updatedTransaction = await api.updateTransaction(editingTransaction.id, transactionData);
                 qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) => prev.map(t => t.id === editingTransaction.id ? updatedTransaction : t));
             } else if (selectedGroupId) {
-                // Just add to DB; realtime bridge will update cache for all users consistently
-                await api.addTransaction(selectedGroupId, transactionData);
+                const created = await api.addTransaction(selectedGroupId, transactionData);
+                qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) =>
+                    prev.some(t => t.id === created.id) ? prev : [created, ...prev]
+                );
             }
             setIsTransactionModalOpen(false);
             setEditingTransaction(null);
         } catch (error) {
             console.error('Failed to save transaction', error);
+            Sentry.captureException(error);
+            toast.error('Could not save expense. Try again.');
         }
     };
 

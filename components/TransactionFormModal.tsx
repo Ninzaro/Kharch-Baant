@@ -12,7 +12,7 @@ import { CalendarIcon, ChevronRightIcon, DeleteIcon, CheckIcon } from './icons/I
 interface TransactionFormModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (transaction: Omit<Transaction, 'id' | 'groupId'>) => void;
+    onSave: (transaction: Omit<Transaction, 'id' | 'groupId'>) => void | Promise<void>;
     transaction: Transaction | null;
     people: Person[];
     currentUserId: string;
@@ -82,6 +82,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [tag, setTag] = useState<Tag>(TAGS[0]);
     const [paymentSourceId, setPaymentSourceId] = useState<string | undefined>(undefined);
+    const [submitting, setSubmitting] = useState(false);
     const [comment, setComment] = useState('');
 
     // UI State
@@ -121,6 +122,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
         setSplitParticipants(people.map(p => p.id));
         setCustomSplitValues(new Map());
         setPayerMode('single');
+        setSubmitting(false);
         setCustomPayerValues(new Map());
         setActiveStep('amount');
         setTouchedSteps(new Set());
@@ -283,6 +285,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
     const handleSubmit = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
 
+        if (submitting) return;
         if (!isSplitValid || !description || !(Number(amount) > 0) || !paidById || splitParticipants.length === 0) return;
 
         // Final categorize pass if user never blurred description / left default Food
@@ -349,18 +352,23 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
             finalDescription = `${withoutTrailingEmoji} ${icon}`;
         }
 
-        onSave({
-            description: finalDescription,
-            amount: Number(amount),
-            paidById: finalPaidById,
-            payers,
-            date,
-            tag: finalTag,
-            paymentSourceId,
-            split: { mode: splitMode, participants },
-            comment,
-            type: transaction?.type ?? 'expense',
-        });
+        setSubmitting(true);
+        try {
+            await onSave({
+                description: finalDescription,
+                amount: Number(amount),
+                paidById: finalPaidById,
+                payers,
+                date,
+                tag: finalTag,
+                paymentSourceId,
+                split: { mode: splitMode, participants },
+                comment,
+                type: transaction?.type ?? 'expense',
+            });
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     if (!isOpen) return null;
@@ -681,13 +689,13 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                         )}
                     </div>
                     <div className="flex gap-3">
-                        <button onClick={onClose} className="px-5 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
+                        <button onClick={onClose} disabled={submitting} className="px-5 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50">Cancel</button>
                         <button
                             onClick={() => handleSubmit()}
-                            disabled={!isSplitValid || !description || !amount}
+                            disabled={!isSplitValid || !description || !amount || submitting}
                             className="px-6 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-bold rounded-xl shadow-lg shadow-primary/20 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 disabled:shadow-none"
                         >
-                            Save
+                            {submitting ? 'Saving…' : 'Save'}
                         </button>
                     </div>
                 </div>
