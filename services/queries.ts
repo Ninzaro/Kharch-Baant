@@ -104,9 +104,6 @@ export const useRealtimeTransactionsBridge = (personId?: string) => {
           return current
         })
       },
-      (_groupId: string) => {
-        qc.invalidateQueries({ queryKey: qk.transactions(personId) })
-      },
     )
 
     return () => {

@@ -298,26 +298,16 @@ export const subscribeToGroups = (personId: string, callback: (payload: any) => 
 export const subscribeToTransactions = (
   personId: string,
   callback: (payload: any) => void,
-  onBroadcast?: (groupId: string) => void,
 ) => {
   const onRow = (payload: any) => {
     const transformedTransaction = transformDbTransactionToAppTransaction(payload.new as DbTransaction);
     callback({ ...payload, new: transformedTransaction });
   };
-  let channel = supabase
+  const channel = supabase
     .channel('public:transactions')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'transactions' }, onRow)
-    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'transactions' }, onRow);
-
-  // Piggyback broadcast listener on the same authenticated channel so it
-  // uses the Clerk JWT already set on this connection (avoids sub:null error).
-  if (onBroadcast) {
-    channel = (channel as any).on('broadcast', { event: 'tx' }, (payload: any) => {
-      onBroadcast(payload.payload?.groupId);
-    });
-  }
-
-  channel.subscribe();
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'transactions' }, onRow)
+    .subscribe();
   return channel;
 };
 
@@ -362,18 +352,6 @@ export const subscribeToGroupMembers = (personId: string, callback: (payload: an
     .subscribe();
   return channel;
 };
-
-// Publisher: sends broadcast on the same channel name as the subscriber ('public:transactions')
-// so both sides share the same authenticated Realtime topic.
-let _txPublishChannel: ReturnType<typeof supabase.channel> | null = null
-
-const _broadcastTxChange = (groupId: string) => {
-  if (!_txPublishChannel) {
-    _txPublishChannel = supabase.channel('public:transactions')
-    _txPublishChannel.subscribe()
-  }
-  _txPublishChannel.send({ type: 'broadcast', event: 'tx', payload: { groupId } })
-}
 
 // TRANSACTIONS API
 export const getTransactions = async (personId?: string): Promise<Transaction[]> => {
@@ -454,9 +432,6 @@ export const addTransaction = async (
 
   const transaction = transformDbTransactionToAppTransaction(data);
 
-  // Notify other group members via broadcast (bypasses postgres_changes RLS filtering)
-  _broadcastTxChange(groupId)
-
   return transaction;
 };
 
@@ -509,7 +484,6 @@ export const updateTransaction = async (
   if (error) throw error;
 
   const updated = transformDbTransactionToAppTransaction(data);
-  _broadcastTxChange(updated.groupId)
   return updated;
 };
 
@@ -545,7 +519,6 @@ export const deleteTransaction = async (transactionId: string, groupId?: string)
 
   if (error) throw error;
 
-  if (groupId) _broadcastTxChange(groupId)
   return { success: true };
 };
 
