@@ -100,7 +100,7 @@ describe('apiService', () => {
       
       const result = await apiService.updateGroup(groupId, groupData)
       
-      expect(supabaseApi.updateGroup).toHaveBeenCalledWith(groupId, groupData)
+      expect(supabaseApi.updateGroup).toHaveBeenCalledWith(groupId, groupData, undefined)
       expect(result).toEqual(mockGroup)
     })
   })
