@@ -117,6 +117,7 @@ const transformDbTransactionToAppTransaction = (dbTransaction: DbTransaction): T
     paymentSourceId: dbTransaction.payment_source_id ?? undefined,
     comment: dbTransaction.comment ?? undefined,
     type: (dbTransaction.type as Transaction['type']) || 'expense',
+    updatedAt: dbTransaction.updated_at ?? undefined,
     split: {
       mode: dbTransaction.split_mode as Transaction['split']['mode'],
       participants,
@@ -504,14 +505,26 @@ export const updateTransaction = async (
     updateData.split_participants = transactionData.split.participants;
   }
 
-  const { data, error } = await supabase
+  let query = supabase
     .from('transactions')
     .update(updateData)
-    .eq('id', transactionId)
-    .select()
-    .single();
+    .eq('id', transactionId);
+  if (transactionData.updatedAt) {
+    query = query.eq('updated_at', transactionData.updatedAt);
+  }
+  const { data, error } = await query.select().single();
 
-  if (error) throw error;
+  if (error || !data) {
+    const { data: still } = await supabase
+      .from('transactions')
+      .select('id')
+      .eq('id', transactionId)
+      .maybeSingle();
+    if (still) {
+      throw new Error('This expense was changed by someone else. Reload and try again.');
+    }
+    throw new Error('This expense is no longer available.');
+  }
 
   const updated = transformDbTransactionToAppTransaction(data);
   return updated;
@@ -534,10 +547,11 @@ export const batchApplyEmojisToGroupTransactions = async (groupId: string): Prom
 
   for (const t of toUpdate) {
     const icon = TAG_EMOJIS[t.tag] ?? '📝';
-    await supabase
+    const { error: upErr } = await supabase
       .from('transactions')
       .update({ description: `${t.description} ${icon}` })
       .eq('id', t.id);
+    if (upErr) throw upErr;
   }
 };
 

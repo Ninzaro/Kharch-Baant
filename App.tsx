@@ -370,7 +370,10 @@ const App: React.FC = () => {
         if (!selectedGroupId && !editingTransaction) return;
         try {
             if (editingTransaction) {
-                const updatedTransaction = await api.updateTransaction(editingTransaction.id, transactionData);
+                const updatedTransaction = await api.updateTransaction(editingTransaction.id, {
+                    ...transactionData,
+                    updatedAt: editingTransaction.updatedAt,
+                });
                 qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) => prev.map(t => t.id === editingTransaction.id ? updatedTransaction : t));
             } else if (selectedGroupId) {
                 const created = await api.addTransaction(selectedGroupId, transactionData);
@@ -383,7 +386,7 @@ const App: React.FC = () => {
         } catch (error) {
             console.error('Failed to save transaction', error);
             Sentry.captureException(error);
-            toast.error('Could not save expense. Try again.');
+            toast.error(error instanceof Error ? error.message : 'Could not save expense. Try again.');
         }
     };
 
@@ -411,7 +414,6 @@ const App: React.FC = () => {
             if (nowEnabled && !wasEnabled) {
                 try {
                     await api.batchApplyEmojisToGroupTransactions(editingGroup.id);
-                    await qc.invalidateQueries({ queryKey: qk.transactions(currentUserId) });
                 } catch (err) {
                     console.warn('Failed to batch apply emojis to existing transactions:', err);
                 }

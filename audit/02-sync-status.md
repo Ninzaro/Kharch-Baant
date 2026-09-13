@@ -18,7 +18,7 @@ Standing job: when the parent reports a batch complete, update **Status** here. 
 | 4. Broadcast | S-11 + S-12 + S-01 + S-14 OR delete | **done (A)** | Deleted `tx` publish/listen. `deleteTransaction(groupId?)` param kept unused. |
 | 5. Membership | S-03 + S-08 + S-19 | **done** | Diff vs open snapshot + fresh SELECT; INSERT then DELETE; people invalidate; groups INSERT refetches. |
 | 6. Destructive / phantoms | S-21 + S-13 + S-05 | **done (A)** | Refetch-or-abort; archive honest 0-row throw; remaining write paths still unchecked. |
-| 7. Leftovers | S-10, S-15, S-18, S-20 | pending | S-16/S-17 already D-05 |
+| 7. Leftovers | S-10, S-15, S-18, S-20 | **done** | updatedAt CAS + follow-up GET; cancelled+removeChannel; emoji errors throw; runtimeCaching removed. |
 
 ## Original grouping (Why together / Notes)
 

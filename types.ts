@@ -286,6 +286,7 @@ export type Transaction = {
     paymentSourceId?: string;
     comment?: string;
     type: TransactionType;
+    updatedAt?: string;
 };
 
 export type Filter = {

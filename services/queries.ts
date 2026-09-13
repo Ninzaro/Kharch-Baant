@@ -49,7 +49,9 @@ export const useRealtimeGroupsBridge = (personId?: string) => {
   const qc = useQueryClient()
   React.useEffect(() => {
     if (!personId) return
+    let cancelled = false
     const sub = api.subscribeToGroups(personId, (payload: any) => {
+      if (cancelled) return
       const { eventType, new: newRow, old: oldRow } = payload
       if (eventType === 'INSERT') {
         qc.invalidateQueries({ queryKey: qk.groups(personId) })
@@ -75,7 +77,8 @@ export const useRealtimeGroupsBridge = (personId?: string) => {
       })
     })
     return () => {
-      sub.unsubscribe()
+      cancelled = true
+      void supabase.removeChannel(sub)
     }
   }, [personId, qc])
 }
@@ -85,9 +88,11 @@ export const useRealtimeTransactionsBridge = (personId?: string) => {
   const qc = useQueryClient()
   React.useEffect(() => {
     if (!personId) return
+    let cancelled = false
     const pgSub = api.subscribeToTransactions(
       personId,
       (payload: any) => {
+        if (cancelled) return
         qc.setQueryData<Transaction[]>(qk.transactions(personId), (current = []) => {
           const { eventType, new: newRow, old: oldRow } = payload
           if (eventType === 'INSERT') {
@@ -103,7 +108,8 @@ export const useRealtimeTransactionsBridge = (personId?: string) => {
     )
 
     return () => {
-      pgSub.unsubscribe()
+      cancelled = true
+      void supabase.removeChannel(pgSub)
     }
   }, [personId, qc])
 }
@@ -113,7 +119,9 @@ export const useRealtimePaymentSourcesBridge = (personId?: string) => {
   const qc = useQueryClient()
   React.useEffect(() => {
     if (!personId) return
+    let cancelled = false
     const sub = api.subscribeToPaymentSources(personId, (payload: any) => {
+      if (cancelled) return
       qc.setQueryData<PaymentSource[]>(qk.paymentSources(personId), (current = []) => {
         const { eventType, new: newRow, old: oldRow } = payload
         if (eventType === 'INSERT') {
@@ -130,7 +138,8 @@ export const useRealtimePaymentSourcesBridge = (personId?: string) => {
       })
     })
     return () => {
-      sub.unsubscribe()
+      cancelled = true
+      void supabase.removeChannel(sub)
     }
   }, [personId, qc])
 }
@@ -140,7 +149,9 @@ export const useRealtimePeopleBridge = (personId?: string) => {
   const qc = useQueryClient()
   React.useEffect(() => {
     if (!personId) return
+    let cancelled = false
     const sub = api.subscribeToPeople(personId, (payload: any) => {
+      if (cancelled) return
       qc.setQueryData<Person[]>(qk.people(personId), (current = []) => {
         const { eventType, new: newRow, old: oldRow } = payload
         if (eventType === 'INSERT') {
@@ -157,7 +168,8 @@ export const useRealtimePeopleBridge = (personId?: string) => {
       })
     })
     return () => {
-      sub.unsubscribe()
+      cancelled = true
+      void supabase.removeChannel(sub)
     }
   }, [personId, qc])
 }
@@ -172,7 +184,9 @@ export const useRealtimeGroupMembersBridge = (personId?: string) => {
   const qc = useQueryClient()
   React.useEffect(() => {
     if (!personId) return
+    let cancelled = false
     const sub = api.subscribeToGroupMembers(personId, (payload: any) => {
+      if (cancelled) return
       const { eventType, new: newRow, old: oldRow } = payload
       const row = newRow || oldRow
 
@@ -207,6 +221,9 @@ export const useRealtimeGroupMembersBridge = (personId?: string) => {
         qc.invalidateQueries({ queryKey: qk.people(personId) })
       }
     })
-    return () => { sub.unsubscribe() }
+    return () => {
+      cancelled = true
+      void supabase.removeChannel(sub)
+    }
   }, [personId, qc])
 }
