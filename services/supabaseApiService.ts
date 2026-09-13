@@ -1,7 +1,18 @@
+function assertAffected(data: unknown[] | null, message: string): void {
+  if (!data || data.length === 0) {
+    throw new Error(message);
+  }
+}
+
 // Unarchive a group (set is_archived to false)
 export const unarchiveGroup = async (groupId: string): Promise<{ success: boolean }> => {
-  const { error } = await supabase.from('groups').update({ is_archived: false }).eq('id', groupId);
+  const { data, error } = await supabase
+    .from('groups')
+    .update({ is_archived: false })
+    .eq('id', groupId)
+    .select('id');
   if (error) throw error;
+  assertAffected(data, 'Could not unarchive this group.');
   return { success: true };
 };
 // Delete a group (only by owner, only if all balances settled)
@@ -12,9 +23,9 @@ export const deleteGroup = async (groupId: string, userId: string, isOwner: bool
   await supabase.from('group_members').delete().eq('group_id', groupId);
   // Delete transactions
   await supabase.from('transactions').delete().eq('group_id', groupId);
-  // Delete group
-  const { error } = await supabase.from('groups').delete().eq('id', groupId);
+  const { data, error } = await supabase.from('groups').delete().eq('id', groupId).select('id');
   if (error) throw error;
+  assertAffected(data, 'Could not delete this group.');
   return { success: true };
 };
 
@@ -25,8 +36,13 @@ export const archiveGroup = async (groupId: string, userId: string, isOwner: boo
   if (!allSettled) throw new Error('All balances must be settled before archiving.');
   // Mark group as archived for this user (add to archived_groups table or set is_archived for user)
   // For simplicity, set is_archived true on group (if all members archive, owner can delete)
-  const { error } = await supabase.from('groups').update({ is_archived: true }).eq('id', groupId);
+  const { data, error } = await supabase
+    .from('groups')
+    .update({ is_archived: true })
+    .eq('id', groupId)
+    .select('id');
   if (error) throw error;
+  assertAffected(data, 'Could not archive this group.');
   return { success: true };
 };
 
@@ -526,12 +542,14 @@ export const batchApplyEmojisToGroupTransactions = async (groupId: string): Prom
 };
 
 export const deleteTransaction = async (transactionId: string, groupId?: string): Promise<{ success: boolean }> => {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('transactions')
     .delete()
-    .eq('id', transactionId);
+    .eq('id', transactionId)
+    .select('id');
 
   if (error) throw error;
+  // 0 rows: already gone (idempotent). RLS-blocked deletes look the same at SQL level.
 
   return { success: true };
 };

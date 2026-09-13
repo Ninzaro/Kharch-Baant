@@ -563,6 +563,29 @@ const App: React.FC = () => {
         setIsTransactionDetailOpen(true);
     };
 
+    const requireFreshGroupSettled = async (groupId: string, action: 'delete' | 'archive') => {
+        let txs: Transaction[];
+        try {
+            txs = await qc.fetchQuery({
+                queryKey: qk.transactions(currentUserId),
+                queryFn: () => api.getTransactions(currentUserId),
+            });
+        } catch {
+            throw new Error('Could not refresh balances. Try again before this action.');
+        }
+        const balances = calculateGroupBalances(txs.filter(t => t.groupId === groupId));
+        const settled = [...balances.values()].every(b => Math.abs(b) < 0.01);
+        if (!settled) {
+            throw new Error(
+                action === 'delete'
+                    ? 'All balances must be settled before deleting the group.'
+                    : 'All balances must be settled before archiving.'
+            );
+        }
+        const userBal = balances.get(currentUserId) ?? 0;
+        return { userSettled: Math.abs(userBal) < 0.01 };
+    };
+
     const handleConfirmDeleteGroup = async () => {
         if (!editingGroup) return;
         setIsProcessingGroupAction(true);
@@ -571,7 +594,8 @@ const App: React.FC = () => {
                 toast.error('Only the group creator can delete this group.');
                 return;
             }
-            await deleteGroup(editingGroup.id, currentUserId, true, allSettled);
+            await requireFreshGroupSettled(editingGroup.id, 'delete');
+            await deleteGroup(editingGroup.id, currentUserId, true, true);
             qc.setQueryData<Group[]>(qk.groups(currentUserId), (prev = []) => prev.filter(g => g.id !== editingGroup.id));
             setIsConfirmDeleteModalOpen(false);
             setIsGroupModalOpen(false);
@@ -587,7 +611,8 @@ const App: React.FC = () => {
         if (!editingGroup) return;
         setIsProcessingGroupAction(true);
         try {
-            await archiveGroup(editingGroup.id, currentUserId, editingGroup.createdBy === currentUserId, userSettled, allSettled);
+            const { userSettled: freshUserSettled } = await requireFreshGroupSettled(editingGroup.id, 'archive');
+            await archiveGroup(editingGroup.id, currentUserId, editingGroup.createdBy === currentUserId, freshUserSettled, true);
             qc.setQueryData<Group[]>(qk.groups(currentUserId), (prev = []) => prev.map(g => g.id === editingGroup.id ? { ...g, isArchived: true } : g));
             setIsConfirmArchiveModalOpen(false);
             setIsGroupModalOpen(false);
