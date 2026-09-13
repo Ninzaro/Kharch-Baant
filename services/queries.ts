@@ -50,16 +50,12 @@ export const useRealtimeGroupsBridge = (personId?: string) => {
   React.useEffect(() => {
     if (!personId) return
     const sub = api.subscribeToGroups(personId, (payload: any) => {
+      const { eventType, new: newRow, old: oldRow } = payload
+      if (eventType === 'INSERT') {
+        qc.invalidateQueries({ queryKey: qk.groups(personId) })
+        return
+      }
       qc.setQueryData<Group[]>(qk.groups(personId), (current = []) => {
-        const { eventType, new: newRow, old: oldRow } = payload
-        if (eventType === 'INSERT') {
-          const newGroup = newRow as Group
-          // Prevent duplicate: check if ID already exists
-          if (current.some(g => g.id === newGroup.id)) {
-            return current
-          }
-          return [...current, newGroup]
-        }
         if (eventType === 'UPDATE') {
           return current.map(g => {
             if (g.id === (newRow as Group).id) {
@@ -185,6 +181,7 @@ export const useRealtimeGroupMembersBridge = (personId?: string) => {
         // (transactions are filtered by group membership, so they need a refresh too)
         qc.invalidateQueries({ queryKey: qk.groups(personId) })
         qc.invalidateQueries({ queryKey: qk.transactions(personId) })
+        qc.invalidateQueries({ queryKey: qk.people(personId) })
         return
       }
 
@@ -207,6 +204,7 @@ export const useRealtimeGroupMembersBridge = (personId?: string) => {
       const affectedGroupId = row?.group_id
       if (affectedGroupId && currentGroups.some(g => g.id === affectedGroupId)) {
         qc.invalidateQueries({ queryKey: qk.groups(personId) })
+        qc.invalidateQueries({ queryKey: qk.people(personId) })
       }
     })
     return () => { sub.unsubscribe() }

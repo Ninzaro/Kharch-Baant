@@ -243,6 +243,7 @@ const App: React.FC = () => {
 
                 // Refresh groups to include the new one
                 await qc.invalidateQueries({ queryKey: qk.groups(personId) });
+                await qc.invalidateQueries({ queryKey: qk.people(personId) });
 
                 // Select the newly joined group
                 if (result.group?.id) {
@@ -402,7 +403,7 @@ const App: React.FC = () => {
     const executeGroupSave = async (groupData: Omit<Group, 'id'>, removingSelf: boolean) => {
         if (!editingGroup) return;
         try {
-            await api.updateGroup(editingGroup.id, groupData);
+            await api.updateGroup(editingGroup.id, groupData, editingGroup.members);
 
             // If cute icons was just turned ON, apply emojis to all existing transactions
             const wasEnabled = editingGroup.enableCuteIcons ?? true;

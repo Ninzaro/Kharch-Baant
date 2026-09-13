@@ -16,7 +16,7 @@ Standing job: when the parent reports a batch complete, update **Status** here. 
 | 2. Expense write | S-04 + S-07 + S-22 | **done** | Cache prepend + submitting + toast/Sentry. Payment-source/delete errors not in this batch. |
 | 3. DELETE leak | S-02 (R-05) | **done** | Client: INSERT/UPDATE only. SQL: REPLICA IDENTITY DEFAULT (apply in dashboard). |
 | 4. Broadcast | S-11 + S-12 + S-01 + S-14 OR delete | **done (A)** | Deleted `tx` publish/listen. `deleteTransaction(groupId?)` param kept unused. |
-| 5. Membership | S-03 + S-08 + S-19 | pending | |
+| 5. Membership | S-03 + S-08 + S-19 | **done** | Diff vs open snapshot + fresh SELECT; INSERT then DELETE; people invalidate; groups INSERT refetches. |
 | 6. Destructive / phantoms | S-21 + S-13 + S-05 | pending | |
 | 7. Leftovers | S-10, S-15, S-18, S-20 | pending | S-16/S-17 already D-05 |
 

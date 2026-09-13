@@ -219,8 +219,11 @@ export const addGroup = async (groupData: Omit<Group, 'id'>, personId?: string):
   return await transformDbGroupToAppGroup(created);
 };
 
-export const updateGroup = async (groupId: string, groupData: Omit<Group, 'id'>): Promise<Group> => {
-  // Update the group with all fields
+export const updateGroup = async (
+  groupId: string,
+  groupData: Omit<Group, 'id'>,
+  loadedMembers: string[] = groupData.members,
+): Promise<Group> => {
   const updateData: any = {
     name: groupData.name,
     currency: groupData.currency,
@@ -242,26 +245,37 @@ export const updateGroup = async (groupId: string, groupData: Omit<Group, 'id'>)
     throw new Error(`Database error: ${groupError.message}`);
   }
 
-  // Delete existing members
-  const { error: deleteError } = await supabase
+  const desired = Array.from(new Set((groupData.members || []).filter(Boolean)));
+  if (desired.length === 0) {
+    throw new Error('A group must have at least one member.');
+  }
+
+  const { data: memberRows, error: memberReadError } = await supabase
     .from('group_members')
-    .delete()
+    .select('person_id')
     .eq('group_id', groupId);
+  if (memberReadError) throw memberReadError;
 
-  if (deleteError) throw deleteError;
+  const current = new Set((memberRows || []).map((r: { person_id: string }) => r.person_id));
+  const loaded = new Set((loadedMembers || []).filter(Boolean));
+  const desiredSet = new Set(desired);
+  const toAdd = desired.filter((id) => !current.has(id));
+  const toRemove = [...current].filter((id) => loaded.has(id) && !desiredSet.has(id));
 
-  // Insert new members
-  if (groupData.members.length > 0) {
+  if (toAdd.length > 0) {
     const { error: membersError } = await supabase
       .from('group_members')
-      .insert(
-        groupData.members.map(memberId => ({
-          group_id: groupId,
-          person_id: memberId,
-        }))
-      );
-
+      .insert(toAdd.map((personId) => ({ group_id: groupId, person_id: personId })));
     if (membersError) throw membersError;
+  }
+
+  if (toRemove.length > 0) {
+    const { error: deleteError } = await supabase
+      .from('group_members')
+      .delete()
+      .eq('group_id', groupId)
+      .in('person_id', toRemove);
+    if (deleteError) throw deleteError;
   }
 
   const finalResult = await transformDbGroupToAppGroup(groupResult);

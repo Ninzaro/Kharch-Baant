@@ -9,7 +9,11 @@ import * as supabaseApi from './supabaseApiService';
 // GROUPS
 export const getGroups = async (personId?: string): Promise<Group[]> => supabaseApi.getGroups(personId);
 export const addGroup = async (groupData: Omit<Group, 'id'>, personId?: string): Promise<Group> => supabaseApi.addGroup(groupData, personId);
-export const updateGroup = async (groupId: string, groupData: Omit<Group, 'id'>): Promise<Group> => supabaseApi.updateGroup(groupId, groupData);
+export const updateGroup = async (
+  groupId: string,
+  groupData: Omit<Group, 'id'>,
+  loadedMembers?: string[],
+): Promise<Group> => supabaseApi.updateGroup(groupId, groupData, loadedMembers);
 export const batchApplyEmojisToGroupTransactions = async (groupId: string): Promise<void> => supabaseApi.batchApplyEmojisToGroupTransactions(groupId);
 export const subscribeToGroups = (personId: string, callback: (payload: any) => void) => supabaseApi.subscribeToGroups(personId, callback);
 export const subscribeToTransactions = (personId: string, callback: (payload: any) => void) => supabaseApi.subscribeToTransactions(personId, callback);
