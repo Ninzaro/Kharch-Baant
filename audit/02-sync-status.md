@@ -14,7 +14,7 @@ Standing job: when the parent reports a batch complete, update **Status** here. 
 |---|---|---|---|
 | 1. Resume | S-06, S-09 | **done** | Commit `148272e` on main. Checkpoint `a3f0eda`. Resume: skipCache JWT then setRealtimeAuth then invalidateQueries. Triggers: visibilitychange, online, Capacitor appStateChange. Live badge = five public:* data channels joined. JWT interval still 50s. Review: see [`audit/02-sync-review-batch1.md`](./02-sync-review-batch1.md) if present. |
 | 2. Expense write | S-04 + S-07 + S-22 | **done** | Cache prepend + submitting + toast/Sentry. Payment-source/delete errors not in this batch. |
-| 3. DELETE leak | S-02 (R-05) | pending | REPLICA IDENTITY or drop DELETE handlers; needs S-06 (done) |
+| 3. DELETE leak | S-02 (R-05) | **done** | Client: INSERT/UPDATE only. SQL: REPLICA IDENTITY DEFAULT (apply in dashboard). |
 | 4. Broadcast | S-11 + S-12 + S-01 + S-14 OR delete | pending | Do not wire S-01 alone |
 | 5. Membership | S-03 + S-08 + S-19 | pending | |
 | 6. Destructive / phantoms | S-21 + S-13 + S-05 | pending | |

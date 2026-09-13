@@ -283,15 +283,13 @@ const mapDbGroupRowBasic = (dbGroup: any) => ({
 });
 
 export const subscribeToGroups = (personId: string, callback: (payload: any) => void) => {
+  const onRow = (payload: any) => {
+    const basic = mapDbGroupRowBasic(payload.new);
+    callback({ ...payload, new: basic });
+  };
   const channel = supabase.channel('public:groups')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'groups' }, (payload) => {
-      if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-        const basic = mapDbGroupRowBasic(payload.new);
-        callback({ ...payload, new: basic });
-      } else {
-        callback(payload);
-      }
-    })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'groups' }, onRow)
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'groups' }, onRow)
     .subscribe();
   return channel;
 };
@@ -302,16 +300,14 @@ export const subscribeToTransactions = (
   callback: (payload: any) => void,
   onBroadcast?: (groupId: string) => void,
 ) => {
+  const onRow = (payload: any) => {
+    const transformedTransaction = transformDbTransactionToAppTransaction(payload.new as DbTransaction);
+    callback({ ...payload, new: transformedTransaction });
+  };
   let channel = supabase
     .channel('public:transactions')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, (payload) => {
-      if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-        const transformedTransaction = transformDbTransactionToAppTransaction(payload.new as DbTransaction);
-        callback({ ...payload, new: transformedTransaction });
-      } else {
-        callback(payload);
-      }
-    });
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'transactions' }, onRow)
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'transactions' }, onRow);
 
   // Piggyback broadcast listener on the same authenticated channel so it
   // uses the Clerk JWT already set on this connection (avoids sub:null error).
@@ -327,34 +323,28 @@ export const subscribeToTransactions = (
 
 // Realtime: Payment Sources
 export const subscribeToPaymentSources = (personId: string, callback: (payload: any) => void) => {
+  const onRow = (payload: any) => {
+    const transformedPaymentSource = transformDbPaymentSourceToAppPaymentSource(payload.new as DbPaymentSource);
+    callback({ ...payload, new: transformedPaymentSource });
+  };
   const channel = supabase
     .channel('public:payment_sources')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'payment_sources' }, (payload) => {
-      // Transform the database record to app format
-      if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-        const transformedPaymentSource = transformDbPaymentSourceToAppPaymentSource(payload.new as DbPaymentSource);
-        callback({ ...payload, new: transformedPaymentSource });
-      } else {
-        callback(payload);
-      }
-    })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'payment_sources' }, onRow)
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'payment_sources' }, onRow)
     .subscribe();
   return channel;
 };
 
 // Realtime: People
 export const subscribeToPeople = (personId: string, callback: (payload: any) => void) => {
+  const onRow = (payload: any) => {
+    const transformedPerson = transformDbPersonToAppPerson(payload.new as DbPerson);
+    callback({ ...payload, new: transformedPerson });
+  };
   const channel = supabase
     .channel('public:people')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'people' }, (payload) => {
-      // Transform the database record to app format
-      if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-        const transformedPerson = transformDbPersonToAppPerson(payload.new as DbPerson);
-        callback({ ...payload, new: transformedPerson });
-      } else {
-        callback(payload);
-      }
-    })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'people' }, onRow)
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'people' }, onRow)
     .subscribe();
   return channel;
 };
@@ -363,7 +353,10 @@ export const subscribeToPeople = (personId: string, callback: (payload: any) => 
 export const subscribeToGroupMembers = (personId: string, callback: (payload: any) => void) => {
   const channel = supabase
     .channel('public:group_members')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'group_members' }, (payload) => {
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'group_members' }, (payload) => {
+      callback(payload);
+    })
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'group_members' }, (payload) => {
       callback(payload);
     })
     .subscribe();
