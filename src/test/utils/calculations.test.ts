@@ -146,6 +146,35 @@ describe('calculateShares', () => {
     expect(result.get('p1')).toBe(80) // 120 * (2/3)
     expect(result.get('p2')).toBe(40) // 120 * (1/3)
   })
+
+  it('equal 100/3 matches materializeSplit (cents sum to amount)', () => {
+    const participants = [
+      { personId: 'p1', value: 1 },
+      { personId: 'p2', value: 1 },
+      { personId: 'p3', value: 1 },
+    ]
+    const transaction: Transaction = {
+      id: '1',
+      groupId: 'g1',
+      description: 'Test',
+      amount: 100,
+      paidById: 'p1',
+      date: '2024-01-01',
+      tag: 'Food',
+      split: { mode: 'equal', participants },
+      type: 'expense',
+    }
+    const result = calculateShares(transaction)
+    const materialized = materializeSplit('equal', 100, participants)
+    expect(result.get('p1')).toBe(materialized.get('p1'))
+    expect(result.get('p2')).toBe(materialized.get('p2'))
+    expect(result.get('p3')).toBe(materialized.get('p3'))
+    const sum = [...result.values()].reduce((s, v) => s + v, 0)
+    expect(sum).toBeCloseTo(100, 2)
+    expect(result.get('p1')).toBeCloseTo(33.34, 2)
+    expect(result.get('p2')).toBeCloseTo(33.33, 2)
+    expect(result.get('p3')).toBeCloseTo(33.33, 2)
+  })
 })
 
 describe('distributeRounding', () => {
