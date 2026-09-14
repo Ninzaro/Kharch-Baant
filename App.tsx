@@ -51,7 +51,7 @@ const App: React.FC = () => {
 
     const qc = useQueryClient();
     const { data: groups = [], isLoading: groupsLoading } = useGroupsQuery(person?.id);
-    const { data: transactions = [] } = useTransactionsQuery(person?.id);
+    const { data: transactions = [], isLoading: txLoading } = useTransactionsQuery(person?.id);
     const { data: paymentSources = [] } = usePaymentSourcesQuery(person?.id);
     const { data: people = [] } = usePeopleQuery(person?.id);
 
@@ -155,8 +155,14 @@ const App: React.FC = () => {
         return Object.fromEntries(calculateGroupBalances(groupTxs));
     }, [transactions, selectedGroupId]);
 
-    // All settled if all balances are zero (within epsilon)
-    const allSettled = Object.values(groupBalances ?? {}).every(b => typeof b === 'number' && Math.abs(b) < 0.01);
+    const selectedGroupTxCount = selectedGroupId
+        ? transactions.filter(t => t.groupId === selectedGroupId).length
+        : 0;
+    // Empty cache must not look settled. Empty group (0 txs after load) may delete.
+    const allSettled =
+        !txLoading &&
+        (selectedGroupTxCount === 0 ||
+            Object.values(groupBalances ?? {}).every(b => typeof b === 'number' && Math.abs(b) < 0.01));
     const userSettled = currentUserId && Math.abs((groupBalances?.[currentUserId] ?? 0)) < 0.01;
     const [pendingDeleteTransaction, setPendingDeleteTransaction] = useState<Transaction | null>(null);
     const [isDeletingTransaction, setIsDeletingTransaction] = useState(false);
@@ -625,7 +631,7 @@ const App: React.FC = () => {
         }
     };
 
-    const loading = isLoading || groupsLoading;
+    const loading = isLoading || groupsLoading || txLoading;
     if (loading) {
         return (
             <div className="h-screen w-screen flex items-center justify-center bg-background text-foreground font-sans">
