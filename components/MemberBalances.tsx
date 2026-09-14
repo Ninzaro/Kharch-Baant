@@ -31,9 +31,11 @@ const MemberBalances: React.FC<MemberBalancesProps> = ({ transactions, people, c
                 {Array.from(balances.entries())
                     .sort(([, a], [, b]) => b - a)
                     .map(([personId, balance]) => {
-                        const person = peopleMap.get(personId);
-                        if (!person) return null;
-                        
+                        const person = peopleMap.get(personId) ?? {
+                            id: personId,
+                            name: 'Former member',
+                            avatarUrl: '',
+                        };
                         const isCurrentUser = personId === currentUserId;
                         return (
                             <li key={personId} className="flex justify-between items-center text-sm min-w-0">

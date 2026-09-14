@@ -132,8 +132,6 @@ const App: React.FC = () => {
     const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
     const [isConfirmDeleteModalOpen, setIsConfirmDeleteModalOpen] = useState(false);
     const [isConfirmArchiveModalOpen, setIsConfirmArchiveModalOpen] = useState(false);
-    const [isConfirmLeaveModalOpen, setIsConfirmLeaveModalOpen] = useState(false);
-    const [pendingGroupSaveData, setPendingGroupSaveData] = useState<Omit<Group, 'id'> | null>(null);
     const [isAddActionModalOpen, setIsAddActionModalOpen] = useState(false);
     const [isPaymentSourceModalOpen, setIsPaymentSourceModalOpen] = useState(false);
     const [isPaymentSourceManageOpen, setIsPaymentSourceManageOpen] = useState(false);
@@ -409,7 +407,7 @@ const App: React.FC = () => {
         }
     };
 
-    const executeGroupSave = async (groupData: Omit<Group, 'id'>, removingSelf: boolean) => {
+    const executeGroupSave = async (groupData: Omit<Group, 'id'>) => {
         if (!editingGroup) return;
         try {
             await api.updateGroup(editingGroup.id, groupData, editingGroup.members);
@@ -425,20 +423,9 @@ const App: React.FC = () => {
                 }
             }
 
-            // Refresh groups with proper filtering to ensure accurate state
             await qc.invalidateQueries({ queryKey: qk.groups(currentUserId) });
-
-            if (removingSelf) {
-                setSelectedGroupId(null);
-                setIsGroupModalOpen(false);
-                setEditingGroup(null);
-                setIsConfirmLeaveModalOpen(false);
-                setPendingGroupSaveData(null);
-                toast.success(`You have left the group "${editingGroup.name}".`);
-            } else {
-                setIsGroupModalOpen(false);
-                setEditingGroup(null);
-            }
+            setIsGroupModalOpen(false);
+            setEditingGroup(null);
         } catch (error) {
             console.error('Failed to save group', error);
             toast.error('Failed to save group updates.');
@@ -454,18 +441,7 @@ const App: React.FC = () => {
             }
 
             if (editingGroup) {
-                // Check if user is removing themselves from the group
-                const wasUserMember = editingGroup.members.includes(currentUserId);
-                const isUserStillMember = groupData.members.includes(currentUserId);
-                const removingSelf = wasUserMember && !isUserStillMember;
-
-                if (removingSelf) {
-                    setPendingGroupSaveData(groupData);
-                    setIsConfirmLeaveModalOpen(true);
-                    return;
-                }
-
-                await executeGroupSave(groupData, false);
+                await executeGroupSave(groupData);
             } else {
                 if (!currentUserId) {
                     toast.error('User data not loaded properly. Please refresh the page and try again.');
@@ -930,39 +906,6 @@ const App: React.FC = () => {
                 </Suspense>
             )}
 
-            {isConfirmLeaveModalOpen && pendingGroupSaveData && editingGroup && (
-                <BaseModal
-                    open={isConfirmLeaveModalOpen}
-                    onClose={() => {
-                        setIsConfirmLeaveModalOpen(false);
-                        setPendingGroupSaveData(null);
-                    }}
-                    title="Leave Group?"
-                    size="sm"
-                    description={<span className="text-muted-foreground text-sm">You are removing yourself from this group.</span>}
-                    footer={
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => {
-                                    setIsConfirmLeaveModalOpen(false);
-                                    setPendingGroupSaveData(null);
-                                }}
-                                className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={() => executeGroupSave(pendingGroupSaveData, true)}
-                                className="px-4 py-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-md"
-                            >
-                                Leave Group
-                            </button>
-                        </div>
-                    }
-                >
-                    <p className="text-sm text-muted-foreground">You will no longer have access to "{editingGroup.name}" or its transactions. This action cannot be undone unless someone invites you back.</p>
-                </BaseModal>
-            )}
         </div>
     );
 }

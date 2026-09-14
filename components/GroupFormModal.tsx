@@ -113,7 +113,12 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
     };
 
     const removeMember = (personId: string) => {
-        if (personId === currentUserId) return; // Cannot remove self
+        if (personId === currentUserId) return;
+        const bal = groupBalances?.[personId] ?? 0;
+        if (Math.abs(bal) >= 0.01) {
+            toast.error("Settle this member's balance before removing them.");
+            return;
+        }
         setMembers(prev => prev.filter(id => id !== personId));
     };
 
