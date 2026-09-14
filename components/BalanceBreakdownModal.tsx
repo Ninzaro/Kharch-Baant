@@ -47,7 +47,7 @@ const BalanceBreakdownModal: React.FC<BalanceBreakdownModalProps> = ({
         })
         .filter((x): x is NonNullable<typeof x> => x !== null);
 
-      const totalAmount = type === 'owed' ? debts.totalOwedToUser : debts.totalUserOwes;
+      const totalAmount = lines.reduce((s, line) => s + line.amount, 0);
       return { lines, totalAmount };
     } catch (error) {
       console.error('BalanceBreakdownModal: Error calculating balances', error);

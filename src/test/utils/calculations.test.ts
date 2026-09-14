@@ -401,6 +401,22 @@ describe('simplifyGroupDebts', () => {
     expect(totalIn).toBeCloseTo(100, 2)
     expect(transfers).toHaveLength(2)
   })
+
+  it('emits transfers that sum to zero (no leftover cent in the matcher)', () => {
+    const balances = new Map([
+      ['A', 100],
+      ['B', -100 / 3],
+      ['C', -100 / 3],
+      ['D', -100 / 3],
+    ])
+    const transfers = simplifyGroupDebts(balances)
+    const totalIn = transfers.reduce((s, t) => s + t.amount, 0)
+    const paid = transfers.filter(t => t.from !== 'A').reduce((s, t) => s + t.amount, 0)
+    const received = transfers.filter(t => t.to === 'A').reduce((s, t) => s + t.amount, 0)
+    expect(paid).toBeCloseTo(received, 2)
+    expect(totalIn).toBeCloseTo(received, 2)
+    expect(Math.abs(paid * 100 - Math.round(paid * 100))).toBe(0)
+  })
 })
 
 describe('getUserFacingDebts', () => {

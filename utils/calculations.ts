@@ -135,12 +135,34 @@ export type SimplifiedTransfer = {
  * Positive balance = is owed money; negative = owes money.
  */
 export function simplifyGroupDebts(balances: Map<string, number>): SimplifiedTransfer[] {
-    const debtors: { id: string; amount: number }[] = [];
-    const creditors: { id: string; amount: number }[] = [];
+    const cents = new Map<string, number>();
+    let sum = 0;
+    let maxAbsId: string | null = null;
+    let maxAbs = 0;
 
     balances.forEach((bal, id) => {
-        if (bal < -BALANCE_EPS) debtors.push({ id, amount: -bal });
-        else if (bal > BALANCE_EPS) creditors.push({ id, amount: bal });
+        const c = Math.round(Number(`${bal}e2`));
+        if (c === 0) return;
+        cents.set(id, c);
+        sum += c;
+        const a = Math.abs(c);
+        if (a > maxAbs) {
+            maxAbs = a;
+            maxAbsId = id;
+        }
+    });
+
+    if (sum !== 0 && maxAbsId) {
+        const next = (cents.get(maxAbsId) ?? 0) - sum;
+        if (next === 0) cents.delete(maxAbsId);
+        else cents.set(maxAbsId, next);
+    }
+
+    const debtors: { id: string; amount: number }[] = [];
+    const creditors: { id: string; amount: number }[] = [];
+    cents.forEach((c, id) => {
+        if (c < 0) debtors.push({ id, amount: -c });
+        else if (c > 0) creditors.push({ id, amount: c });
     });
 
     debtors.sort((a, b) => b.amount - a.amount);
@@ -151,17 +173,17 @@ export function simplifyGroupDebts(balances: Map<string, number>): SimplifiedTra
     let j = 0;
     while (i < debtors.length && j < creditors.length) {
         const pay = Math.min(debtors[i].amount, creditors[j].amount);
-        if (pay > BALANCE_EPS) {
+        if (pay > 0) {
             transfers.push({
                 from: debtors[i].id,
                 to: creditors[j].id,
-                amount: Math.round(pay * 100) / 100,
+                amount: pay / 100,
             });
         }
         debtors[i].amount -= pay;
         creditors[j].amount -= pay;
-        if (debtors[i].amount <= BALANCE_EPS) i += 1;
-        if (creditors[j].amount <= BALANCE_EPS) j += 1;
+        if (debtors[i].amount === 0) i += 1;
+        if (creditors[j].amount === 0) j += 1;
     }
     return transfers;
 }
