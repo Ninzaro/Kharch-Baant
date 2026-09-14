@@ -3,6 +3,7 @@ import { Group, Transaction, Person } from '../types';
 import GroupSummaryCard from './GroupSummaryCard';
 import { PlusIcon } from './icons/Icons';
 import { getUserFacingDebts } from '../utils/calculations';
+import { formatMoney } from '../utils/money';
 import BalanceBreakdownModal from './BalanceBreakdownModal';
 
 interface HomeScreenProps {
@@ -20,17 +21,24 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ groups, transactions, people, c
 
     // Same debt simplification as BalanceBreakdownModal so card totals match modal totals.
     // "Owed" and "owe" can both be non-zero (unlike a single global net).
-    const { totalOwedToUser, totalUserOwes, netBalance } = useMemo(() => {
+    const { netBalance, byCurrency } = useMemo(() => {
         const debts = getUserFacingDebts(currentUserId, groups, transactions);
         return {
-            totalOwedToUser: debts.totalOwedToUser,
-            totalUserOwes: debts.totalUserOwes,
             netBalance: debts.netBalance,
+            byCurrency: debts.byCurrency,
         };
     }, [transactions, currentUserId, groups]);
 
-    const formatNumber = (amount: number) => {
-        return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
+    const renderAmounts = (pick: (b: { code: string; owedToUser: number; userOwes: number; net: number }) => number) => {
+        if (byCurrency.length === 0) return formatMoney(0, groups[0]?.currency || 'INR');
+        if (byCurrency.length === 1) return formatMoney(pick(byCurrency[0]), byCurrency[0].code);
+        return (
+            <span className="flex flex-col gap-1">
+                {byCurrency.map((b) => (
+                    <span key={b.code}>{formatMoney(pick(b), b.code)}</span>
+                ))}
+            </span>
+        );
     };
 
     const groupTransactionsMap = useMemo(() => {
@@ -70,7 +78,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ groups, transactions, people, c
                             <h3 className="text-sm font-medium text-muted-foreground group-hover:text-foreground">
                                 Total you are owed
                             </h3>
-                            <p className="text-3xl font-bold text-success mt-2">{formatNumber(totalOwedToUser)}</p>
+                            <p className="text-3xl font-bold text-success mt-2">{renderAmounts((b) => b.owedToUser)}</p>
                             <p className="text-xs text-muted-foreground mt-1">(tap to see breakdown)</p>
                         </button>
                         <button
@@ -81,15 +89,17 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ groups, transactions, people, c
                             <h3 className="text-sm font-medium text-muted-foreground group-hover:text-foreground">
                                 Total you owe
                             </h3>
-                            <p className="text-3xl font-bold text-destructive mt-2">{formatNumber(totalUserOwes)}</p>
+                            <p className="text-3xl font-bold text-destructive mt-2">{renderAmounts((b) => b.userOwes)}</p>
                             <p className="text-xs text-muted-foreground mt-1">(tap to see breakdown)</p>
                         </button>
                         <div className="bg-card backdrop-blur-md p-card rounded-2xl shadow-sm border border-border">
                             <h3 className="text-sm font-medium text-muted-foreground">Total Net Balance</h3>
-                            <p className={`text-3xl font-bold mt-2 ${netBalance >= 0 ? 'text-success' : 'text-destructive'}`}>
-                                {formatNumber(netBalance)}
+                            <p className={`text-3xl font-bold mt-2 ${byCurrency.length > 1 ? 'text-foreground' : netBalance >= 0 ? 'text-success' : 'text-destructive'}`}>
+                                {renderAmounts((b) => b.net)}
                             </p>
-                            <p className="text-xs text-muted-foreground mt-1">(across all currencies)</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                {byCurrency.length > 1 ? '(per currency)' : '(tap a group for details)'}
+                            </p>
                         </div>
                     </div>
                 </section>

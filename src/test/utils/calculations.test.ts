@@ -499,6 +499,23 @@ describe('getUserFacingDebts', () => {
     expect(debts.owedToUser).toHaveLength(0)
   })
 
+  it('does not mix currencies into one scalar bucket', () => {
+    const mixedGroups = [
+      { id: 'g1', isArchived: false, currency: 'INR' },
+      { id: 'g2', isArchived: false, currency: 'USD' },
+    ]
+    const txs = [
+      equalExpense('t1', 'g1', 40000, 'you', ['you', 'a']),
+      equalExpense('t2', 'g2', 300, 'you', ['you', 'b']),
+    ]
+    const debts = getUserFacingDebts('you', mixedGroups, txs)
+    expect(debts.byCurrency).toHaveLength(2)
+    expect(debts.byCurrency.find(b => b.code === 'INR')?.owedToUser).toBeCloseTo(20000, 2)
+    expect(debts.byCurrency.find(b => b.code === 'USD')?.owedToUser).toBeCloseTo(150, 2)
+    expect(debts.totalOwedToUser).toBe(0)
+    expect(debts.netBalance).toBe(0)
+  })
+
   it('card totals match sum of breakdown lines', () => {
     const txs = [
       equalExpense('t1', 'g1', 300, 'you', ['you', 'a', 'b']),

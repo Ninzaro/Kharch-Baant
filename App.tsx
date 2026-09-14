@@ -756,6 +756,7 @@ const App: React.FC = () => {
                             setIsGroupModalOpen(false);
                             setIsPaymentSourceManageOpen(true);
                         }}
+                        hasTransactions={Boolean(editingGroup && transactions.some(t => t.groupId === editingGroup.id))}
                     />
                 </Suspense>
             )}

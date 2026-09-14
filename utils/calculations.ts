@@ -192,6 +192,14 @@ export type UserDebtLine = {
     personId: string;
     groupId: string;
     amount: number;
+    currency: string;
+};
+
+export type CurrencyDebtBucket = {
+    code: string;
+    owedToUser: number;
+    userOwes: number;
+    net: number;
 };
 
 export type UserFacingDebts = {
@@ -203,6 +211,7 @@ export type UserFacingDebts = {
     totalUserOwes: number;
     /** totalOwedToUser - totalUserOwes */
     netBalance: number;
+    byCurrency: CurrencyDebtBucket[];
 };
 
 /**
@@ -211,7 +220,7 @@ export type UserFacingDebts = {
  */
 export function getUserFacingDebts(
     currentUserId: string,
-    groups: Array<{ id: string; isArchived?: boolean }>,
+    groups: Array<{ id: string; isArchived?: boolean; currency?: string }>,
     transactions: Transaction[],
 ): UserFacingDebts {
     const owedToUser: UserDebtLine[] = [];
@@ -224,6 +233,7 @@ export function getUserFacingDebts(
             totalOwedToUser: 0,
             totalUserOwes: 0,
             netBalance: 0,
+            byCurrency: [],
         };
     }
 
@@ -247,12 +257,14 @@ export function getUserFacingDebts(
                     personId: transfer.from,
                     groupId: group.id,
                     amount: transfer.amount,
+                    currency: group.currency || 'INR',
                 });
             } else if (transfer.from === currentUserId && transfer.amount > BALANCE_EPS) {
                 userOwes.push({
                     personId: transfer.to,
                     groupId: group.id,
                     amount: transfer.amount,
+                    currency: group.currency || 'INR',
                 });
             }
         }
@@ -264,12 +276,32 @@ export function getUserFacingDebts(
     const totalOwedToUser = owedToUser.reduce((s, x) => s + x.amount, 0);
     const totalUserOwes = userOwes.reduce((s, x) => s + x.amount, 0);
 
+    const bucketMap = new Map<string, CurrencyDebtBucket>();
+    const bump = (code: string) => {
+        let b = bucketMap.get(code);
+        if (!b) {
+            b = { code, owedToUser: 0, userOwes: 0, net: 0 };
+            bucketMap.set(code, b);
+        }
+        return b;
+    };
+    for (const line of owedToUser) bump(line.currency).owedToUser += line.amount;
+    for (const line of userOwes) bump(line.currency).userOwes += line.amount;
+    const byCurrency = [...bucketMap.values()].map((b) => ({
+        ...b,
+        owedToUser: Math.round(b.owedToUser * 100) / 100,
+        userOwes: Math.round(b.userOwes * 100) / 100,
+        net: Math.round((b.owedToUser - b.userOwes) * 100) / 100,
+    }));
+
+    const mixed = byCurrency.length > 1;
     return {
         owedToUser,
         userOwes,
-        totalOwedToUser: Math.round(totalOwedToUser * 100) / 100,
-        totalUserOwes: Math.round(totalUserOwes * 100) / 100,
-        netBalance: Math.round((totalOwedToUser - totalUserOwes) * 100) / 100,
+        totalOwedToUser: mixed ? 0 : Math.round(totalOwedToUser * 100) / 100,
+        totalUserOwes: mixed ? 0 : Math.round(totalUserOwes * 100) / 100,
+        netBalance: mixed ? 0 : Math.round((totalOwedToUser - totalUserOwes) * 100) / 100,
+        byCurrency,
     };
 }
 

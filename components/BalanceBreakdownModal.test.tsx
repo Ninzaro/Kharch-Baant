@@ -43,8 +43,7 @@ describe('BalanceBreakdownModal', () => {
       />
     );
 
-    expect(screen.getByText(/Total:/)).toHaveTextContent(/Total:\s*30\.00/);
-    expect(screen.getByText('30.00')).toBeInTheDocument();
+    expect(screen.getByText(/Total:/)).toHaveTextContent(/Total:.*30\.00/);
     expect(screen.queryByText(/ghost/i)).not.toBeInTheDocument();
   });
 });

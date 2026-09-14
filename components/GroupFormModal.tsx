@@ -22,6 +22,7 @@ interface GroupFormModalProps {
     onDeleteGroup?: () => void;
     onArchiveGroup?: () => void;
     onOpenPaymentSources?: () => void;
+    hasTransactions?: boolean;
 }
 
 const GroupFormModal: React.FC<GroupFormModalProps> = ({
@@ -38,7 +39,8 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
     isProcessingGroupAction,
     onDeleteGroup,
     onArchiveGroup,
-    onOpenPaymentSources
+    onOpenPaymentSources,
+    hasTransactions = false,
 }) => {
     const [name, setName] = useState('');
     const [members, setMembers] = useState<string[]>([currentUserId]);
@@ -303,7 +305,9 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
                             id="currency"
                             value={currency}
                             onChange={e => setCurrency(e.target.value as Currency)}
-                            className="w-full bg-card border border-border text-foreground rounded-md p-2 focus:ring-ring focus:border-ring"
+                            disabled={Boolean(group && hasTransactions)}
+                            title={group && hasTransactions ? 'Currency is locked after the first expense' : undefined}
+                            className="w-full bg-card border border-border text-foreground rounded-md p-2 focus:ring-ring focus:border-ring disabled:opacity-60"
                         >
                             {CURRENCIES.map(c => <option key={c.code} value={c.code}>{c.name} ({c.symbol})</option>)}
                         </select>

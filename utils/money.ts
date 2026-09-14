@@ -1,5 +1,18 @@
 import type { Payer } from '../types';
 
+export function formatMoney(amount: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  } catch {
+    return `${currency} ${amount.toFixed(2)}`;
+  }
+}
+
 /** Half-up to 2 decimal places via string exponent (not n * 100). */
 export function roundToCents(n: number): number {
   if (!Number.isFinite(n)) return n;

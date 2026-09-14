@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import BaseModal from './BaseModal';
 import { Group, Transaction, Person } from '../types';
 import { getUserFacingDebts } from '../utils/calculations';
+import { formatMoney } from '../utils/money';
 import Avatar from './Avatar';
 
 interface BalanceBreakdownModalProps {
@@ -27,7 +28,7 @@ const BalanceBreakdownModal: React.FC<BalanceBreakdownModalProps> = ({
   onSelectGroup,
   onSettleLine,
 }) => {
-  const { lines, totalAmount } = useMemo(() => {
+  const { lines, totalsByCurrency } = useMemo(() => {
     try {
       const debts = getUserFacingDebts(currentUserId, groups, transactions);
       const raw = type === 'owed' ? debts.owedToUser : debts.userOwes;
@@ -45,24 +46,23 @@ const BalanceBreakdownModal: React.FC<BalanceBreakdownModalProps> = ({
             amount: line.amount,
             groupId: line.groupId,
             groupName: group.name,
+            currency: group.currency,
           };
         })
         .filter((x): x is NonNullable<typeof x> => x !== null);
 
-      const totalAmount = lines.reduce((s, line) => s + line.amount, 0);
-      return { lines, totalAmount };
+      const totalsByCurrency = new Map<string, number>();
+      for (const line of lines) {
+        totalsByCurrency.set(line.currency, (totalsByCurrency.get(line.currency) ?? 0) + line.amount);
+      }
+      return { lines, totalsByCurrency: [...totalsByCurrency.entries()] };
     } catch (error) {
       console.error('BalanceBreakdownModal: Error calculating balances', error);
-      return { lines: [], totalAmount: 0 };
+      return { lines: [], totalsByCurrency: [] as [string, number][] };
     }
   }, [groups, transactions, people, currentUserId, type]);
 
-  const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(amount);
-  };
+  const formatAmount = (amount: number, currency: string) => formatMoney(amount, currency);
 
   const handleGroupClick = (groupId: string) => {
     onClose();
@@ -89,9 +89,11 @@ const BalanceBreakdownModal: React.FC<BalanceBreakdownModalProps> = ({
         <div className="flex justify-between items-center w-full">
           <div className="text-muted-foreground">
             <span className="text-lg font-semibold text-success">
-              Total: {formatAmount(totalAmount)}
+              Total:{' '}
+              {totalsByCurrency.length === 0
+                ? formatAmount(0, 'INR')
+                : totalsByCurrency.map(([code, amt]) => formatAmount(amt, code)).join(' · ')}
             </span>
-            <span className="text-xs text-muted-foreground ml-2">(across all currencies)</span>
           </div>
           <button
             onClick={onClose}
@@ -144,13 +146,13 @@ const BalanceBreakdownModal: React.FC<BalanceBreakdownModalProps> = ({
                       })
                     }
                   >
-                    {formatAmount(item.amount)}
+                    {formatAmount(item.amount, item.currency)}
                   </button>
                 ) : (
                 <div className={`shrink-0 font-semibold ${
                   type === 'owed' ? 'text-success' : 'text-destructive'
                 }`}>
-                  {formatAmount(item.amount)}
+                  {formatAmount(item.amount, item.currency)}
                 </div>
                 )}
               </div>
