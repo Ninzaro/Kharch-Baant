@@ -19,6 +19,18 @@ interface TransactionFormModalProps {
     paymentSources: PaymentSource[];
     onAddNewPaymentSource: () => void;
     enableCuteIcons: boolean;
+    currency: string;
+}
+
+function currencyMark(code: string): string {
+    try {
+        const part = new Intl.NumberFormat(undefined, { style: 'currency', currency: code })
+            .formatToParts(0)
+            .find((p) => p.type === 'currency');
+        return part?.value ?? code;
+    } catch {
+        return code;
+    }
 }
 
 const splitModes: { id: SplitMode, label: string }[] = [
@@ -73,8 +85,9 @@ const TimelineNode: React.FC<TimelineNodeProps> = ({ state, isLast, onClick }) =
 // --- Main Component ---
 
 const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
-    isOpen, onClose, onSave, transaction, people, currentUserId, paymentSources, onAddNewPaymentSource, enableCuteIcons
+    isOpen, onClose, onSave, transaction, people, currentUserId, paymentSources, onAddNewPaymentSource, enableCuteIcons, currency
 }) => {
+    const moneyMark = currencyMark(currency);
     // --- State ---
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState<number | ''>('');
@@ -192,6 +205,12 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
 
         const numericAmount = Number(amount);
 
+        const hasNegative = Array.from(customSplitValues.entries())
+            .some(([personId, value]) => splitParticipants.includes(personId) && value < 0);
+        if (hasNegative) {
+            return { splitTotal: total, isSplitValid: false, validationReason: 'Values cannot be negative' };
+        }
+
         if (splitMode === 'unequal') {
             const ok = Math.abs(total - numericAmount) < 0.01;
             return { splitTotal: total, isSplitValid: ok, validationReason: ok ? undefined : `Total: ${total.toFixed(2)} / ${numericAmount.toFixed(2)}` };
@@ -277,7 +296,9 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
         });
     };
     const handleCustomSplitChange = (personId: string, val: string) => {
-        setCustomSplitValues(prev => new Map(prev).set(personId, parseFloat(val) || 0));
+        const n = parseFloat(val);
+        const next = Number.isFinite(n) && n >= 0 ? n : 0;
+        setCustomSplitValues(prev => new Map(prev).set(personId, next));
     };
 
 
@@ -286,7 +307,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
         if (e) e.preventDefault();
 
         if (submitting) return;
-        if (!isSplitValid || !description || !(Number(amount) > 0) || !paidById || splitParticipants.length === 0) return;
+        if (!isSplitValid || !isPayerValid || !description || !(Number(amount) > 0) || !paidById || splitParticipants.length === 0) return;
 
         // Final categorize pass if user never blurred description / left default Food
         let finalTag = tag;
@@ -396,12 +417,22 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                         <div className="flex-1 pb-8">
                             <label className={`block text-xs font-bold uppercase tracking-wider mb-1 transition-colors ${activeStep === 'amount' ? 'text-primary' : 'text-muted-foreground'}`}>Amount</label>
                             <div className="relative">
-                                <span className={`absolute left-0 top-1/2 -translate-y-1/2 text-3xl font-light transition-colors ${activeStep === 'amount' ? 'text-primary' : 'text-muted-foreground'}`}>₹</span>
+                                <span className={`absolute left-0 top-1/2 -translate-y-1/2 text-3xl font-light transition-colors ${activeStep === 'amount' ? 'text-primary' : 'text-muted-foreground'}`}>{moneyMark}</span>
                                 <input
                                     ref={amountRef}
                                     type="number"
+                                    min="0"
+                                    step="0.01"
                                     value={amount}
-                                    onChange={e => setAmount(e.target.value === '' ? '' : parseFloat(e.target.value))}
+                                    onChange={e => {
+                                        if (e.target.value === '') {
+                                            setAmount('');
+                                            return;
+                                        }
+                                        const n = parseFloat(e.target.value);
+                                        if (!Number.isFinite(n) || n < 0) return;
+                                        setAmount(n);
+                                    }}
                                     onFocus={() => handleStepFocus('amount')}
                                     onKeyDown={handleAmountSubmit}
                                     className="w-full bg-transparent text-5xl font-bold p-0 pl-10 border-none focus:ring-0 placeholder:text-muted-foreground outline-none text-foreground transition-all"
@@ -476,7 +507,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                 ) : (
                                     <div className="space-y-2">
                                         <div className={`text-[10px] font-bold uppercase tracking-tight mb-2 ${isPayerValid ? 'text-success' : 'text-destructive'}`}>
-                                            {isPayerValid ? `Total: ₹${payersTotal.toFixed(2)}` : payerValidationReason || 'Total must match amount'}
+                                            {isPayerValid ? `Total: ${moneyMark}${payersTotal.toFixed(2)}` : payerValidationReason || 'Total must match amount'}
                                         </div>
                                         {people.map(p => {
                                             const val = customPayerValues.get(p.id) || 0;
@@ -485,13 +516,16 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                                     <Avatar person={p} size="sm" />
                                                     <span className="min-w-0 flex-1 text-xs text-muted-foreground truncate">{p.name}</span>
                                                     <div className="relative w-24 shrink-0">
-                                                        <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground pointer-events-none">₹</span>
+                                                        <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground pointer-events-none">{moneyMark}</span>
                                                         <input
                                                             type="number"
+                                                            min="0"
+                                                            step="0.01"
                                                             value={val || ''}
                                                             placeholder="0"
                                                             onChange={e => {
-                                                                const v = parseFloat(e.target.value) || 0;
+                                                                const n = parseFloat(e.target.value);
+                                                                const v = Number.isFinite(n) && n >= 0 ? n : 0;
                                                                 setCustomPayerValues(prev => new Map(prev).set(p.id, v));
                                                             }}
                                                             className="w-full bg-overlay/40 text-right text-xs text-foreground rounded p-1 pl-4 border border-border focus:border-ring outline-none"
@@ -572,6 +606,8 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                                         <input
                                                             type="number"
                                                             inputMode="decimal"
+                                                            min="0"
+                                                            step={splitMode === 'shares' ? '1' : '0.01'}
                                                             value={displayValue}
                                                             onChange={e => handleCustomSplitChange(p.id, e.target.value)}
                                                             onClick={e => e.stopPropagation()}
@@ -683,7 +719,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                 <div className="p-4 border-t border-border bg-background/80 backdrop-blur-xl flex justify-between items-center z-20">
                     <div className="text-sm">
                         {amount && paidById === currentUserId ? (
-                            <span className="text-muted-foreground">You paid <span className="text-foreground font-bold">₹{Number(amount).toFixed(0)}</span></span>
+                            <span className="text-muted-foreground">You paid <span className="text-foreground font-bold">{moneyMark}{Number(amount).toFixed(2)}</span></span>
                         ) : (
                             <span className="text-muted-foreground italic">Draft Expense</span>
                         )}
@@ -692,7 +728,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                         <button onClick={onClose} disabled={submitting} className="px-5 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50">Cancel</button>
                         <button
                             onClick={() => handleSubmit()}
-                            disabled={!isSplitValid || !description || !amount || submitting}
+                            disabled={!isSplitValid || !isPayerValid || !description || !amount || submitting}
                             className="px-6 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-bold rounded-xl shadow-lg shadow-primary/20 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 disabled:shadow-none"
                         >
                             {submitting ? 'Saving…' : 'Save'}

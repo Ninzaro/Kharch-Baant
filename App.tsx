@@ -725,6 +725,7 @@ const App: React.FC = () => {
                         paymentSources={paymentSources}
                         onAddNewPaymentSource={() => setIsPaymentSourceModalOpen(true)}
                         enableCuteIcons={selectedGroup.enableCuteIcons ?? true}
+                        currency={selectedGroup.currency}
                     />
                 </Suspense>
             )}
