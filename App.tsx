@@ -643,6 +643,16 @@ const App: React.FC = () => {
                         onAddExpense={() => { setEditingTransaction(null); setIsTransactionModalOpen(true); }}
                         onSettleUp={() => {
                             setEditingTransaction(null);
+                            setDefaultSettlePayer(undefined);
+                            setDefaultSettleReceiver(undefined);
+                            setDefaultSettleAmount(undefined);
+                            setIsSettleUpOpen(true);
+                        }}
+                        onSettlePair={(payerId, receiverId, amount) => {
+                            setEditingTransaction(null);
+                            setDefaultSettlePayer(payerId);
+                            setDefaultSettleReceiver(receiverId);
+                            setDefaultSettleAmount(amount);
                             setIsSettleUpOpen(true);
                         }}
                         onEditTransaction={handleEditTransactionClick}
@@ -677,6 +687,14 @@ const App: React.FC = () => {
                             currentUserId={currentUserId}
                             onSelectGroup={handleSelectGroup}
                             onAddGroup={handleCreateGroupFromAddAction}
+                            onSettleLine={({ groupId, payerId, receiverId, amount }) => {
+                                setEditingTransaction(null);
+                                setDefaultSettlePayer(payerId);
+                                setDefaultSettleReceiver(receiverId);
+                                setDefaultSettleAmount(amount);
+                                handleSelectGroup(groupId);
+                                setIsSettleUpOpen(true);
+                            }}
                         />
                     </div>
                 </div>
@@ -820,7 +838,10 @@ const App: React.FC = () => {
                     initialTransaction={editingTransaction?.type === 'settlement' ? editingTransaction : undefined}
                     onSubmit={async (tx) => {
                         if (editingTransaction && editingTransaction.type === 'settlement') {
-                            const updated = await api.updateTransaction(editingTransaction.id, tx);
+                            const updated = await api.updateTransaction(editingTransaction.id, {
+                                ...tx,
+                                updatedAt: editingTransaction.updatedAt,
+                            });
                             qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) => prev.map(t => t.id === editingTransaction.id ? updated : t));
                             return updated;
                         } else {

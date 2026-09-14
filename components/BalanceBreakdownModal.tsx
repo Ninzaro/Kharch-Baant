@@ -13,6 +13,7 @@ interface BalanceBreakdownModalProps {
   people: Person[];
   currentUserId: string;
   onSelectGroup: (groupId: string) => void;
+  onSettleLine?: (args: { groupId: string; payerId: string; receiverId: string; amount: number }) => void;
 }
 
 const BalanceBreakdownModal: React.FC<BalanceBreakdownModalProps> = ({
@@ -23,7 +24,8 @@ const BalanceBreakdownModal: React.FC<BalanceBreakdownModalProps> = ({
   transactions,
   people,
   currentUserId,
-  onSelectGroup
+  onSelectGroup,
+  onSettleLine,
 }) => {
   const { lines, totalAmount } = useMemo(() => {
     try {
@@ -127,11 +129,30 @@ const BalanceBreakdownModal: React.FC<BalanceBreakdownModalProps> = ({
                     </button>
                   </div>
                 </div>
+                {onSettleLine ? (
+                  <button
+                    type="button"
+                    className={`shrink-0 font-semibold ${
+                      type === 'owed' ? 'text-success' : 'text-destructive'
+                    } hover:underline`}
+                    onClick={() =>
+                      onSettleLine({
+                        groupId: item.groupId,
+                        payerId: type === 'owing' ? currentUserId : item.personId,
+                        receiverId: type === 'owing' ? item.personId : currentUserId,
+                        amount: item.amount,
+                      })
+                    }
+                  >
+                    {formatAmount(item.amount)}
+                  </button>
+                ) : (
                 <div className={`shrink-0 font-semibold ${
                   type === 'owed' ? 'text-success' : 'text-destructive'
                 }`}>
                   {formatAmount(item.amount)}
                 </div>
+                )}
               </div>
             </div>
           ))

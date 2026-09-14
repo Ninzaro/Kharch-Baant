@@ -12,9 +12,10 @@ interface HomeScreenProps {
     currentUserId: string;
     onSelectGroup: (groupId: string) => void;
     onAddGroup: () => void;
+    onSettleLine?: (args: { groupId: string; payerId: string; receiverId: string; amount: number }) => void;
 }
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ groups, transactions, people, currentUserId, onSelectGroup, onAddGroup }) => {
+const HomeScreen: React.FC<HomeScreenProps> = ({ groups, transactions, people, currentUserId, onSelectGroup, onAddGroup, onSettleLine }) => {
     const [breakdownType, setBreakdownType] = useState<'owed' | 'owing' | null>(null);
 
     // Same debt simplification as BalanceBreakdownModal so card totals match modal totals.
@@ -140,6 +141,14 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ groups, transactions, people, c
                         setBreakdownType(null);
                         onSelectGroup(groupId);
                     }}
+                    onSettleLine={
+                        onSettleLine
+                            ? (args) => {
+                                setBreakdownType(null);
+                                onSettleLine(args);
+                            }
+                            : undefined
+                    }
                 />
             )}
         </div>

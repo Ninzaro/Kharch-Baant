@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import BaseModal from './BaseModal';
 import { Person, Transaction, PaymentSource } from '../types';
 import { addTransaction } from '../services/apiService';
-import { calculateGroupBalances } from '../utils/calculations';
+import { calculateGroupBalances, simplifyGroupDebts } from '../utils/calculations';
 import { ArrowRightIcon, ChevronDownIcon, CalendarIcon } from './icons/Icons';
 import toast from 'react-hot-toast';
 
@@ -82,7 +82,6 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
   const amountNumber = parseFloat(amount) || 0;
   const isEditing = Boolean(initialTransaction?.id);
   const isSelfSelect = payerId && receiverId && payerId === receiverId;
-  const isValid = payerId && receiverId && !isSelfSelect && amountNumber > 0 && !submitting;
 
   // --- CALCULATIONS (Live Preview) ---
   // When editing, exclude the settlement being edited so we don't double-count it.
@@ -97,6 +96,15 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
     () => calculateGroupBalances(transactionsForBase),
     [transactionsForBase],
   );
+
+  const outstanding = useMemo(() => {
+    if (!payerId || !receiverId || payerId === receiverId) return 0;
+    const transfers = simplifyGroupDebts(baseBalances);
+    const pair = transfers.find((t) => t.from === payerId && t.to === receiverId);
+    return pair?.amount ?? 0;
+  }, [baseBalances, payerId, receiverId]);
+  const isOverpay = amountNumber > outstanding + 0.01;
+  const isValid = payerId && receiverId && !isSelfSelect && amountNumber > 0 && !isOverpay && !submitting;
 
   // Live balances still include the existing settlement (edit mode) — used as the "from" side
   const liveBalances = useMemo(
@@ -137,7 +145,7 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
   };
 
   const handleSubmit = async () => {
-    if (!isValid) return;
+    if (!isValid || isOverpay) return;
     setSubmitting(true);
     try {
       // Build settlement transaction
@@ -232,12 +240,18 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0"
-              min="1"
+              min="0.01"
+              step="0.01"
               className="w-full bg-transparent text-center text-5xl font-bold text-foreground placeholder:text-muted-foreground focus:outline-none p-2 pl-8"
               aria-label="Settlement Amount"
             />
           </div>
         </div>
+        {isOverpay && payerId && receiverId && (
+          <p className="text-center text-sm text-destructive">
+            Amount is more than the {format(outstanding)} outstanding between these two people.
+          </p>
+        )}
 
         {/* 2. PAYER -> RECEIVER FLOW */}
         <div className="bg-muted/40 rounded-xl p-4 flex flex-col sm:flex-row items-center gap-4 relative border border-border">
