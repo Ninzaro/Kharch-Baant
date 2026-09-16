@@ -25,7 +25,7 @@ export interface EmailResult {
   error?: string;
 }
 
-type EmailType = 'welcome' | 'group_invite' | 'member_added' | 'settle_up' | 'new_expense';
+type EmailType = 'group_invite';
 
 // ============================================================================
 // CORE

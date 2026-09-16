@@ -23,4 +23,4 @@ Requires `Authorization: Bearer <Clerk JWT>` (sent automatically by `supabase.fu
 
 ## Types
 
-`welcome` | `group_invite` | `member_added` | `settle_up` | `new_expense`
+`group_invite`
