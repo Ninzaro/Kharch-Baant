@@ -1,0 +1,5801 @@
+{
+  "nodes": [
+    {
+      "id": "g0",
+      "type": "group",
+      "label": "Balances and Settle-Up",
+      "x": 0,
+      "y": 0,
+      "width": 1980,
+      "height": 920,
+      "color": "1"
+    },
+    {
+      "id": "n_components_settleupmodal_settleupmodalprops_onclose",
+      "type": "file",
+      "file": "dot-onClose()_1.md",
+      "x": 20,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_settleupmodal_settleupmodalprops_oncreated",
+      "type": "file",
+      "file": "dot-onCreated().md",
+      "x": 220,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_settleupmodal_settleupmodalprops_onsubmit",
+      "type": "file",
+      "file": "dot-onSubmit().md",
+      "x": 420,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_balancebreakdownmodal_balancebreakdownmodal",
+      "type": "file",
+      "file": "BalanceBreakdownModal().md",
+      "x": 620,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_balancebreakdownmodal",
+      "type": "file",
+      "file": "BalanceBreakdownModal.tsx.md",
+      "x": 820,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_balancebreakdownmodal_balancebreakdownmodalprops",
+      "type": "file",
+      "file": "BalanceBreakdownModalProps.md",
+      "x": 1020,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_currency",
+      "type": "file",
+      "file": "Currency.md",
+      "x": 1220,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_dashboard_dashboard",
+      "type": "file",
+      "file": "Dashboard().md",
+      "x": 1420,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_dashboard",
+      "type": "file",
+      "file": "Dashboard.tsx.md",
+      "x": 1620,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_dashboard_dashboardprops",
+      "type": "file",
+      "file": "DashboardProps.md",
+      "x": 20,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_admindeletionrequestspanel_deletionrequest",
+      "type": "file",
+      "file": "DeletionRequest.md",
+      "x": 220,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_transactionitem_eyeicon",
+      "type": "file",
+      "file": "EyeIcon().md",
+      "x": 420,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_group",
+      "type": "file",
+      "file": "Group.md",
+      "x": 620,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_groupbalancesmodal_groupbalancesmodal",
+      "type": "file",
+      "file": "GroupBalancesModal().md",
+      "x": 820,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_groupbalancesmodal_test",
+      "type": "file",
+      "file": "GroupBalancesModal.test.tsx.md",
+      "x": 1020,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_groupbalancesmodal",
+      "type": "file",
+      "file": "GroupBalancesModal.tsx.md",
+      "x": 1220,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_groupbalancesmodal_groupbalancesmodalprops",
+      "type": "file",
+      "file": "GroupBalancesModalProps.md",
+      "x": 1420,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_groupformmodal_groupformmodalprops",
+      "type": "file",
+      "file": "GroupFormModalProps.md",
+      "x": 1620,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_grouplist_grouplistprops",
+      "type": "file",
+      "file": "GroupListProps.md",
+      "x": 20,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_groupsummarycard_groupsummarycard",
+      "type": "file",
+      "file": "GroupSummaryCard().md",
+      "x": 220,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_groupsummarycard",
+      "type": "file",
+      "file": "GroupSummaryCard.tsx.md",
+      "x": 420,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_groupsummarycard_groupsummarycardprops",
+      "type": "file",
+      "file": "GroupSummaryCardProps.md",
+      "x": 620,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_groupsummarymodal_groupsummarymodalprops",
+      "type": "file",
+      "file": "GroupSummaryModalProps.md",
+      "x": 820,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_groupview_groupviewprops",
+      "type": "file",
+      "file": "GroupViewProps.md",
+      "x": 1020,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_homescreen_homescreen",
+      "type": "file",
+      "file": "HomeScreen().md",
+      "x": 1220,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_homescreen",
+      "type": "file",
+      "file": "HomeScreen.tsx.md",
+      "x": 1420,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_homescreen_homescreenprops",
+      "type": "file",
+      "file": "HomeScreenProps.md",
+      "x": 1620,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_memberbalances_memberbalances",
+      "type": "file",
+      "file": "MemberBalances().md",
+      "x": 20,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_memberbalances",
+      "type": "file",
+      "file": "MemberBalances.tsx.md",
+      "x": 220,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_memberbalances_memberbalancesprops",
+      "type": "file",
+      "file": "MemberBalancesProps.md",
+      "x": 420,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_hooks_usemodals_modalactions",
+      "type": "file",
+      "file": "ModalActions.md",
+      "x": 620,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_hooks_usemodals_modalstate",
+      "type": "file",
+      "file": "ModalState.md",
+      "x": 820,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_paymentsource",
+      "type": "file",
+      "file": "PaymentSource.md",
+      "x": 1020,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_person",
+      "type": "file",
+      "file": "Person.md",
+      "x": 1220,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_settleupmodal_settleupmodal",
+      "type": "file",
+      "file": "SettleUpModal().md",
+      "x": 1420,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_settleupmodal_settleupmodalprops",
+      "type": "file",
+      "file": "SettleUpModalProps.md",
+      "x": 1620,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_calculations_simplifiedtransfer",
+      "type": "file",
+      "file": "SimplifiedTransfer.md",
+      "x": 20,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_transaction",
+      "type": "file",
+      "file": "Transaction.md",
+      "x": 220,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_transactiondetailmodal_transactiondetailmodal",
+      "type": "file",
+      "file": "TransactionDetailModal().md",
+      "x": 420,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_transactiondetailmodal",
+      "type": "file",
+      "file": "TransactionDetailModal.tsx.md",
+      "x": 620,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_transactiondetailmodal_transactiondetailmodalprops",
+      "type": "file",
+      "file": "TransactionDetailModalProps.md",
+      "x": 820,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_transactionformmodal_transactionformmodalprops",
+      "type": "file",
+      "file": "TransactionFormModalProps.md",
+      "x": 1020,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_transactionitem_transactionitem",
+      "type": "file",
+      "file": "TransactionItem().md",
+      "x": 1220,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_transactionitem",
+      "type": "file",
+      "file": "TransactionItem.tsx.md",
+      "x": 1420,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_transactionitem_transactionitemprops",
+      "type": "file",
+      "file": "TransactionItemProps.md",
+      "x": 1620,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_transactionlist",
+      "type": "file",
+      "file": "TransactionList.tsx.md",
+      "x": 20,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_transactionlist_transactionlistprops",
+      "type": "file",
+      "file": "TransactionListProps.md",
+      "x": 220,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_calculations_userdebtline",
+      "type": "file",
+      "file": "UserDebtLine.md",
+      "x": 420,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_calculations_userfacingdebts",
+      "type": "file",
+      "file": "UserFacingDebts.md",
+      "x": 620,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_apiservice_addtransaction",
+      "type": "file",
+      "file": "addTransaction().md",
+      "x": 820,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_calculations_calculategroupbalances",
+      "type": "file",
+      "file": "calculateGroupBalances().md",
+      "x": 1020,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_calculations_calculateshares",
+      "type": "file",
+      "file": "calculateShares().md",
+      "x": 1220,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_calculations",
+      "type": "file",
+      "file": "calculations.ts.md",
+      "x": 1420,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_groupbalancesmodal_test_consolelogspy",
+      "type": "file",
+      "file": "consoleLogSpy.md",
+      "x": 1620,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_calculations_distributerounding",
+      "type": "file",
+      "file": "distributeRounding().md",
+      "x": 20,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_calculations_getuserfacingdebts",
+      "type": "file",
+      "file": "getUserFacingDebts().md",
+      "x": 220,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_hooks_usemodals_initialstate",
+      "type": "file",
+      "file": "initialState.md",
+      "x": 420,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_calculations_materializesplit",
+      "type": "file",
+      "file": "materializeSplit().md",
+      "x": 620,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_hooks_usemodals_test_mockgroup",
+      "type": "file",
+      "file": "mockGroup.md",
+      "x": 820,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_hooks_usemodals_test_mockpaymentsource",
+      "type": "file",
+      "file": "mockPaymentSource.md",
+      "x": 1020,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_hooks_usemodals_test_mocktransaction",
+      "type": "file",
+      "file": "mockTransaction.md",
+      "x": 1220,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_calculations_simplifygroupdebts",
+      "type": "file",
+      "file": "simplifyGroupDebts().md",
+      "x": 1420,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_hooks_usemodals_test",
+      "type": "file",
+      "file": "useModals.test.ts.md",
+      "x": 1620,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_hooks_usemodals",
+      "type": "file",
+      "file": "useModals.ts.md",
+      "x": 20,
+      "y": 640,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_calculations_validatesplit",
+      "type": "file",
+      "file": "validateSplit().md",
+      "x": 220,
+      "y": 640,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g1",
+      "type": "group",
+      "label": "Modals and Icon Set",
+      "x": 2060,
+      "y": 0,
+      "width": 1760,
+      "height": 920,
+      "color": "2"
+    },
+    {
+      "id": "n_app_addactionmodal",
+      "type": "file",
+      "file": "AddActionModal.md",
+      "x": 2080,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_addactionmodal_addactionmodal",
+      "type": "file",
+      "file": "AddActionModal().md",
+      "x": 2280,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_addactionmodal",
+      "type": "file",
+      "file": "AddActionModal.tsx.md",
+      "x": 2480,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_addactionmodal_addactionmodalprops",
+      "type": "file",
+      "file": "AddActionModalProps.md",
+      "x": 2680,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_icons_icons_arrowrighticon",
+      "type": "file",
+      "file": "ArrowRightIcon().md",
+      "x": 2880,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_basemodal_basemodal",
+      "type": "file",
+      "file": "BaseModal().md",
+      "x": 3080,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_basemodal",
+      "type": "file",
+      "file": "BaseModal.tsx.md",
+      "x": 3280,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_basemodal_basemodalprops",
+      "type": "file",
+      "file": "BaseModalProps.md",
+      "x": 3480,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_currencies",
+      "type": "file",
+      "file": "CURRENCIES.md",
+      "x": 2080,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_icons_icons_calendaricon",
+      "type": "file",
+      "file": "CalendarIcon().md",
+      "x": 2280,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_calendarmodal_calendarmodal",
+      "type": "file",
+      "file": "CalendarModal().md",
+      "x": 2480,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_calendarmodal",
+      "type": "file",
+      "file": "CalendarModal.tsx.md",
+      "x": 2680,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_calendarmodal_calendarmodalprops",
+      "type": "file",
+      "file": "CalendarModalProps.md",
+      "x": 2880,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_icons_icons_charticon",
+      "type": "file",
+      "file": "ChartIcon().md",
+      "x": 3080,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_icons_icons_chevrondownicon",
+      "type": "file",
+      "file": "ChevronDownIcon().md",
+      "x": 3280,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_icons_icons_chevronlefticon",
+      "type": "file",
+      "file": "ChevronLeftIcon().md",
+      "x": 3480,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_icons_icons_chevronrighticon",
+      "type": "file",
+      "file": "ChevronRightIcon().md",
+      "x": 2080,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_icons_icons_closeicon",
+      "type": "file",
+      "file": "CloseIcon().md",
+      "x": 2280,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_datefiltermodal_datefiltermodal",
+      "type": "file",
+      "file": "DateFilterModal().md",
+      "x": 2480,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_datefiltermodal",
+      "type": "file",
+      "file": "DateFilterModal.tsx.md",
+      "x": 2680,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_datefiltermodal_datefiltermodalprops",
+      "type": "file",
+      "file": "DateFilterModalProps.md",
+      "x": 2880,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_icons_icons_editicon",
+      "type": "file",
+      "file": "EditIcon().md",
+      "x": 3080,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_filter",
+      "type": "file",
+      "file": "Filter.md",
+      "x": 3280,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_filterbar_filterbar",
+      "type": "file",
+      "file": "FilterBar().md",
+      "x": 3480,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_filterbar",
+      "type": "file",
+      "file": "FilterBar.tsx.md",
+      "x": 2080,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_filterbar_filterbarprops",
+      "type": "file",
+      "file": "FilterBarProps.md",
+      "x": 2280,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_app_groupformmodal",
+      "type": "file",
+      "file": "GroupFormModal.md",
+      "x": 2480,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_groupformmodal",
+      "type": "file",
+      "file": "GroupFormModal.tsx.md",
+      "x": 2680,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_groupselectionlist_groupselectionlist",
+      "type": "file",
+      "file": "GroupSelectionList().md",
+      "x": 2880,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_groupselectionlist",
+      "type": "file",
+      "file": "GroupSelectionList.tsx.md",
+      "x": 3080,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_groupselectionlist_groupselectionlistprops",
+      "type": "file",
+      "file": "GroupSelectionListProps.md",
+      "x": 3280,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_groupsummarymodal_groupsummarymodal",
+      "type": "file",
+      "file": "GroupSummaryModal().md",
+      "x": 3480,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_groupsummarymodal",
+      "type": "file",
+      "file": "GroupSummaryModal.tsx.md",
+      "x": 2080,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_grouptype",
+      "type": "file",
+      "file": "GroupType.md",
+      "x": 2280,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_groupview_groupview",
+      "type": "file",
+      "file": "GroupView().md",
+      "x": 2480,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_groupview",
+      "type": "file",
+      "file": "GroupView.tsx.md",
+      "x": 2680,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_icons_icons_homeicon",
+      "type": "file",
+      "file": "HomeIcon().md",
+      "x": 2880,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_icons_icons",
+      "type": "file",
+      "file": "Icons.tsx.md",
+      "x": 3080,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_icons_icons_plusicon",
+      "type": "file",
+      "file": "PlusIcon().md",
+      "x": 3280,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_basemodal_size_class",
+      "type": "file",
+      "file": "SIZE_CLASS.md",
+      "x": 3480,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_icons_icons_settingsicon",
+      "type": "file",
+      "file": "SettingsIcon().md",
+      "x": 2080,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_app_settleupmodal",
+      "type": "file",
+      "file": "SettleUpModal.md",
+      "x": 2280,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_settleupmodal",
+      "type": "file",
+      "file": "SettleUpModal.tsx.md",
+      "x": 2480,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_icons_icons_shareicon",
+      "type": "file",
+      "file": "ShareIcon().md",
+      "x": 2680,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_sharemodal_sharemodal",
+      "type": "file",
+      "file": "ShareModal().md",
+      "x": 2880,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_sharemodal",
+      "type": "file",
+      "file": "ShareModal.tsx.md",
+      "x": 3080,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_sharemodal_sharemodalprops",
+      "type": "file",
+      "file": "ShareModalProps.md",
+      "x": 3280,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_icons_icons_sortascicon",
+      "type": "file",
+      "file": "SortAscIcon().md",
+      "x": 3480,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_icons_icons_sortdescicon",
+      "type": "file",
+      "file": "SortDescIcon().md",
+      "x": 2080,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_sortoption",
+      "type": "file",
+      "file": "SortOption.md",
+      "x": 2280,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_transactionlist_transactionlist",
+      "type": "file",
+      "file": "TransactionList().md",
+      "x": 2480,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_icons_icons_usersicon",
+      "type": "file",
+      "file": "UsersIcon().md",
+      "x": 2680,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_groupsummarymodal_charttokenvars",
+      "type": "file",
+      "file": "chartTokenVars.md",
+      "x": 2880,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_groupsummarymodal_getpercentage",
+      "type": "file",
+      "file": "getPercentage().md",
+      "x": 3080,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_icons_icons_iconprops",
+      "type": "file",
+      "file": "iconProps.md",
+      "x": 3280,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_groupsummarymodal_resolvechartcolors",
+      "type": "file",
+      "file": "resolveChartColors().md",
+      "x": 3480,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_groupsummarymodal_resolvecsscolor",
+      "type": "file",
+      "file": "resolveCssColor().md",
+      "x": 2080,
+      "y": 640,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g2",
+      "type": "group",
+      "label": "App Shell and Queries",
+      "x": 3900,
+      "y": 0,
+      "width": 1760,
+      "height": 820,
+      "color": "3"
+    },
+    {
+      "id": "n_utils_components_transactionformmodal",
+      "type": "file",
+      "file": "dot-componentsTransactionFormModal.md",
+      "x": 3920,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_app_app",
+      "type": "file",
+      "file": "App().md",
+      "x": 4120,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_app",
+      "type": "file",
+      "file": "App.tsx.md",
+      "x": 4320,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_app_archivepromptmodal",
+      "type": "file",
+      "file": "ArchivePromptModal.md",
+      "x": 4520,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_archivepromptmodal_archivepromptmodal",
+      "type": "file",
+      "file": "ArchivePromptModal().md",
+      "x": 4720,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_archivepromptmodal",
+      "type": "file",
+      "file": "ArchivePromptModal.tsx.md",
+      "x": 4920,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_archivepromptmodal_archivepromptmodalprops",
+      "type": "file",
+      "file": "ArchivePromptModalProps.md",
+      "x": 5120,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_invite_invitepage_invitepage",
+      "type": "file",
+      "file": "InvitePage().md",
+      "x": 5320,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_invite_invitepage",
+      "type": "file",
+      "file": "InvitePage.tsx.md",
+      "x": 3920,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_invite_invitepage_invitestatus",
+      "type": "file",
+      "file": "InviteStatus.md",
+      "x": 4120,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_modalshell_modalshell",
+      "type": "file",
+      "file": "ModalShell().md",
+      "x": 4320,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_modalshell",
+      "type": "file",
+      "file": "ModalShell.tsx.md",
+      "x": 4520,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_app_paymentsourcemanagemodal",
+      "type": "file",
+      "file": "PaymentSourceManageModal.md",
+      "x": 4720,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_paymentsourcemanagemodal_paymentsourcemanagemodal",
+      "type": "file",
+      "file": "PaymentSourceManageModal().md",
+      "x": 4920,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_paymentsourcemanagemodal",
+      "type": "file",
+      "file": "PaymentSourceManageModal.tsx.md",
+      "x": 5120,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_paymentsourcemanagemodal_paymentsourcemanagemodalprops",
+      "type": "file",
+      "file": "PaymentSourceManageModalProps.md",
+      "x": 5320,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_realtimestatus_realtimestatus",
+      "type": "file",
+      "file": "RealtimeStatus().md",
+      "x": 3920,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_realtimestatus",
+      "type": "file",
+      "file": "RealtimeStatus.tsx.md",
+      "x": 4120,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_store_appstore_theme",
+      "type": "file",
+      "file": "Theme.md",
+      "x": 4320,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_app_transactiondetailmodal",
+      "type": "file",
+      "file": "TransactionDetailModal.md",
+      "x": 4520,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_store_appstore_uistate",
+      "type": "file",
+      "file": "UIState.md",
+      "x": 4720,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_auth_usermenu_usermenu",
+      "type": "file",
+      "file": "UserMenu().md",
+      "x": 4920,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_auth_usermenu",
+      "type": "file",
+      "file": "UserMenu.tsx.md",
+      "x": 5120,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_auth_welcomescreen_welcomescreen",
+      "type": "file",
+      "file": "WelcomeScreen().md",
+      "x": 5320,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_auth_welcomescreen",
+      "type": "file",
+      "file": "WelcomeScreen.tsx.md",
+      "x": 3920,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_auth_welcomescreen_welcomescreenprops",
+      "type": "file",
+      "file": "WelcomeScreenProps.md",
+      "x": 4120,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_acceptinvite",
+      "type": "file",
+      "file": "acceptInvite().md",
+      "x": 4320,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_store_appstore",
+      "type": "file",
+      "file": "appStore.ts.md",
+      "x": 4520,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_archivegroup",
+      "type": "file",
+      "file": "archiveGroup().md",
+      "x": 4720,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_apiservice_assertsupabaseenvironment",
+      "type": "file",
+      "file": "assertSupabaseEnvironment().md",
+      "x": 4920,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_deletegroup",
+      "type": "file",
+      "file": "deleteGroup().md",
+      "x": 5120,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_preload",
+      "type": "file",
+      "file": "preload.ts.md",
+      "x": 5320,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_preload_preloadcomponent",
+      "type": "file",
+      "file": "preloadComponent().md",
+      "x": 3920,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_app_preloadgroupform",
+      "type": "file",
+      "file": "preloadGroupForm().md",
+      "x": 4120,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_app_preloadsettings",
+      "type": "file",
+      "file": "preloadSettings().md",
+      "x": 4320,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_app_preloadsettleup",
+      "type": "file",
+      "file": "preloadSettleUp().md",
+      "x": 4520,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_app_preloadtransactionform",
+      "type": "file",
+      "file": "preloadTransactionForm().md",
+      "x": 4720,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_queries_qk",
+      "type": "file",
+      "file": "qk.md",
+      "x": 4920,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_queries",
+      "type": "file",
+      "file": "queries.ts.md",
+      "x": 5120,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_requestgroupdeletion",
+      "type": "file",
+      "file": "requestGroupDeletion().md",
+      "x": 5320,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_store_appstore_useappstore",
+      "type": "file",
+      "file": "useAppStore.md",
+      "x": 3920,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_hooks_usebackbutton_usebackbutton",
+      "type": "file",
+      "file": "useBackButton().md",
+      "x": 4120,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_hooks_usebackbutton",
+      "type": "file",
+      "file": "useBackButton.ts.md",
+      "x": 4320,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_queries_usegroupsquery",
+      "type": "file",
+      "file": "useGroupsQuery().md",
+      "x": 4520,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_queries_usepaymentsourcesquery",
+      "type": "file",
+      "file": "usePaymentSourcesQuery().md",
+      "x": 4720,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_queries_usepeoplequery",
+      "type": "file",
+      "file": "usePeopleQuery().md",
+      "x": 4920,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_queries_userealtimegroupmembersbridge",
+      "type": "file",
+      "file": "useRealtimeGroupMembersBridge().md",
+      "x": 5120,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_queries_userealtimegroupsbridge",
+      "type": "file",
+      "file": "useRealtimeGroupsBridge().md",
+      "x": 5320,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_queries_userealtimepaymentsourcesbridge",
+      "type": "file",
+      "file": "useRealtimePaymentSourcesBridge().md",
+      "x": 3920,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_queries_userealtimepeoplebridge",
+      "type": "file",
+      "file": "useRealtimePeopleBridge().md",
+      "x": 4120,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_queries_userealtimetransactionsbridge",
+      "type": "file",
+      "file": "useRealtimeTransactionsBridge().md",
+      "x": 4320,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_queries_usetransactionsquery",
+      "type": "file",
+      "file": "useTransactionsQuery().md",
+      "x": 4520,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_validateinvite",
+      "type": "file",
+      "file": "validateInvite().md",
+      "x": 4720,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g3",
+      "type": "group",
+      "label": "Expense Forms and Tags",
+      "x": 5740,
+      "y": 0,
+      "width": 1760,
+      "height": 820,
+      "color": "4"
+    },
+    {
+      "id": "n_types_acceptinviterequest",
+      "type": "file",
+      "file": "AcceptInviteRequest.md",
+      "x": 5760,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_acceptinviteresponse",
+      "type": "file",
+      "file": "AcceptInviteResponse.md",
+      "x": 5960,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_icons_icons_checkicon",
+      "type": "file",
+      "file": "CheckIcon().md",
+      "x": 6160,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_createinviterequest",
+      "type": "file",
+      "file": "CreateInviteRequest.md",
+      "x": 6360,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_createinviteresponse",
+      "type": "file",
+      "file": "CreateInviteResponse.md",
+      "x": 6560,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_creditcarddetails",
+      "type": "file",
+      "file": "CreditCardDetails.md",
+      "x": 6760,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_currencydetails",
+      "type": "file",
+      "file": "CurrencyDetails.md",
+      "x": 6960,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_icons_icons_deleteicon",
+      "type": "file",
+      "file": "DeleteIcon().md",
+      "x": 7160,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_emailinvite",
+      "type": "file",
+      "file": "EmailInvite.md",
+      "x": 5760,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_groupinvite",
+      "type": "file",
+      "file": "GroupInvite.md",
+      "x": 5960,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_tagkeywords_keyword_map",
+      "type": "file",
+      "file": "KEYWORD_MAP.md",
+      "x": 6160,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_payer",
+      "type": "file",
+      "file": "Payer.md",
+      "x": 6360,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_app_paymentsourceformmodal",
+      "type": "file",
+      "file": "PaymentSourceFormModal.md",
+      "x": 6560,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_paymentsourceformmodal_paymentsourceformmodal",
+      "type": "file",
+      "file": "PaymentSourceFormModal().md",
+      "x": 6760,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_paymentsourceformmodal",
+      "type": "file",
+      "file": "PaymentSourceFormModal.tsx.md",
+      "x": 6960,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_paymentsourceformmodal_paymentsourceformmodalprops",
+      "type": "file",
+      "file": "PaymentSourceFormModalProps.md",
+      "x": 7160,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_paymentsourcemetrics_paymentsourcemetrics",
+      "type": "file",
+      "file": "PaymentSourceMetrics.md",
+      "x": 5760,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_paymentsourcetype",
+      "type": "file",
+      "file": "PaymentSourceType.md",
+      "x": 5960,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_personsource",
+      "type": "file",
+      "file": "PersonSource.md",
+      "x": 6160,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_split",
+      "type": "file",
+      "file": "Split.md",
+      "x": 6360,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_splitmode",
+      "type": "file",
+      "file": "SplitMode.md",
+      "x": 6560,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_splitparticipant",
+      "type": "file",
+      "file": "SplitParticipant.md",
+      "x": 6760,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_transactionformmodal_stepid",
+      "type": "file",
+      "file": "StepId.md",
+      "x": 6960,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_tags",
+      "type": "file",
+      "file": "TAGS.md",
+      "x": 7160,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_tag",
+      "type": "file",
+      "file": "Tag.md",
+      "x": 5760,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_transactionformmodal_timelinenode",
+      "type": "file",
+      "file": "TimelineNode().md",
+      "x": 5960,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_transactionformmodal_timelinenodeprops",
+      "type": "file",
+      "file": "TimelineNodeProps.md",
+      "x": 6160,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_app_transactionformmodal",
+      "type": "file",
+      "file": "TransactionFormModal.md",
+      "x": 6360,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_transactionformmodal_transactionformmodal",
+      "type": "file",
+      "file": "TransactionFormModal().md",
+      "x": 6560,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_transactionformmodal",
+      "type": "file",
+      "file": "TransactionFormModal.tsx.md",
+      "x": 6760,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_transactiontype",
+      "type": "file",
+      "file": "TransactionType.md",
+      "x": 6960,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_upidetails",
+      "type": "file",
+      "file": "UPIDetails.md",
+      "x": 7160,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_validateinviteresponse",
+      "type": "file",
+      "file": "ValidateInviteResponse.md",
+      "x": 5760,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_allcurrencies",
+      "type": "file",
+      "file": "allCurrencies.md",
+      "x": 5960,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_tagclassifier_classifydescription",
+      "type": "file",
+      "file": "classifyDescription().md",
+      "x": 6160,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_paymentsourcemetrics_computepaymentsourcemetrics",
+      "type": "file",
+      "file": "computePaymentSourceMetrics().md",
+      "x": 6360,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_geminiservice",
+      "type": "file",
+      "file": "geminiService.ts.md",
+      "x": 6560,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_geminiservice_geticonforcategory",
+      "type": "file",
+      "file": "getIconForCategory().md",
+      "x": 6760,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_inrindex",
+      "type": "file",
+      "file": "inrIndex.md",
+      "x": 6960,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_geminiservice_isaitaggingconfigured",
+      "type": "file",
+      "file": "isAiTaggingConfigured().md",
+      "x": 7160,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_tagclassifier_lookupcache",
+      "type": "file",
+      "file": "lookupCache().md",
+      "x": 5760,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_tagkeywords_matchkeyword",
+      "type": "file",
+      "file": "matchKeyword().md",
+      "x": 5960,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_tagclassifier_normalize",
+      "type": "file",
+      "file": "normalize().md",
+      "x": 6160,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_paymentsourcemetrics",
+      "type": "file",
+      "file": "paymentSourceMetrics.ts.md",
+      "x": 6360,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_tagclassifier_sessioncache",
+      "type": "file",
+      "file": "sessionCache.md",
+      "x": 6560,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_transactionformmodal_splitmodes",
+      "type": "file",
+      "file": "splitModes.md",
+      "x": 6760,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_geminiservice_suggesttagfordescription",
+      "type": "file",
+      "file": "suggestTagForDescription().md",
+      "x": 6960,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_supabase_supabase",
+      "type": "file",
+      "file": "supabase.md",
+      "x": 7160,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_tagclassifier",
+      "type": "file",
+      "file": "tagClassifier.ts.md",
+      "x": 5760,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_tagkeywords",
+      "type": "file",
+      "file": "tagKeywords.ts.md",
+      "x": 5960,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types",
+      "type": "file",
+      "file": "types.ts.md",
+      "x": 6160,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_tagclassifier_writecache",
+      "type": "file",
+      "file": "writeCache().md",
+      "x": 6360,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g4",
+      "type": "group",
+      "label": "Settings Profile Avatars",
+      "x": 7580,
+      "y": 0,
+      "width": 1540,
+      "height": 820,
+      "color": "5"
+    },
+    {
+      "id": "n_components_confirmdeletemodal_confirmdeletemodalprops_oncancel",
+      "type": "file",
+      "file": "dot-onCancel().md",
+      "x": 7600,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_confirmdeletemodal_confirmdeletemodalprops_onconfirm",
+      "type": "file",
+      "file": "dot-onConfirm().md",
+      "x": 7800,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_aboutsection_aboutsection",
+      "type": "file",
+      "file": "AboutSection().md",
+      "x": 8000,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_aboutsection",
+      "type": "file",
+      "file": "AboutSection.tsx.md",
+      "x": 8200,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_admindeletionrequestspanel_admindeletionrequestspanel",
+      "type": "file",
+      "file": "AdminDeletionRequestsPanel().md",
+      "x": 8400,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_admindeletionrequestspanel",
+      "type": "file",
+      "file": "AdminDeletionRequestsPanel.tsx.md",
+      "x": 8600,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_admindeletionrequestspanel_admindeletionrequestspanelprops",
+      "type": "file",
+      "file": "AdminDeletionRequestsPanelProps.md",
+      "x": 8800,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_avatar_avatar",
+      "type": "file",
+      "file": "Avatar().md",
+      "x": 7600,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_avatar",
+      "type": "file",
+      "file": "Avatar.tsx.md",
+      "x": 7800,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_avatar_avatarprops",
+      "type": "file",
+      "file": "AvatarProps.md",
+      "x": 8000,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_app_confirmdeletemodal",
+      "type": "file",
+      "file": "ConfirmDeleteModal.md",
+      "x": 8200,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_confirmdeletemodal_confirmdeletemodal",
+      "type": "file",
+      "file": "ConfirmDeleteModal().md",
+      "x": 8400,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_confirmdeletemodal",
+      "type": "file",
+      "file": "ConfirmDeleteModal.tsx.md",
+      "x": 8600,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_confirmdeletemodal_confirmdeletemodalprops",
+      "type": "file",
+      "file": "ConfirmDeleteModalProps.md",
+      "x": 8800,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_dangerzone_dangerzone",
+      "type": "file",
+      "file": "DangerZone().md",
+      "x": 7600,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_dangerzone",
+      "type": "file",
+      "file": "DangerZone.tsx.md",
+      "x": 7800,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_dangerzone_dangerzoneprops",
+      "type": "file",
+      "file": "DangerZoneProps.md",
+      "x": 8000,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_dataexport_dataexport",
+      "type": "file",
+      "file": "DataExport().md",
+      "x": 8200,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_dataexport",
+      "type": "file",
+      "file": "DataExport.tsx.md",
+      "x": 8400,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_dataexport_dataexportprops",
+      "type": "file",
+      "file": "DataExportProps.md",
+      "x": 8600,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_confirmdeletemodal_entity_label",
+      "type": "file",
+      "file": "ENTITY_LABEL.md",
+      "x": 8800,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_confirmdeletemodal_entitytype",
+      "type": "file",
+      "file": "EntityType.md",
+      "x": 7600,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_types_group_types",
+      "type": "file",
+      "file": "GROUP_TYPES.md",
+      "x": 7800,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_grouplist_grouplist",
+      "type": "file",
+      "file": "GroupList().md",
+      "x": 8000,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_grouplist",
+      "type": "file",
+      "file": "GroupList.tsx.md",
+      "x": 8200,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_grouplist_grouplistitem",
+      "type": "file",
+      "file": "GroupListItem().md",
+      "x": 8400,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_avatar_stock_avatar_host_markers",
+      "type": "file",
+      "file": "STOCK_AVATAR_HOST_MARKERS.md",
+      "x": 8600,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_app_settingsmodal",
+      "type": "file",
+      "file": "SettingsModal.md",
+      "x": 8800,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_settingsmodal_settingsmodal",
+      "type": "file",
+      "file": "SettingsModal().md",
+      "x": 7600,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_settingsmodal",
+      "type": "file",
+      "file": "SettingsModal.tsx.md",
+      "x": 7800,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_settingsmodal_settingsmodalprops",
+      "type": "file",
+      "file": "SettingsModalProps.md",
+      "x": 8000,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_themetoggle_themetoggle",
+      "type": "file",
+      "file": "ThemeToggle().md",
+      "x": 8200,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_themetoggle",
+      "type": "file",
+      "file": "ThemeToggle.tsx.md",
+      "x": 8400,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_themetoggle_themetoggleprops",
+      "type": "file",
+      "file": "ThemeToggleProps.md",
+      "x": 8600,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_auth_userprofile_userprofile",
+      "type": "file",
+      "file": "UserProfile().md",
+      "x": 8800,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_auth_userprofile",
+      "type": "file",
+      "file": "UserProfile.tsx.md",
+      "x": 7600,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_auth_userprofile_userprofileprops",
+      "type": "file",
+      "file": "UserProfileProps.md",
+      "x": 7800,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_approvegroupdeletion",
+      "type": "file",
+      "file": "approveGroupDeletion().md",
+      "x": 8000,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_avatar_colors",
+      "type": "file",
+      "file": "colors.md",
+      "x": 8200,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_avatar_getcolorforid",
+      "type": "file",
+      "file": "getColorForId().md",
+      "x": 8400,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_avatar_getinitials",
+      "type": "file",
+      "file": "getInitials().md",
+      "x": 8600,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_getpendingdeletionrequests",
+      "type": "file",
+      "file": "getPendingDeletionRequests().md",
+      "x": 8800,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_avatar_isstockavatarurl",
+      "type": "file",
+      "file": "isStockAvatarUrl().md",
+      "x": 7600,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_rejectgroupdeletion",
+      "type": "file",
+      "file": "rejectGroupDeletion().md",
+      "x": 7800,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_avatar_sizeboxmap",
+      "type": "file",
+      "file": "sizeBoxMap.md",
+      "x": 8000,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_updateperson",
+      "type": "file",
+      "file": "updatePerson().md",
+      "x": 8200,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_updateuseravatar",
+      "type": "file",
+      "file": "updateUserAvatar().md",
+      "x": 8400,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_contexts_supabaseauthcontext_useauth",
+      "type": "file",
+      "file": "useAuth().md",
+      "x": 8600,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g5",
+      "type": "group",
+      "label": "Native Google Sign-In",
+      "x": 0,
+      "y": 1000,
+      "width": 1320,
+      "height": 720,
+      "color": "6"
+    },
+    {
+      "id": "n_services_clerknativeauth_clerknativeauthplugin_signinwithgoogle",
+      "type": "file",
+      "file": "dot-signInWithGoogle().md",
+      "x": 20,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_clerknativeauth_clerknativeauthweb_signinwithgoogle",
+      "type": "file",
+      "file": "dot-signInWithGoogle()_1.md",
+      "x": 220,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_auth_authscreen_authscreen",
+      "type": "file",
+      "file": "AuthScreen().md",
+      "x": 420,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_auth_authscreen",
+      "type": "file",
+      "file": "AuthScreen.tsx.md",
+      "x": 620,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_auth_authscreen_authscreenprops",
+      "type": "file",
+      "file": "AuthScreenProps.md",
+      "x": 820,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_hooks_usenativeoauth_clerk_account_portal_sign_in",
+      "type": "file",
+      "file": "CLERK_ACCOUNT_PORTAL_SIGN_IN.md",
+      "x": 1020,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_clerknativeauth_clerknativeauth",
+      "type": "file",
+      "file": "ClerkNativeAuth.md",
+      "x": 20,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_clerknativeauth_clerknativeauthplugin",
+      "type": "file",
+      "file": "ClerkNativeAuthPlugin.md",
+      "x": 220,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_clerknativeauth_clerknativeauthweb",
+      "type": "file",
+      "file": "ClerkNativeAuthWeb.md",
+      "x": 420,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_auth_authscreen_googleicon",
+      "type": "file",
+      "file": "GoogleIcon().md",
+      "x": 620,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_env_known",
+      "type": "file",
+      "file": "KNOWN.md",
+      "x": 820,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_auth_clerkappearance_native_hide_social_clerk_appearance",
+      "type": "file",
+      "file": "NATIVE_HIDE_SOCIAL_CLERK_APPEARANCE.md",
+      "x": 1020,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_auth_clerkappearance_native_portal_return_url",
+      "type": "file",
+      "file": "NATIVE_PORTAL_RETURN_URL.md",
+      "x": 20,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_auth_clerkappearance_native_sso_redirect",
+      "type": "file",
+      "file": "NATIVE_SSO_REDIRECT.md",
+      "x": 220,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_nativeauthbridge_setactivefn",
+      "type": "file",
+      "file": "SetActiveFn.md",
+      "x": 420,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_nativeauthbridge_ticketsignin",
+      "type": "file",
+      "file": "TicketSignIn.md",
+      "x": 620,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_hooks_usenativeoauth_buildaccountportaloauthurl",
+      "type": "file",
+      "file": "buildAccountPortalOAuthUrl().md",
+      "x": 820,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_auth_clerkappearance",
+      "type": "file",
+      "file": "clerkAppearance.ts.md",
+      "x": 1020,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_clerknativeauth",
+      "type": "file",
+      "file": "clerkNativeAuth.ts.md",
+      "x": 20,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_nativeauthbridge_completenativegooglesignin",
+      "type": "file",
+      "file": "completeNativeGoogleSignIn().md",
+      "x": 220,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_nativeauthbridge_consumesigninticket",
+      "type": "file",
+      "file": "consumeSignInTicket().md",
+      "x": 420,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_env",
+      "type": "file",
+      "file": "env.ts.md",
+      "x": 620,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_nativeauthbridge_exchangenativesessionforticket",
+      "type": "file",
+      "file": "exchangeNativeSessionForTicket().md",
+      "x": 820,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_env_getenvvalue",
+      "type": "file",
+      "file": "getEnvValue().md",
+      "x": 1020,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_nativeauthbridge_isandroidnativeapp",
+      "type": "file",
+      "file": "isAndroidNativeApp().md",
+      "x": 20,
+      "y": 1400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_nativeauthbridge",
+      "type": "file",
+      "file": "nativeAuthBridge.ts.md",
+      "x": 220,
+      "y": 1400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_nativeauthbridge_nativebridgeurl",
+      "type": "file",
+      "file": "nativeBridgeUrl().md",
+      "x": 420,
+      "y": 1400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_env_nonempty",
+      "type": "file",
+      "file": "nonEmpty().md",
+      "x": 620,
+      "y": 1400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_hooks_usenativeoauth_openaccountportal",
+      "type": "file",
+      "file": "openAccountPortal().md",
+      "x": 820,
+      "y": 1400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_hooks_usenativeoauth_startnativegoogleoauth",
+      "type": "file",
+      "file": "startNativeGoogleOAuth().md",
+      "x": 1020,
+      "y": 1400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_hooks_usenativegooglesignin_usenativegooglesignin",
+      "type": "file",
+      "file": "useNativeGoogleSignIn().md",
+      "x": 20,
+      "y": 1480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_hooks_usenativegooglesignin",
+      "type": "file",
+      "file": "useNativeGoogleSignIn.ts.md",
+      "x": 220,
+      "y": 1480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_hooks_usenativeoauth_usenativeoauth",
+      "type": "file",
+      "file": "useNativeOAuth().md",
+      "x": 420,
+      "y": 1480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_hooks_usenativeoauth",
+      "type": "file",
+      "file": "useNativeOAuth.ts.md",
+      "x": 620,
+      "y": 1480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g6",
+      "type": "group",
+      "label": "Bootstrap and Deep Links",
+      "x": 2060,
+      "y": 1000,
+      "width": 1320,
+      "height": 720,
+      "color": "1"
+    },
+    {
+      "id": "n_components_errorboundary_errorboundary_componentdidcatch",
+      "type": "file",
+      "file": "dot-componentDidCatch().md",
+      "x": 2080,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_errorboundary_errorboundary_constructor",
+      "type": "file",
+      "file": "dot-constructor().md",
+      "x": 2280,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_errorboundary_errorboundary_getderivedstatefromerror",
+      "type": "file",
+      "file": "dot-getDerivedStateFromError().md",
+      "x": 2480,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_errorboundary_errorboundary_handlereset",
+      "type": "file",
+      "file": "dot-handleReset().md",
+      "x": 2680,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_errorboundary_errorboundary_render",
+      "type": "file",
+      "file": "dot-render().md",
+      "x": 2880,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_app_appwithauth",
+      "type": "file",
+      "file": "AppWithAuth().md",
+      "x": 3080,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_errorboundary_errorboundary",
+      "type": "file",
+      "file": "ErrorBoundary.md",
+      "x": 2080,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_errorboundary",
+      "type": "file",
+      "file": "ErrorBoundary.tsx.md",
+      "x": 2280,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_errorboundary_errorboundaryprops",
+      "type": "file",
+      "file": "ErrorBoundaryProps.md",
+      "x": 2480,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_errorboundary_errorboundarystate",
+      "type": "file",
+      "file": "ErrorBoundaryState.md",
+      "x": 2680,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_nativedeeplinks_handle_redirect_params",
+      "type": "file",
+      "file": "HANDLE_REDIRECT_PARAMS.md",
+      "x": 2880,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_auth_ssofinish_ssofinish",
+      "type": "file",
+      "file": "SsoFinish().md",
+      "x": 3080,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_auth_ssofinish",
+      "type": "file",
+      "file": "SsoFinish.tsx.md",
+      "x": 2080,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_toastprovider_toastprovider",
+      "type": "file",
+      "file": "ToastProvider().md",
+      "x": 2280,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_toastprovider",
+      "type": "file",
+      "file": "ToastProvider.tsx.md",
+      "x": 2480,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_nativedeeplinks_applynativeappurl",
+      "type": "file",
+      "file": "applyNativeAppUrl().md",
+      "x": 2680,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_nativedeeplinks_consumecapturedssocallback",
+      "type": "file",
+      "file": "consumeCapturedSsoCallback().md",
+      "x": 2880,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_nativedeeplinks_getcapturedssorawurl",
+      "type": "file",
+      "file": "getCapturedSsoRawUrl().md",
+      "x": 3080,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_nativedeeplinks_historypathforappurl",
+      "type": "file",
+      "file": "historyPathForAppUrl().md",
+      "x": 2080,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_index",
+      "type": "file",
+      "file": "index.tsx.md",
+      "x": 2280,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_index_initcapacitor",
+      "type": "file",
+      "file": "initCapacitor().md",
+      "x": 2480,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_nativedeeplinks_isssocallbackurl",
+      "type": "file",
+      "file": "isSsoCallbackUrl().md",
+      "x": 2680,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_nativedeeplinks_isssoflowpending",
+      "type": "file",
+      "file": "isSsoFlowPending().md",
+      "x": 2880,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_nativedeeplinks_logclerkauthstate",
+      "type": "file",
+      "file": "logClerkAuthState().md",
+      "x": 3080,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_nativedeeplinks",
+      "type": "file",
+      "file": "nativeDeepLinks.ts.md",
+      "x": 2080,
+      "y": 1400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_nativedeeplinks_queryandhashfromappurl",
+      "type": "file",
+      "file": "queryAndHashFromAppUrl().md",
+      "x": 2280,
+      "y": 1400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_queryclient_queryclient",
+      "type": "file",
+      "file": "queryClient.md",
+      "x": 2480,
+      "y": 1400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_queryclient",
+      "type": "file",
+      "file": "queryClient.ts.md",
+      "x": 2680,
+      "y": 1400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_nativedeeplinks_registernativedeeplinklistener",
+      "type": "file",
+      "file": "registerNativeDeepLinkListener().md",
+      "x": 2880,
+      "y": 1400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_index_root",
+      "type": "file",
+      "file": "root.md",
+      "x": 3080,
+      "y": 1400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_index_rootelement",
+      "type": "file",
+      "file": "rootElement.md",
+      "x": 2080,
+      "y": 1480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_nativedeeplinks_spanavigate",
+      "type": "file",
+      "file": "spaNavigate().md",
+      "x": 2280,
+      "y": 1480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_utils_nativedeeplinks_ssolog",
+      "type": "file",
+      "file": "ssoLog().md",
+      "x": 2480,
+      "y": 1480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g7",
+      "type": "group",
+      "label": "API Facade Layer",
+      "x": 3900,
+      "y": 1000,
+      "width": 1320,
+      "height": 620,
+      "color": "2"
+    },
+    {
+      "id": "n_components_memberinvitemodal_memberinvitemodalprops_onadded",
+      "type": "file",
+      "file": "dot-onAdded().md",
+      "x": 3920,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_memberinvitemodal_memberinvitemodalprops_onclose",
+      "type": "file",
+      "file": "dot-onClose().md",
+      "x": 4120,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_memberinvitemodal_memberinvitemodal",
+      "type": "file",
+      "file": "MemberInviteModal().md",
+      "x": 4320,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_memberinvitemodal",
+      "type": "file",
+      "file": "MemberInviteModal.tsx.md",
+      "x": 4520,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_memberinvitemodal_memberinvitemodalprops",
+      "type": "file",
+      "file": "MemberInviteModalProps.md",
+      "x": 4720,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_apiservice_addgroup",
+      "type": "file",
+      "file": "addGroup().md",
+      "x": 4920,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_apiservice_addpaymentsource",
+      "type": "file",
+      "file": "addPaymentSource().md",
+      "x": 3920,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_apiservice_addperson",
+      "type": "file",
+      "file": "addPerson().md",
+      "x": 4120,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_apiservice_addpersontogroup",
+      "type": "file",
+      "file": "addPersonToGroup().md",
+      "x": 4320,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_apiservice_anonymizemyaccount",
+      "type": "file",
+      "file": "anonymizeMyAccount().md",
+      "x": 4520,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_apiservice",
+      "type": "file",
+      "file": "apiService.ts.md",
+      "x": 4720,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_apiservice_archivepaymentsource",
+      "type": "file",
+      "file": "archivePaymentSource().md",
+      "x": 4920,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_apiservice_batchapplyemojistogrouptransactions",
+      "type": "file",
+      "file": "batchApplyEmojisToGroupTransactions().md",
+      "x": 3920,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_apiservice_checkconnection",
+      "type": "file",
+      "file": "checkConnection().md",
+      "x": 4120,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_apiservice_deletepaymentsource",
+      "type": "file",
+      "file": "deletePaymentSource().md",
+      "x": 4320,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_apiservice_deletetransaction",
+      "type": "file",
+      "file": "deleteTransaction().md",
+      "x": 4520,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_apiservice_ensureuserexists",
+      "type": "file",
+      "file": "ensureUserExists().md",
+      "x": 4720,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_findpersonbyemail",
+      "type": "file",
+      "file": "findPersonByEmail().md",
+      "x": 4920,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_apiservice_getgroups",
+      "type": "file",
+      "file": "getGroups().md",
+      "x": 3920,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_apiservice_getpaymentsources",
+      "type": "file",
+      "file": "getPaymentSources().md",
+      "x": 4120,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_apiservice_getpeople",
+      "type": "file",
+      "file": "getPeople().md",
+      "x": 4320,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_apiservice_gettransactions",
+      "type": "file",
+      "file": "getTransactions().md",
+      "x": 4520,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_apiservice_subscribetogroupmembers",
+      "type": "file",
+      "file": "subscribeToGroupMembers().md",
+      "x": 4720,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_apiservice_subscribetogroups",
+      "type": "file",
+      "file": "subscribeToGroups().md",
+      "x": 4920,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_apiservice_subscribetopaymentsources",
+      "type": "file",
+      "file": "subscribeToPaymentSources().md",
+      "x": 3920,
+      "y": 1400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_apiservice_subscribetopeople",
+      "type": "file",
+      "file": "subscribeToPeople().md",
+      "x": 4120,
+      "y": 1400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_apiservice_subscribetotransactions",
+      "type": "file",
+      "file": "subscribeToTransactions().md",
+      "x": 4320,
+      "y": 1400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_apiservice_updategroup",
+      "type": "file",
+      "file": "updateGroup().md",
+      "x": 4520,
+      "y": 1400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_apiservice_updatetransaction",
+      "type": "file",
+      "file": "updateTransaction().md",
+      "x": 4720,
+      "y": 1400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g8",
+      "type": "group",
+      "label": "People Payment Sources",
+      "x": 5740,
+      "y": 1000,
+      "width": 1100,
+      "height": 520,
+      "color": "3"
+    },
+    {
+      "id": "n_services_supabaseapiservice_tag_emojis",
+      "type": "file",
+      "file": "TAG_EMOJIS.md",
+      "x": 5760,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_addpaymentsource",
+      "type": "file",
+      "file": "addPaymentSource()_1.md",
+      "x": 5960,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_addperson",
+      "type": "file",
+      "file": "addPerson()_1.md",
+      "x": 6160,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_anonymizemyaccount",
+      "type": "file",
+      "file": "anonymizeMyAccount()_1.md",
+      "x": 6360,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_archivepaymentsource",
+      "type": "file",
+      "file": "archivePaymentSource()_1.md",
+      "x": 6560,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_batchapplyemojistogrouptransactions",
+      "type": "file",
+      "file": "batchApplyEmojisToGroupTransactions()_1.md",
+      "x": 5760,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_cleanupexpiredinvites",
+      "type": "file",
+      "file": "cleanupExpiredInvites().md",
+      "x": 5960,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_deactivateinvite",
+      "type": "file",
+      "file": "deactivateInvite().md",
+      "x": 6160,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_deletepaymentsource",
+      "type": "file",
+      "file": "deletePaymentSource()_1.md",
+      "x": 6360,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_getpaymentsources",
+      "type": "file",
+      "file": "getPaymentSources()_1.md",
+      "x": 6560,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_getpeople",
+      "type": "file",
+      "file": "getPeople()_1.md",
+      "x": 5760,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_mapdbgrouprowbasic",
+      "type": "file",
+      "file": "mapDbGroupRowBasic().md",
+      "x": 5960,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_mergepersonbyemail",
+      "type": "file",
+      "file": "mergePersonByEmail().md",
+      "x": 6160,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_subscribetogroupmembers",
+      "type": "file",
+      "file": "subscribeToGroupMembers()_1.md",
+      "x": 6360,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_subscribetogroups",
+      "type": "file",
+      "file": "subscribeToGroups()_1.md",
+      "x": 6560,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_subscribetopaymentsources",
+      "type": "file",
+      "file": "subscribeToPaymentSources()_1.md",
+      "x": 5760,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_subscribetopeople",
+      "type": "file",
+      "file": "subscribeToPeople()_1.md",
+      "x": 5960,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice",
+      "type": "file",
+      "file": "supabaseApiService.ts.md",
+      "x": 6160,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_transformdbpaymentsourcetoapppaymentsource",
+      "type": "file",
+      "file": "transformDbPaymentSourceToAppPaymentSource().md",
+      "x": 6360,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_transformdbpersontoappperson",
+      "type": "file",
+      "file": "transformDbPersonToAppPerson().md",
+      "x": 6560,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g9",
+      "type": "group",
+      "label": "Email Notification Service",
+      "x": 7580,
+      "y": 1000,
+      "width": 880,
+      "height": 520,
+      "color": "4"
+    },
+    {
+      "id": "n_services_emailservice_emailresult",
+      "type": "file",
+      "file": "EmailResult.md",
+      "x": 7600,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_emailservice_emailtype",
+      "type": "file",
+      "file": "EmailType.md",
+      "x": 7800,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_emailservice_groupinviteemaildata",
+      "type": "file",
+      "file": "GroupInviteEmailData.md",
+      "x": 8000,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_emailservice_memberaddedemaildata",
+      "type": "file",
+      "file": "MemberAddedEmailData.md",
+      "x": 8200,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_emailservice_newexpenseemaildata",
+      "type": "file",
+      "file": "NewExpenseEmailData.md",
+      "x": 7600,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_emailservice_settleupemaildata",
+      "type": "file",
+      "file": "SettleUpEmailData.md",
+      "x": 7800,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_emailservice_welcomeemaildata",
+      "type": "file",
+      "file": "WelcomeEmailData.md",
+      "x": 8000,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_emailservice",
+      "type": "file",
+      "file": "emailService.ts.md",
+      "x": 8200,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_emailservice_invokesendemail",
+      "type": "file",
+      "file": "invokeSendEmail().md",
+      "x": 7600,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_emailservice_isemailserviceenabled",
+      "type": "file",
+      "file": "isEmailServiceEnabled().md",
+      "x": 7800,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_emailservice_sendgroupinviteemail",
+      "type": "file",
+      "file": "sendGroupInviteEmail().md",
+      "x": 8000,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_emailservice_sendmemberaddedemail",
+      "type": "file",
+      "file": "sendMemberAddedEmail().md",
+      "x": 8200,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_emailservice_sendnewexpenseemail",
+      "type": "file",
+      "file": "sendNewExpenseEmail().md",
+      "x": 7600,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_emailservice_sendsettleupemail",
+      "type": "file",
+      "file": "sendSettleUpEmail().md",
+      "x": 7800,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_emailservice_sendwelcomeemail",
+      "type": "file",
+      "file": "sendWelcomeEmail().md",
+      "x": 8000,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g10",
+      "type": "group",
+      "label": "Generated Database Types",
+      "x": 0,
+      "y": 1800,
+      "width": 880,
+      "height": 420,
+      "color": "5"
+    },
+    {
+      "id": "n_lib_database_types_compositetypes",
+      "type": "file",
+      "file": "CompositeTypes.md",
+      "x": 20,
+      "y": 1880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_database_types_constants",
+      "type": "file",
+      "file": "Constants.md",
+      "x": 220,
+      "y": 1880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_database_types_database",
+      "type": "file",
+      "file": "Database.md",
+      "x": 420,
+      "y": 1880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_database_types_databasewithoutinternals",
+      "type": "file",
+      "file": "DatabaseWithoutInternals.md",
+      "x": 620,
+      "y": 1880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_database_types_defaultschema",
+      "type": "file",
+      "file": "DefaultSchema.md",
+      "x": 20,
+      "y": 1960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_database_types_enums",
+      "type": "file",
+      "file": "Enums.md",
+      "x": 220,
+      "y": 1960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_database_types_json",
+      "type": "file",
+      "file": "Json.md",
+      "x": 420,
+      "y": 1960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_database_types_tables",
+      "type": "file",
+      "file": "Tables.md",
+      "x": 620,
+      "y": 1960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_database_types_tablesinsert",
+      "type": "file",
+      "file": "TablesInsert.md",
+      "x": 20,
+      "y": 2040,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_database_types_tablesupdate",
+      "type": "file",
+      "file": "TablesUpdate.md",
+      "x": 220,
+      "y": 2040,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_database_types",
+      "type": "file",
+      "file": "database.types.ts.md",
+      "x": 420,
+      "y": 2040,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g11",
+      "type": "group",
+      "label": "Group Archive Operations",
+      "x": 2060,
+      "y": 1800,
+      "width": 660,
+      "height": 420,
+      "color": "6"
+    },
+    {
+      "id": "n_components_archivedgroupsmodal_archivedgroupsmodal",
+      "type": "file",
+      "file": "ArchivedGroupsModal().md",
+      "x": 2080,
+      "y": 1880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_archivedgroupsmodal",
+      "type": "file",
+      "file": "ArchivedGroupsModal.tsx.md",
+      "x": 2280,
+      "y": 1880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_archivedgroupsmodal_archivedgroupsmodalprops",
+      "type": "file",
+      "file": "ArchivedGroupsModalProps.md",
+      "x": 2480,
+      "y": 1880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_addgroup",
+      "type": "file",
+      "file": "addGroup()_1.md",
+      "x": 2080,
+      "y": 1960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_getarchivedgroups",
+      "type": "file",
+      "file": "getArchivedGroups().md",
+      "x": 2280,
+      "y": 1960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_getgroups",
+      "type": "file",
+      "file": "getGroups()_1.md",
+      "x": 2480,
+      "y": 1960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_transformdbgrouptoappgroup",
+      "type": "file",
+      "file": "transformDbGroupToAppGroup().md",
+      "x": 2080,
+      "y": 2040,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_unarchivegroup",
+      "type": "file",
+      "file": "unarchiveGroup().md",
+      "x": 2280,
+      "y": 2040,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_updategroup",
+      "type": "file",
+      "file": "updateGroup()_1.md",
+      "x": 2480,
+      "y": 2040,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g12",
+      "type": "group",
+      "label": "Supabase Client Types",
+      "x": 3900,
+      "y": 1800,
+      "width": 660,
+      "height": 420,
+      "color": "1"
+    },
+    {
+      "id": "n_lib_supabase_dbgroup",
+      "type": "file",
+      "file": "DbGroup.md",
+      "x": 3920,
+      "y": 1880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_supabase_dbgroupmember",
+      "type": "file",
+      "file": "DbGroupMember.md",
+      "x": 4120,
+      "y": 1880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_supabase_dbpaymentsource",
+      "type": "file",
+      "file": "DbPaymentSource.md",
+      "x": 4320,
+      "y": 1880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_supabase_dbperson",
+      "type": "file",
+      "file": "DbPerson.md",
+      "x": 3920,
+      "y": 1960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_supabase_dbtransaction",
+      "type": "file",
+      "file": "DbTransaction.md",
+      "x": 4120,
+      "y": 1960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_supabase_inserts",
+      "type": "file",
+      "file": "Inserts.md",
+      "x": 4320,
+      "y": 1960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_supabase_tables",
+      "type": "file",
+      "file": "Tables_1.md",
+      "x": 3920,
+      "y": 2040,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_supabase_updates",
+      "type": "file",
+      "file": "Updates.md",
+      "x": 4120,
+      "y": 2040,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_supabase",
+      "type": "file",
+      "file": "supabase.ts.md",
+      "x": 4320,
+      "y": 2040,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g13",
+      "type": "group",
+      "label": "Native Google Token",
+      "x": 5740,
+      "y": 1800,
+      "width": 660,
+      "height": 420,
+      "color": "2"
+    },
+    {
+      "id": "n_services_nativegoogleauth_google_web_client_id",
+      "type": "file",
+      "file": "GOOGLE_WEB_CLIENT_ID.md",
+      "x": 5760,
+      "y": 1880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_nativegoogleauth_rationale_6",
+      "type": "file",
+      "file": "IMPORTANT.md",
+      "x": 5960,
+      "y": 1880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_nativegoogleauth_rationale_97",
+      "type": "file",
+      "file": "IMPORTANT_1.md",
+      "x": 6160,
+      "y": 1880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_nativegoogleauth_nativegoogleuser",
+      "type": "file",
+      "file": "NativeGoogleUser.md",
+      "x": 5760,
+      "y": 1960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_nativegoogleauth_exchangegoogleidtokenwithclerk",
+      "type": "file",
+      "file": "exchangeGoogleIdTokenWithClerk().md",
+      "x": 5960,
+      "y": 1960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_nativegoogleauth_getgooglewebclientid",
+      "type": "file",
+      "file": "getGoogleWebClientId().md",
+      "x": 6160,
+      "y": 1960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_nativegoogleauth_initnativegoogleauth",
+      "type": "file",
+      "file": "initNativeGoogleAuth().md",
+      "x": 5760,
+      "y": 2040,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_nativegoogleauth",
+      "type": "file",
+      "file": "nativeGoogleAuth.ts.md",
+      "x": 5960,
+      "y": 2040,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_nativegoogleauth_performnativegooglesignin",
+      "type": "file",
+      "file": "performNativeGoogleSignIn().md",
+      "x": 6160,
+      "y": 2040,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g14",
+      "type": "group",
+      "label": "Modal Context State",
+      "x": 7580,
+      "y": 1800,
+      "width": 660,
+      "height": 420,
+      "color": "3"
+    },
+    {
+      "id": "n_contexts_modalcontext_modalcontext",
+      "type": "file",
+      "file": "ModalContext.md",
+      "x": 7600,
+      "y": 1880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_contexts_modalcontext",
+      "type": "file",
+      "file": "ModalContext.tsx.md",
+      "x": 7800,
+      "y": 1880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_contexts_modalcontext_modalcontextvalue",
+      "type": "file",
+      "file": "ModalContextValue.md",
+      "x": 8000,
+      "y": 1880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_contexts_modalcontext_modalprovider",
+      "type": "file",
+      "file": "ModalProvider().md",
+      "x": 7600,
+      "y": 1960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_contexts_modalcontext_modalproviderprops",
+      "type": "file",
+      "file": "ModalProviderProps.md",
+      "x": 7800,
+      "y": 1960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_contexts_modalcontext_usemodalsparams",
+      "type": "file",
+      "file": "UseModalsParams.md",
+      "x": 8000,
+      "y": 1960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_contexts_modalcontext_usemodalcontext",
+      "type": "file",
+      "file": "useModalContext().md",
+      "x": 7600,
+      "y": 2040,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_hooks_usemodals_usemodals",
+      "type": "file",
+      "file": "useModals().md",
+      "x": 7800,
+      "y": 2040,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g15",
+      "type": "group",
+      "label": "Clerk Auth Bridge",
+      "x": 0,
+      "y": 2300,
+      "width": 660,
+      "height": 420,
+      "color": "4"
+    },
+    {
+      "id": "n_contexts_supabaseauthcontext_authcontext",
+      "type": "file",
+      "file": "AuthContext.md",
+      "x": 20,
+      "y": 2380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_contexts_supabaseauthcontext_authcontexttype",
+      "type": "file",
+      "file": "AuthContextType.md",
+      "x": 220,
+      "y": 2380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_contexts_supabaseauthcontext",
+      "type": "file",
+      "file": "SupabaseAuthContext.tsx.md",
+      "x": 420,
+      "y": 2380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_contexts_supabaseauthcontext_supabaseauthprovider",
+      "type": "file",
+      "file": "SupabaseAuthProvider().md",
+      "x": 20,
+      "y": 2460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_ensureuserexists",
+      "type": "file",
+      "file": "ensureUserExists()_1.md",
+      "x": 220,
+      "y": 2460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_supabase_getclerksupabasetoken",
+      "type": "file",
+      "file": "getClerkSupabaseToken().md",
+      "x": 420,
+      "y": 2460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_supabase_setrealtimeauth",
+      "type": "file",
+      "file": "setRealtimeAuth().md",
+      "x": 20,
+      "y": 2540,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g16",
+      "type": "group",
+      "label": "Transaction CRUD API",
+      "x": 2060,
+      "y": 2300,
+      "width": 660,
+      "height": 420,
+      "color": "5"
+    },
+    {
+      "id": "n_services_supabaseapiservice_broadcasttxchange",
+      "type": "file",
+      "file": "_broadcastTxChange().md",
+      "x": 2080,
+      "y": 2380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_addtransaction",
+      "type": "file",
+      "file": "addTransaction()_1.md",
+      "x": 2280,
+      "y": 2380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_deletetransaction",
+      "type": "file",
+      "file": "deleteTransaction()_1.md",
+      "x": 2480,
+      "y": 2380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_gettransactions",
+      "type": "file",
+      "file": "getTransactions()_1.md",
+      "x": 2080,
+      "y": 2460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_subscribetotransactions",
+      "type": "file",
+      "file": "subscribeToTransactions()_1.md",
+      "x": 2280,
+      "y": 2460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_transformdbtransactiontoapptransaction",
+      "type": "file",
+      "file": "transformDbTransactionToAppTransaction().md",
+      "x": 2480,
+      "y": 2460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_updatetransaction",
+      "type": "file",
+      "file": "updateTransaction()_1.md",
+      "x": 2080,
+      "y": 2540,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g17",
+      "type": "group",
+      "label": "Group Invite Operations",
+      "x": 3900,
+      "y": 2300,
+      "width": 660,
+      "height": 400,
+      "color": "6"
+    },
+    {
+      "id": "n_components_groupformmodal_groupformmodal",
+      "type": "file",
+      "file": "GroupFormModal().md",
+      "x": 3920,
+      "y": 2380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_creategroupinvite",
+      "type": "file",
+      "file": "createGroupInvite().md",
+      "x": 4120,
+      "y": 2380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_generateinvitetoken",
+      "type": "file",
+      "file": "generateInviteToken().md",
+      "x": 4320,
+      "y": 2380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_getgroupinvites",
+      "type": "file",
+      "file": "getGroupInvites().md",
+      "x": 3920,
+      "y": 2460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_transformdbemailinvitetoappemailinvite",
+      "type": "file",
+      "file": "transformDbEmailInviteToAppEmailInvite().md",
+      "x": 4120,
+      "y": 2460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_services_supabaseapiservice_transformdbinvitetoappinvite",
+      "type": "file",
+      "file": "transformDbInviteToAppInvite().md",
+      "x": 4320,
+      "y": 2460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g18",
+      "type": "group",
+      "label": "Simple Auth Screen",
+      "x": 5740,
+      "y": 2300,
+      "width": 600,
+      "height": 400,
+      "color": "1"
+    },
+    {
+      "id": "n_components_auth_simpleauth_simpleauth",
+      "type": "file",
+      "file": "SimpleAuth().md",
+      "x": 5760,
+      "y": 2380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_auth_simpleauth",
+      "type": "file",
+      "file": "SimpleAuth.tsx.md",
+      "x": 5960,
+      "y": 2380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_auth_simpleauth_simpleauthprops",
+      "type": "file",
+      "file": "SimpleAuthProps.md",
+      "x": 5760,
+      "y": 2460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g19",
+      "type": "group",
+      "label": "Currency Selector",
+      "x": 7580,
+      "y": 2300,
+      "width": 600,
+      "height": 400,
+      "color": "2"
+    },
+    {
+      "id": "n_components_currencyselector_currencyselector",
+      "type": "file",
+      "file": "CurrencySelector().md",
+      "x": 7600,
+      "y": 2380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_currencyselector",
+      "type": "file",
+      "file": "CurrencySelector.tsx.md",
+      "x": 7800,
+      "y": 2380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_currencyselector_currencyselectorprops",
+      "type": "file",
+      "file": "CurrencySelectorProps.md",
+      "x": 7600,
+      "y": 2460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g20",
+      "type": "group",
+      "label": "Language Selector",
+      "x": 0,
+      "y": 2800,
+      "width": 600,
+      "height": 400,
+      "color": "3"
+    },
+    {
+      "id": "n_components_languageselector_languageselector",
+      "type": "file",
+      "file": "LanguageSelector().md",
+      "x": 20,
+      "y": 2880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_languageselector",
+      "type": "file",
+      "file": "LanguageSelector.tsx.md",
+      "x": 220,
+      "y": 2880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_languageselector_languageselectorprops",
+      "type": "file",
+      "file": "LanguageSelectorProps.md",
+      "x": 20,
+      "y": 2960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g21",
+      "type": "group",
+      "label": "Auth Layout Shell",
+      "x": 2060,
+      "y": 2800,
+      "width": 600,
+      "height": 400,
+      "color": "4"
+    },
+    {
+      "id": "n_components_auth_authlayout_authlayout",
+      "type": "file",
+      "file": "AuthLayout().md",
+      "x": 2080,
+      "y": 2880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_components_auth_authlayout",
+      "type": "file",
+      "file": "AuthLayout.tsx.md",
+      "x": 2280,
+      "y": 2880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g22",
+      "type": "group",
+      "label": "Current User Constant",
+      "x": 3900,
+      "y": 2800,
+      "width": 600,
+      "height": 400,
+      "color": "5"
+    },
+    {
+      "id": "n_constants_current_user_id",
+      "type": "file",
+      "file": "CURRENT_USER_ID.md",
+      "x": 3920,
+      "y": 2880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_constants",
+      "type": "file",
+      "file": "constants.ts.md",
+      "x": 4120,
+      "y": 2880,
+      "width": 180,
+      "height": 60
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_components_aboutsection_components_aboutsection_aboutsection",
+      "fromNode": "n_components_aboutsection",
+      "toNode": "n_components_aboutsection_aboutsection",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_aboutsection_components_settingsmodal",
+      "fromNode": "n_components_aboutsection",
+      "toNode": "n_components_settingsmodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_aboutsection_aboutsection_components_settingsmodal",
+      "fromNode": "n_components_aboutsection_aboutsection",
+      "toNode": "n_components_settingsmodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_addactionmodal_app",
+      "fromNode": "n_components_addactionmodal",
+      "toNode": "n_app",
+      "label": "dynamic_import [EXTRACTED]"
+    },
+    {
+      "id": "e_components_addactionmodal_app_addactionmodal",
+      "fromNode": "n_components_addactionmodal",
+      "toNode": "n_app_addactionmodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_addactionmodal_components_addactionmodal_addactionmodal",
+      "fromNode": "n_components_addactionmodal",
+      "toNode": "n_components_addactionmodal_addactionmodal",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_addactionmodal_components_addactionmodal_addactionmodalprops",
+      "fromNode": "n_components_addactionmodal",
+      "toNode": "n_components_addactionmodal_addactionmodalprops",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_addactionmodal_components_basemodal",
+      "fromNode": "n_components_addactionmodal",
+      "toNode": "n_components_basemodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_addactionmodal_components_basemodal_basemodal",
+      "fromNode": "n_components_addactionmodal",
+      "toNode": "n_components_basemodal_basemodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_addactionmodal_components_groupselectionlist",
+      "fromNode": "n_components_addactionmodal",
+      "toNode": "n_components_groupselectionlist",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_addactionmodal_components_groupselectionlist_groupselectionlist",
+      "fromNode": "n_components_addactionmodal",
+      "toNode": "n_components_groupselectionlist_groupselectionlist",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_addactionmodal_components_icons_icons",
+      "fromNode": "n_components_addactionmodal",
+      "toNode": "n_components_icons_icons",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_addactionmodal_components_icons_icons_plusicon",
+      "fromNode": "n_components_addactionmodal",
+      "toNode": "n_components_icons_icons_plusicon",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_addactionmodal_components_icons_icons_usersicon",
+      "fromNode": "n_components_addactionmodal",
+      "toNode": "n_components_icons_icons_usersicon",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_addactionmodal_types",
+      "fromNode": "n_components_addactionmodal",
+      "toNode": "n_types",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_addactionmodal_types_group",
+      "fromNode": "n_components_addactionmodal",
+      "toNode": "n_types_group",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_addactionmodal_types_person",
+      "fromNode": "n_components_addactionmodal",
+      "toNode": "n_types_person",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_addactionmodal_addactionmodalprops_types_group",
+      "fromNode": "n_components_addactionmodal_addactionmodalprops",
+      "toNode": "n_types_group",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_components_admindeletionrequestspanel_components_admindeletionrequestspanel_admindeletionrequestspanel",
+      "fromNode": "n_components_admindeletionrequestspanel",
+      "toNode": "n_components_admindeletionrequestspanel_admindeletionrequestspanel",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_admindeletionrequestspanel_components_admindeletionrequestspanel_admindeletionrequestspanelprops",
+      "fromNode": "n_components_admindeletionrequestspanel",
+      "toNode": "n_components_admindeletionrequestspanel_admindeletionrequestspanelprops",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_admindeletionrequestspanel_components_admindeletionrequestspanel_deletionrequest",
+      "fromNode": "n_components_admindeletionrequestspanel",
+      "toNode": "n_components_admindeletionrequestspanel_deletionrequest",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_admindeletionrequestspanel_components_avatar",
+      "fromNode": "n_components_admindeletionrequestspanel",
+      "toNode": "n_components_avatar",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_admindeletionrequestspanel_components_avatar_avatar",
+      "fromNode": "n_components_admindeletionrequestspanel",
+      "toNode": "n_components_avatar_avatar",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_admindeletionrequestspanel_components_basemodal",
+      "fromNode": "n_components_admindeletionrequestspanel",
+      "toNode": "n_components_basemodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_admindeletionrequestspanel_components_basemodal_basemodal",
+      "fromNode": "n_components_admindeletionrequestspanel",
+      "toNode": "n_components_basemodal_basemodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_admindeletionrequestspanel_components_confirmdeletemodal",
+      "fromNode": "n_components_admindeletionrequestspanel",
+      "toNode": "n_components_confirmdeletemodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_admindeletionrequestspanel_components_confirmdeletemodal_confirmdeletemodal",
+      "fromNode": "n_components_admindeletionrequestspanel",
+      "toNode": "n_components_confirmdeletemodal_confirmdeletemodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_admindeletionrequestspanel_services_supabaseapiservice",
+      "fromNode": "n_components_admindeletionrequestspanel",
+      "toNode": "n_services_supabaseapiservice",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_admindeletionrequestspanel_services_supabaseapiservice_approvegroupdeletion",
+      "fromNode": "n_components_admindeletionrequestspanel",
+      "toNode": "n_services_supabaseapiservice_approvegroupdeletion",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_admindeletionrequestspanel_services_supabaseapiservice_getpendingdeletionrequests",
+      "fromNode": "n_components_admindeletionrequestspanel",
+      "toNode": "n_services_supabaseapiservice_getpendingdeletionrequests",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_admindeletionrequestspanel_services_supabaseapiservice_rejectgroupdeletion",
+      "fromNode": "n_components_admindeletionrequestspanel",
+      "toNode": "n_services_supabaseapiservice_rejectgroupdeletion",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_admindeletionrequestspanel_types",
+      "fromNode": "n_components_admindeletionrequestspanel",
+      "toNode": "n_types",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_admindeletionrequestspanel_types_group",
+      "fromNode": "n_components_admindeletionrequestspanel",
+      "toNode": "n_types_group",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_admindeletionrequestspanel_types_person",
+      "fromNode": "n_components_admindeletionrequestspanel",
+      "toNode": "n_types_person",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_admindeletionrequestspanel_components_settingsmodal",
+      "fromNode": "n_components_admindeletionrequestspanel",
+      "toNode": "n_components_settingsmodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_admindeletionrequestspanel_deletionrequest_types_group",
+      "fromNode": "n_components_admindeletionrequestspanel_deletionrequest",
+      "toNode": "n_types_group",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_components_admindeletionrequestspanel_deletionrequest_types_person",
+      "fromNode": "n_components_admindeletionrequestspanel_deletionrequest",
+      "toNode": "n_types_person",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_components_admindeletionrequestspanel_admindeletionrequestspanel_services_supabaseapiservice_approvegroupdeletion",
+      "fromNode": "n_components_admindeletionrequestspanel_admindeletionrequestspanel",
+      "toNode": "n_services_supabaseapiservice_approvegroupdeletion",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_components_admindeletionrequestspanel_admindeletionrequestspanel_services_supabaseapiservice_getpendingdeletionrequests",
+      "fromNode": "n_components_admindeletionrequestspanel_admindeletionrequestspanel",
+      "toNode": "n_services_supabaseapiservice_getpendingdeletionrequests",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_components_admindeletionrequestspanel_admindeletionrequestspanel_services_supabaseapiservice_rejectgroupdeletion",
+      "fromNode": "n_components_admindeletionrequestspanel_admindeletionrequestspanel",
+      "toNode": "n_services_supabaseapiservice_rejectgroupdeletion",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_components_admindeletionrequestspanel_admindeletionrequestspanel_components_settingsmodal",
+      "fromNode": "n_components_admindeletionrequestspanel_admindeletionrequestspanel",
+      "toNode": "n_components_settingsmodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_archivepromptmodal_app",
+      "fromNode": "n_components_archivepromptmodal",
+      "toNode": "n_app",
+      "label": "dynamic_import [EXTRACTED]"
+    },
+    {
+      "id": "e_components_archivepromptmodal_app_archivepromptmodal",
+      "fromNode": "n_components_archivepromptmodal",
+      "toNode": "n_app_archivepromptmodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_archivepromptmodal_components_archivepromptmodal_archivepromptmodal",
+      "fromNode": "n_components_archivepromptmodal",
+      "toNode": "n_components_archivepromptmodal_archivepromptmodal",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_archivepromptmodal_components_archivepromptmodal_archivepromptmodalprops",
+      "fromNode": "n_components_archivepromptmodal",
+      "toNode": "n_components_archivepromptmodal_archivepromptmodalprops",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_archivepromptmodal_components_basemodal",
+      "fromNode": "n_components_archivepromptmodal",
+      "toNode": "n_components_basemodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_archivepromptmodal_components_basemodal_basemodal",
+      "fromNode": "n_components_archivepromptmodal",
+      "toNode": "n_components_basemodal_basemodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_archivedgroupsmodal_components_archivedgroupsmodal_archivedgroupsmodal",
+      "fromNode": "n_components_archivedgroupsmodal",
+      "toNode": "n_components_archivedgroupsmodal_archivedgroupsmodal",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_archivedgroupsmodal_components_archivedgroupsmodal_archivedgroupsmodalprops",
+      "fromNode": "n_components_archivedgroupsmodal",
+      "toNode": "n_components_archivedgroupsmodal_archivedgroupsmodalprops",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_archivedgroupsmodal_components_basemodal",
+      "fromNode": "n_components_archivedgroupsmodal",
+      "toNode": "n_components_basemodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_archivedgroupsmodal_components_basemodal_basemodal",
+      "fromNode": "n_components_archivedgroupsmodal",
+      "toNode": "n_components_basemodal_basemodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_archivedgroupsmodal_services_supabaseapiservice",
+      "fromNode": "n_components_archivedgroupsmodal",
+      "toNode": "n_services_supabaseapiservice",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_archivedgroupsmodal_services_supabaseapiservice_getarchivedgroups",
+      "fromNode": "n_components_archivedgroupsmodal",
+      "toNode": "n_services_supabaseapiservice_getarchivedgroups",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_archivedgroupsmodal_services_supabaseapiservice_unarchivegroup",
+      "fromNode": "n_components_archivedgroupsmodal",
+      "toNode": "n_services_supabaseapiservice_unarchivegroup",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_archivedgroupsmodal_components_settingsmodal",
+      "fromNode": "n_components_archivedgroupsmodal",
+      "toNode": "n_components_settingsmodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_archivedgroupsmodal_archivedgroupsmodal_services_supabaseapiservice_getarchivedgroups",
+      "fromNode": "n_components_archivedgroupsmodal_archivedgroupsmodal",
+      "toNode": "n_services_supabaseapiservice_getarchivedgroups",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_components_archivedgroupsmodal_archivedgroupsmodal_services_supabaseapiservice_unarchivegroup",
+      "fromNode": "n_components_archivedgroupsmodal_archivedgroupsmodal",
+      "toNode": "n_services_supabaseapiservice_unarchivegroup",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_components_archivedgroupsmodal_archivedgroupsmodal_components_settingsmodal",
+      "fromNode": "n_components_archivedgroupsmodal_archivedgroupsmodal",
+      "toNode": "n_components_settingsmodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_components_avatar_avatar",
+      "fromNode": "n_components_avatar",
+      "toNode": "n_components_avatar_avatar",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_components_avatar_avatarprops",
+      "fromNode": "n_components_avatar",
+      "toNode": "n_components_avatar_avatarprops",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_components_avatar_colors",
+      "fromNode": "n_components_avatar",
+      "toNode": "n_components_avatar_colors",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_components_avatar_getcolorforid",
+      "fromNode": "n_components_avatar",
+      "toNode": "n_components_avatar_getcolorforid",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_components_avatar_getinitials",
+      "fromNode": "n_components_avatar",
+      "toNode": "n_components_avatar_getinitials",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_components_avatar_isstockavatarurl",
+      "fromNode": "n_components_avatar",
+      "toNode": "n_components_avatar_isstockavatarurl",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_components_avatar_sizeboxmap",
+      "fromNode": "n_components_avatar",
+      "toNode": "n_components_avatar_sizeboxmap",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_components_avatar_stock_avatar_host_markers",
+      "fromNode": "n_components_avatar",
+      "toNode": "n_components_avatar_stock_avatar_host_markers",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_components_balancebreakdownmodal",
+      "fromNode": "n_components_avatar",
+      "toNode": "n_components_balancebreakdownmodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_components_groupformmodal",
+      "fromNode": "n_components_avatar",
+      "toNode": "n_components_groupformmodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_components_grouplist",
+      "fromNode": "n_components_avatar",
+      "toNode": "n_components_grouplist",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_components_groupselectionlist",
+      "fromNode": "n_components_avatar",
+      "toNode": "n_components_groupselectionlist",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_components_groupsummarycard",
+      "fromNode": "n_components_avatar",
+      "toNode": "n_components_groupsummarycard",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_components_groupview",
+      "fromNode": "n_components_avatar",
+      "toNode": "n_components_groupview",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_components_invite_invitepage",
+      "fromNode": "n_components_avatar",
+      "toNode": "n_components_invite_invitepage",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_components_memberbalances",
+      "fromNode": "n_components_avatar",
+      "toNode": "n_components_memberbalances",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_components_settingsmodal",
+      "fromNode": "n_components_avatar",
+      "toNode": "n_components_settingsmodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_components_transactiondetailmodal",
+      "fromNode": "n_components_avatar",
+      "toNode": "n_components_transactiondetailmodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_components_transactionformmodal",
+      "fromNode": "n_components_avatar",
+      "toNode": "n_components_transactionformmodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_isstockavatarurl_components_avatar_avatar",
+      "fromNode": "n_components_avatar_isstockavatarurl",
+      "toNode": "n_components_avatar_avatar",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_isstockavatarurl_components_settingsmodal",
+      "fromNode": "n_components_avatar_isstockavatarurl",
+      "toNode": "n_components_settingsmodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_isstockavatarurl_components_settingsmodal_settingsmodal",
+      "fromNode": "n_components_avatar_isstockavatarurl",
+      "toNode": "n_components_settingsmodal_settingsmodal",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_getcolorforid_components_avatar_avatar",
+      "fromNode": "n_components_avatar_getcolorforid",
+      "toNode": "n_components_avatar_avatar",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_getinitials_components_avatar_avatar",
+      "fromNode": "n_components_avatar_getinitials",
+      "toNode": "n_components_avatar_avatar",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_avatar_components_balancebreakdownmodal",
+      "fromNode": "n_components_avatar_avatar",
+      "toNode": "n_components_balancebreakdownmodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_avatar_components_groupformmodal",
+      "fromNode": "n_components_avatar_avatar",
+      "toNode": "n_components_groupformmodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_avatar_components_grouplist",
+      "fromNode": "n_components_avatar_avatar",
+      "toNode": "n_components_grouplist",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_avatar_components_groupselectionlist",
+      "fromNode": "n_components_avatar_avatar",
+      "toNode": "n_components_groupselectionlist",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_avatar_components_groupsummarycard",
+      "fromNode": "n_components_avatar_avatar",
+      "toNode": "n_components_groupsummarycard",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_avatar_components_groupview",
+      "fromNode": "n_components_avatar_avatar",
+      "toNode": "n_components_groupview",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_avatar_components_invite_invitepage",
+      "fromNode": "n_components_avatar_avatar",
+      "toNode": "n_components_invite_invitepage",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_avatar_components_memberbalances",
+      "fromNode": "n_components_avatar_avatar",
+      "toNode": "n_components_memberbalances",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_avatar_components_settingsmodal",
+      "fromNode": "n_components_avatar_avatar",
+      "toNode": "n_components_settingsmodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_avatar_components_transactiondetailmodal",
+      "fromNode": "n_components_avatar_avatar",
+      "toNode": "n_components_transactiondetailmodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_avatar_avatar_components_transactionformmodal",
+      "fromNode": "n_components_avatar_avatar",
+      "toNode": "n_components_transactionformmodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_balancebreakdownmodal_components_balancebreakdownmodal_balancebreakdownmodal",
+      "fromNode": "n_components_balancebreakdownmodal",
+      "toNode": "n_components_balancebreakdownmodal_balancebreakdownmodal",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_balancebreakdownmodal_components_balancebreakdownmodal_balancebreakdownmodalprops",
+      "fromNode": "n_components_balancebreakdownmodal",
+      "toNode": "n_components_balancebreakdownmodal_balancebreakdownmodalprops",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_balancebreakdownmodal_components_basemodal",
+      "fromNode": "n_components_balancebreakdownmodal",
+      "toNode": "n_components_basemodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_balancebreakdownmodal_components_basemodal_basemodal",
+      "fromNode": "n_components_balancebreakdownmodal",
+      "toNode": "n_components_basemodal_basemodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_balancebreakdownmodal_types",
+      "fromNode": "n_components_balancebreakdownmodal",
+      "toNode": "n_types",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_balancebreakdownmodal_types_group",
+      "fromNode": "n_components_balancebreakdownmodal",
+      "toNode": "n_types_group",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_balancebreakdownmodal_types_person",
+      "fromNode": "n_components_balancebreakdownmodal",
+      "toNode": "n_types_person",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_balancebreakdownmodal_types_transaction",
+      "fromNode": "n_components_balancebreakdownmodal",
+      "toNode": "n_types_transaction",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_balancebreakdownmodal_utils_calculations",
+      "fromNode": "n_components_balancebreakdownmodal",
+      "toNode": "n_utils_calculations",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_balancebreakdownmodal_utils_calculations_getuserfacingdebts",
+      "fromNode": "n_components_balancebreakdownmodal",
+      "toNode": "n_utils_calculations_getuserfacingdebts",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_balancebreakdownmodal_components_homescreen",
+      "fromNode": "n_components_balancebreakdownmodal",
+      "toNode": "n_components_homescreen",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_balancebreakdownmodal_balancebreakdownmodalprops_types_group",
+      "fromNode": "n_components_balancebreakdownmodal_balancebreakdownmodalprops",
+      "toNode": "n_types_group",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_components_balancebreakdownmodal_balancebreakdownmodalprops_types_person",
+      "fromNode": "n_components_balancebreakdownmodal_balancebreakdownmodalprops",
+      "toNode": "n_types_person",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_components_balancebreakdownmodal_balancebreakdownmodalprops_types_transaction",
+      "fromNode": "n_components_balancebreakdownmodal_balancebreakdownmodalprops",
+      "toNode": "n_types_transaction",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_components_balancebreakdownmodal_balancebreakdownmodal_utils_calculations_getuserfacingdebts",
+      "fromNode": "n_components_balancebreakdownmodal_balancebreakdownmodal",
+      "toNode": "n_utils_calculations_getuserfacingdebts",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_components_balancebreakdownmodal_balancebreakdownmodal_components_homescreen",
+      "fromNode": "n_components_balancebreakdownmodal_balancebreakdownmodal",
+      "toNode": "n_components_homescreen",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_basemodal_app",
+      "fromNode": "n_components_basemodal",
+      "toNode": "n_app",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_basemodal_components_basemodal_basemodal",
+      "fromNode": "n_components_basemodal",
+      "toNode": "n_components_basemodal_basemodal",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_basemodal_components_basemodal_basemodalprops",
+      "fromNode": "n_components_basemodal",
+      "toNode": "n_components_basemodal_basemodalprops",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_basemodal_components_basemodal_size_class",
+      "fromNode": "n_components_basemodal",
+      "toNode": "n_components_basemodal_size_class",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_basemodal_components_confirmdeletemodal",
+      "fromNode": "n_components_basemodal",
+      "toNode": "n_components_confirmdeletemodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_basemodal_components_datefiltermodal",
+      "fromNode": "n_components_basemodal",
+      "toNode": "n_components_datefiltermodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_basemodal_components_groupformmodal",
+      "fromNode": "n_components_basemodal",
+      "toNode": "n_components_groupformmodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_basemodal_components_groupsummarymodal",
+      "fromNode": "n_components_basemodal",
+      "toNode": "n_components_groupsummarymodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_basemodal_components_memberinvitemodal",
+      "fromNode": "n_components_basemodal",
+      "toNode": "n_components_memberinvitemodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_basemodal_components_paymentsourcemanagemodal",
+      "fromNode": "n_components_basemodal",
+      "toNode": "n_components_paymentsourcemanagemodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_basemodal_components_settingsmodal",
+      "fromNode": "n_components_basemodal",
+      "toNode": "n_components_settingsmodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_basemodal_components_settleupmodal",
+      "fromNode": "n_components_basemodal",
+      "toNode": "n_components_settleupmodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_basemodal_components_sharemodal",
+      "fromNode": "n_components_basemodal",
+      "toNode": "n_components_sharemodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_basemodal_basemodal_app",
+      "fromNode": "n_components_basemodal_basemodal",
+      "toNode": "n_app",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_basemodal_basemodal_components_confirmdeletemodal",
+      "fromNode": "n_components_basemodal_basemodal",
+      "toNode": "n_components_confirmdeletemodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_basemodal_basemodal_components_datefiltermodal",
+      "fromNode": "n_components_basemodal_basemodal",
+      "toNode": "n_components_datefiltermodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_basemodal_basemodal_components_groupformmodal",
+      "fromNode": "n_components_basemodal_basemodal",
+      "toNode": "n_components_groupformmodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_basemodal_basemodal_components_groupsummarymodal",
+      "fromNode": "n_components_basemodal_basemodal",
+      "toNode": "n_components_groupsummarymodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_basemodal_basemodal_components_memberinvitemodal",
+      "fromNode": "n_components_basemodal_basemodal",
+      "toNode": "n_components_memberinvitemodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_basemodal_basemodal_components_paymentsourcemanagemodal",
+      "fromNode": "n_components_basemodal_basemodal",
+      "toNode": "n_components_paymentsourcemanagemodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_basemodal_basemodal_components_settingsmodal",
+      "fromNode": "n_components_basemodal_basemodal",
+      "toNode": "n_components_settingsmodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_basemodal_basemodal_components_settleupmodal",
+      "fromNode": "n_components_basemodal_basemodal",
+      "toNode": "n_components_settleupmodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_basemodal_basemodal_components_sharemodal",
+      "fromNode": "n_components_basemodal_basemodal",
+      "toNode": "n_components_sharemodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_calendarmodal_components_calendarmodal_calendarmodal",
+      "fromNode": "n_components_calendarmodal",
+      "toNode": "n_components_calendarmodal_calendarmodal",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_calendarmodal_components_calendarmodal_calendarmodalprops",
+      "fromNode": "n_components_calendarmodal",
+      "toNode": "n_components_calendarmodal_calendarmodalprops",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_calendarmodal_components_icons_icons",
+      "fromNode": "n_components_calendarmodal",
+      "toNode": "n_components_icons_icons",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_calendarmodal_components_icons_icons_chevronlefticon",
+      "fromNode": "n_components_calendarmodal",
+      "toNode": "n_components_icons_icons_chevronlefticon",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_calendarmodal_components_icons_icons_chevronrighticon",
+      "fromNode": "n_components_calendarmodal",
+      "toNode": "n_components_icons_icons_chevronrighticon",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_calendarmodal_components_datefiltermodal",
+      "fromNode": "n_components_calendarmodal",
+      "toNode": "n_components_datefiltermodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_calendarmodal_components_transactionformmodal",
+      "fromNode": "n_components_calendarmodal",
+      "toNode": "n_components_transactionformmodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_calendarmodal_calendarmodal_components_datefiltermodal",
+      "fromNode": "n_components_calendarmodal_calendarmodal",
+      "toNode": "n_components_datefiltermodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_calendarmodal_calendarmodal_components_transactionformmodal",
+      "fromNode": "n_components_calendarmodal_calendarmodal",
+      "toNode": "n_components_transactionformmodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_confirmdeletemodal_app",
+      "fromNode": "n_components_confirmdeletemodal",
+      "toNode": "n_app",
+      "label": "dynamic_import [EXTRACTED]"
+    },
+    {
+      "id": "e_components_confirmdeletemodal_app_confirmdeletemodal",
+      "fromNode": "n_components_confirmdeletemodal",
+      "toNode": "n_app_confirmdeletemodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_confirmdeletemodal_components_confirmdeletemodal_confirmdeletemodal",
+      "fromNode": "n_components_confirmdeletemodal",
+      "toNode": "n_components_confirmdeletemodal_confirmdeletemodal",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_confirmdeletemodal_components_confirmdeletemodal_confirmdeletemodalprops",
+      "fromNode": "n_components_confirmdeletemodal",
+      "toNode": "n_components_confirmdeletemodal_confirmdeletemodalprops",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_confirmdeletemodal_components_confirmdeletemodal_entity_label",
+      "fromNode": "n_components_confirmdeletemodal",
+      "toNode": "n_components_confirmdeletemodal_entity_label",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_confirmdeletemodal_components_confirmdeletemodal_entitytype",
+      "fromNode": "n_components_confirmdeletemodal",
+      "toNode": "n_components_confirmdeletemodal_entitytype",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_confirmdeletemodal_components_settingsmodal",
+      "fromNode": "n_components_confirmdeletemodal",
+      "toNode": "n_components_settingsmodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_confirmdeletemodal_confirmdeletemodalprops_components_confirmdeletemodal_confirmdeletemodalprops_oncancel",
+      "fromNode": "n_components_confirmdeletemodal_confirmdeletemodalprops",
+      "toNode": "n_components_confirmdeletemodal_confirmdeletemodalprops_oncancel",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_components_confirmdeletemodal_confirmdeletemodalprops_components_confirmdeletemodal_confirmdeletemodalprops_onconfirm",
+      "fromNode": "n_components_confirmdeletemodal_confirmdeletemodalprops",
+      "toNode": "n_components_confirmdeletemodal_confirmdeletemodalprops_onconfirm",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_components_confirmdeletemodal_confirmdeletemodalprops_onconfirm_components_confirmdeletemodal_confirmdeletemodal",
+      "fromNode": "n_components_confirmdeletemodal_confirmdeletemodalprops_onconfirm",
+      "toNode": "n_components_confirmdeletemodal_confirmdeletemodal",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_components_confirmdeletemodal_confirmdeletemodal_components_settingsmodal",
+      "fromNode": "n_components_confirmdeletemodal_confirmdeletemodal",
+      "toNode": "n_components_settingsmodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_currencyselector_components_currencyselector_currencyselector",
+      "fromNode": "n_components_currencyselector",
+      "toNode": "n_components_currencyselector_currencyselector",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_currencyselector_components_currencyselector_currencyselectorprops",
+      "fromNode": "n_components_currencyselector",
+      "toNode": "n_components_currencyselector_currencyselectorprops",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_dangerzone_components_dangerzone_dangerzone",
+      "fromNode": "n_components_dangerzone",
+      "toNode": "n_components_dangerzone_dangerzone",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_dangerzone_components_dangerzone_dangerzoneprops",
+      "fromNode": "n_components_dangerzone",
+      "toNode": "n_components_dangerzone_dangerzoneprops",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_dangerzone_components_settingsmodal",
+      "fromNode": "n_components_dangerzone",
+      "toNode": "n_components_settingsmodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_dangerzone_dangerzone_components_settingsmodal",
+      "fromNode": "n_components_dangerzone_dangerzone",
+      "toNode": "n_components_settingsmodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_dashboard_components_dashboard_dashboard",
+      "fromNode": "n_components_dashboard",
+      "toNode": "n_components_dashboard_dashboard",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_dashboard_components_dashboard_dashboardprops",
+      "fromNode": "n_components_dashboard",
+      "toNode": "n_components_dashboard_dashboardprops",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_dashboard_types",
+      "fromNode": "n_components_dashboard",
+      "toNode": "n_types",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_dashboard_types_currency",
+      "fromNode": "n_components_dashboard",
+      "toNode": "n_types_currency",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_dashboard_types_person",
+      "fromNode": "n_components_dashboard",
+      "toNode": "n_types_person",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_dashboard_types_transaction",
+      "fromNode": "n_components_dashboard",
+      "toNode": "n_types_transaction",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_dashboard_utils_calculations",
+      "fromNode": "n_components_dashboard",
+      "toNode": "n_utils_calculations",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_dashboard_utils_calculations_calculategroupbalances",
+      "fromNode": "n_components_dashboard",
+      "toNode": "n_utils_calculations_calculategroupbalances",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_dashboard_utils_calculations_simplifygroupdebts",
+      "fromNode": "n_components_dashboard",
+      "toNode": "n_utils_calculations_simplifygroupdebts",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_dashboard_components_groupview",
+      "fromNode": "n_components_dashboard",
+      "toNode": "n_components_groupview",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_dashboard_dashboardprops_types_currency",
+      "fromNode": "n_components_dashboard_dashboardprops",
+      "toNode": "n_types_currency",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_components_dashboard_dashboardprops_types_person",
+      "fromNode": "n_components_dashboard_dashboardprops",
+      "toNode": "n_types_person",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_components_dashboard_dashboardprops_types_transaction",
+      "fromNode": "n_components_dashboard_dashboardprops",
+      "toNode": "n_types_transaction",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_components_dashboard_dashboard_utils_calculations_calculategroupbalances",
+      "fromNode": "n_components_dashboard_dashboard",
+      "toNode": "n_utils_calculations_calculategroupbalances",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_components_dashboard_dashboard_utils_calculations_simplifygroupdebts",
+      "fromNode": "n_components_dashboard_dashboard",
+      "toNode": "n_utils_calculations_simplifygroupdebts",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_components_dashboard_dashboard_components_groupview",
+      "fromNode": "n_components_dashboard_dashboard",
+      "toNode": "n_components_groupview",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_dataexport_components_dataexport_dataexport",
+      "fromNode": "n_components_dataexport",
+      "toNode": "n_components_dataexport_dataexport",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_dataexport_components_dataexport_dataexportprops",
+      "fromNode": "n_components_dataexport",
+      "toNode": "n_components_dataexport_dataexportprops",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_dataexport_components_settingsmodal",
+      "fromNode": "n_components_dataexport",
+      "toNode": "n_components_settingsmodal",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_dataexport_dataexport_components_settingsmodal",
+      "fromNode": "n_components_dataexport_dataexport",
+      "toNode": "n_components_settingsmodal",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_datefiltermodal_components_datefiltermodal_datefiltermodal",
+      "fromNode": "n_components_datefiltermodal",
+      "toNode": "n_components_datefiltermodal_datefiltermodal",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_datefiltermodal_components_datefiltermodal_datefiltermodalprops",
+      "fromNode": "n_components_datefiltermodal",
+      "toNode": "n_components_datefiltermodal_datefiltermodalprops",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_datefiltermodal_components_groupview",
+      "fromNode": "n_components_datefiltermodal",
+      "toNode": "n_components_groupview",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_datefiltermodal_datefiltermodal_components_groupview",
+      "fromNode": "n_components_datefiltermodal_datefiltermodal",
+      "toNode": "n_components_groupview",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_errorboundary_components_errorboundary_errorboundary",
+      "fromNode": "n_components_errorboundary",
+      "toNode": "n_components_errorboundary_errorboundary",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_errorboundary_components_errorboundary_errorboundaryprops",
+      "fromNode": "n_components_errorboundary",
+      "toNode": "n_components_errorboundary_errorboundaryprops",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_errorboundary_components_errorboundary_errorboundarystate",
+      "fromNode": "n_components_errorboundary",
+      "toNode": "n_components_errorboundary_errorboundarystate",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_errorboundary_index",
+      "fromNode": "n_components_errorboundary",
+      "toNode": "n_index",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_errorboundary_errorboundary_components_errorboundary_errorboundary_componentdidcatch",
+      "fromNode": "n_components_errorboundary_errorboundary",
+      "toNode": "n_components_errorboundary_errorboundary_componentdidcatch",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_components_errorboundary_errorboundary_components_errorboundary_errorboundary_constructor",
+      "fromNode": "n_components_errorboundary_errorboundary",
+      "toNode": "n_components_errorboundary_errorboundary_constructor",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_components_errorboundary_errorboundary_components_errorboundary_errorboundary_getderivedstatefromerror",
+      "fromNode": "n_components_errorboundary_errorboundary",
+      "toNode": "n_components_errorboundary_errorboundary_getderivedstatefromerror",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_components_errorboundary_errorboundary_components_errorboundary_errorboundary_handlereset",
+      "fromNode": "n_components_errorboundary_errorboundary",
+      "toNode": "n_components_errorboundary_errorboundary_handlereset",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_components_errorboundary_errorboundary_components_errorboundary_errorboundary_render",
+      "fromNode": "n_components_errorboundary_errorboundary",
+      "toNode": "n_components_errorboundary_errorboundary_render",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_components_errorboundary_errorboundary_index",
+      "fromNode": "n_components_errorboundary_errorboundary",
+      "toNode": "n_index",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_filterbar_components_filterbar_filterbar",
+      "fromNode": "n_components_filterbar",
+      "toNode": "n_components_filterbar_filterbar",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_filterbar_components_filterbar_filterbarprops",
+      "fromNode": "n_components_filterbar",
+      "toNode": "n_components_filterbar_filterbarprops",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_components_filterbar_components_icons_icons",
+      "fromNode": "n_components_filterbar",
+      "toNode": "n_components_icons_icons",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_filterbar_components_icons_icons_calendaricon",
+      "fromNode": "n_components_filterbar",
+      "toNode": "n_components_icons_icons_calendaricon",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_filterbar_types",
+      "fromNode": "n_components_filterbar",
+      "toNode": "n_types",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_components_filterbar_types_filter",
+      "fromNode": "n_components_filterbar",
+      "toNode": "n_types_filter",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_filterbar_types_person",
+      "fromNode": "n_components_filterbar",
+      "toNode": "n_types_person",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_components_filterbar_types_sortoption",
+      "fromNode": "n_components_filterbar",
+      "toNode": "n_types_sortoption",
+      "label": "imports [EXTRACTED]"
+    }
+  ]
+}
