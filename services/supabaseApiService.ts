@@ -704,7 +704,7 @@ export const addPerson = async (personData: Omit<Person, 'id'>): Promise<Person>
 };
 
 export const findPersonByEmail = async (email: string): Promise<Person | null> => {
-  // SECURITY DEFINER RPC — exact email match only (no full-table people SELECT)
+  // SECURITY DEFINER RPC — exact email match with a minimal invite-safe response.
   const { data, error } = await supabase.rpc('find_person_by_email', {
     p_email: email.toLowerCase().trim(),
   });
@@ -712,7 +712,12 @@ export const findPersonByEmail = async (email: string): Promise<Person | null> =
   if (error) throw error;
   const row = Array.isArray(data) ? data[0] : data;
   if (!row) return null;
-  return transformDbPersonToAppPerson(row);
+  return {
+    id: row.id,
+    name: row.name,
+    avatarUrl: '',
+    isClaimed: row.is_claimed,
+  };
 };
 
 // USER MANAGEMENT

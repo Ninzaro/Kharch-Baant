@@ -503,17 +503,9 @@ export type Database = {
       find_person_by_email: {
         Args: { p_email: string }
         Returns: {
-          auth_user_id: string | null
-          avatar_url: string
-          clerk_user_id: string | null
-          created_at: string | null
-          email: string | null
           id: string
           is_claimed: boolean
           name: string
-          source: string
-          updated_at: string | null
-          user_id: string | null
         }[]
         SetofOptions: {
           from: "*"
