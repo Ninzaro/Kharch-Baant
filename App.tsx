@@ -58,7 +58,7 @@ const App: React.FC = () => {
     // Identify the user in Sentry so error reports show who was affected
     useEffect(() => {
       if (person) {
-        Sentry.setUser({ id: person.id, email: person.email, username: person.name });
+        Sentry.setUser({ id: person.id });
       } else {
         Sentry.setUser(null);
       }

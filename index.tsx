@@ -21,12 +21,12 @@ Sentry.init({
   dsn: 'https://241dafbc0787e2e71906ec5aaff9a3f9@o4511203625795584.ingest.us.sentry.io/4511203644342272',
   integrations: [
     Sentry.browserTracingIntegration(),
-    Sentry.replayIntegration(),
+    Sentry.replayIntegration({ maskAllText: true, maskAllInputs: true, blockAllMedia: true }),
   ],
   tracesSampleRate: 0.2,       // 20% of transactions for performance monitoring
   replaysSessionSampleRate: 0.1, // 10% of sessions
   replaysOnErrorSampleRate: 1.0, // 100% of sessions with errors
-  sendDefaultPii: true,
+  sendDefaultPii: false,
   environment: import.meta.env.MODE,
   enabled: import.meta.env.PROD, // only send events in production builds
 });
