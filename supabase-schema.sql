@@ -179,4 +179,5 @@ ALTER TABLE payment_sources ENABLE ROW LEVEL SECURITY;
 --   20260913000000_replica_identity_default.sql
 --   20260914000000_transactions_money_invariants.sql
 --   20260916000000_transaction_authorship.sql
+--   20260917000000_identity_claim_containment.sql
 -- Fresh installs: run those migrations after this schema file.

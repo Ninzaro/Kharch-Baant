@@ -740,20 +740,6 @@ export const ensureUserExists = async (authUserId: string, userName: string, use
   if (authIdError) console.warn('⚠️ Error checking clerk_user_id:', authIdError);
   if (byAuthId) return transformDbPersonToAppPerson(byAuthId);
 
-  if (userEmail) {
-    const { data: claimedRows, error: claimError } = await supabase
-      .rpc('claim_person_by_email', {
-        p_email:    userEmail.trim().toLowerCase(),
-        p_clerk_id: authUserId,
-        p_name:     userName || userEmail.split('@')[0],
-      });
-
-    if (claimError) console.warn('⚠️ Error in claim_person_by_email:', claimError);
-    else if (claimedRows && claimedRows.length > 0) {
-      return transformDbPersonToAppPerson(claimedRows[0]);
-    }
-  }
-
   // Do not write clerk text ids into auth_user_id (uuid) — that insert fails
   const { data: inserted, error: insertError } = await supabase
     .from('people')
