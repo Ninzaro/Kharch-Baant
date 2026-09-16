@@ -392,6 +392,7 @@ export type Database = {
           amount: number
           comment: string | null
           created_at: string | null
+          created_by: string
           date: string
           description: string
           group_id: string
@@ -409,6 +410,7 @@ export type Database = {
           amount: number
           comment?: string | null
           created_at?: string | null
+          created_by?: string
           date: string
           description: string
           group_id: string
@@ -426,6 +428,7 @@ export type Database = {
           amount?: number
           comment?: string | null
           created_at?: string | null
+          created_by?: string
           date?: string
           description?: string
           group_id?: string
@@ -440,6 +443,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "transactions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "transactions_group_id_fkey"
             columns: ["group_id"]
