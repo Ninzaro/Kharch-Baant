@@ -70,8 +70,7 @@ jobs:
         run: echo "${{ secrets.KEYSTORE_FILE }}" | base64 -d > android/app/release-key.jks
 
       # 7. Build signed AAB with auto-incremented versionCode
-      - name: Build Release AAB
-        working-directory: android
+         - name: Build Android release bundle
         env:
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
         run: |
