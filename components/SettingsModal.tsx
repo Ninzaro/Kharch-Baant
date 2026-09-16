@@ -40,7 +40,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   const { user: clerkUser } = useUser();
   const queryClient = useQueryClient();
   const [showArchivedGroups, setShowArchivedGroups] = useState(false);
-  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
 
   // Profile State
@@ -152,25 +151,31 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       toast.error('Export failed. Try again.');
     }
   };
-  const handleImport = (file: File) => toast.success(`Importing from ${file.name}`);
-  const handleReset = () => setIsResetModalOpen(true);
   const handleDeleteAccount = () => setIsDeleteAccountModalOpen(true);
 
   const confirmDeleteAccount = async () => {
+    if (!clerkUser || typeof clerkUser.delete !== 'function') {
+      toast.error('Account deletion is currently unavailable. Please try again later.');
+      return;
+    }
+
+    try {
+      await clerkUser.delete();
+    } catch (clerkErr) {
+      console.error('Clerk user.delete failed:', clerkErr);
+      toast.error('Could not delete your account. Nothing was changed.');
+      return;
+    }
+
     try {
       const result = await api.anonymizeMyAccount();
       if (!result.success) {
-        toast.error(result.error || 'Could not delete account data.');
+        toast.error(result.error || 'Your account was deleted, but app data could not be anonymized. Contact support.');
+        setIsDeleteAccountModalOpen(false);
+        await signOut();
         return;
       }
-      try {
-        if (clerkUser && typeof clerkUser.delete === 'function') {
-          await clerkUser.delete();
-        }
-      } catch (clerkErr) {
-        console.warn('Clerk user.delete failed (enable in Clerk Dashboard):', clerkErr);
-      }
-      toast.success('Your account data has been deleted.');
+      toast.success('Your account has been deleted and your app profile anonymized.');
       setIsDeleteAccountModalOpen(false);
       await signOut();
     } catch (err) {
@@ -264,7 +269,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* Theme toggle */}
           <ThemeToggle theme={theme} onChange={onThemeChange} />
 
-          <DataExport onExport={handleExport} onImport={handleImport} />
+          <DataExport onExport={handleExport} />
 
           {/* Manage Payment Sources */}
           <button
@@ -282,23 +287,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           <AboutSection />
 
           {/* Danger zone */}
-          <DangerZone onReset={handleReset} onDeleteAccount={handleDeleteAccount} />
+          <DangerZone onDeleteAccount={handleDeleteAccount} />
         </div>
       </BaseModal>
 
       {/* Confirmation Modals */}
-      <ConfirmDeleteModal
-        open={isResetModalOpen}
-        entityType="transaction" // Reuse styling but change text
-        entityName="All App Data"
-        onConfirm={() => {
-          toast.success('App data reset!');
-          setIsResetModalOpen(false);
-        }}
-        onCancel={() => setIsResetModalOpen(false)}
-        impactDescription="This will permanently delete all your local settings, cached data, and preferences. This action is irreversible."
-      />
-
       <ConfirmDeleteModal
         open={isDeleteAccountModalOpen}
         entityType="transaction"
@@ -307,7 +300,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           void confirmDeleteAccount();
         }}
         onCancel={() => setIsDeleteAccountModalOpen(false)}
-        impactDescription="This will permanently delete your profile and remove you from all groups. This action cannot be undone."
+        impactDescription="This deletes your sign-in account and anonymizes your profile. Your past transactions and saved payment sources remain in the app. This action cannot be undone."
       />
     </>
   );

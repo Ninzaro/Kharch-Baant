@@ -2,7 +2,7 @@ import React from 'react';
 
 interface DataExportProps {
   onExport: () => void;
-  onImport: (file: File) => void;
+  onImport?: (file: File) => void;
 }
 
 const DataExport: React.FC<DataExportProps> = ({ onExport, onImport }) => (
@@ -16,15 +16,17 @@ const DataExport: React.FC<DataExportProps> = ({ onExport, onImport }) => (
       >
         Export Data
       </button>
-      <label className="px-3 py-2 bg-secondary text-secondary-foreground border border-border text-sm rounded-md cursor-pointer hover:bg-secondary/80">
-        Import Data
-        <input
-          type="file"
-          accept=".json,.csv"
-          className="hidden"
-          onChange={e => e.target.files && e.target.files[0] && onImport(e.target.files[0])}
-        />
-      </label>
+      {onImport && (
+        <label className="px-3 py-2 bg-secondary text-secondary-foreground border border-border text-sm rounded-md cursor-pointer hover:bg-secondary/80">
+          Import Data
+          <input
+            type="file"
+            accept=".json,.csv"
+            className="hidden"
+            onChange={e => e.target.files && e.target.files[0] && onImport(e.target.files[0])}
+          />
+        </label>
+      )}
     </div>
   </div>
 );
