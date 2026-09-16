@@ -89,11 +89,6 @@ CREATE TABLE ai_item_cache (
 
 ALTER TABLE ai_item_cache ENABLE ROW LEVEL SECURITY;
 
--- Any authenticated user can read the shared cache
-CREATE POLICY "cache_read"
-  ON ai_item_cache FOR SELECT
-  USING (auth.role() = 'authenticated');
-
 -- Any authenticated user can add new entries (no UPDATE/DELETE — entries are immutable)
 CREATE POLICY "cache_insert"
   ON ai_item_cache FOR INSERT
@@ -183,4 +178,5 @@ ALTER TABLE payment_sources ENABLE ROW LEVEL SECURITY;
 --   20260917000001_restrict_person_lookup.sql
 --   20260917000002_restrict_people_visibility.sql
 --   20260917000003_restrict_invite_preview.sql
+--   20260917000004_disable_ai_cache_reads.sql
 -- Fresh installs: run those migrations after this schema file.
