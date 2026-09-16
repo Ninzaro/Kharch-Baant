@@ -785,6 +785,8 @@ import {
   EmailInvite,
   CreateInviteRequest,
   CreateInviteResponse,
+  InvitePreview,
+  InvitePreviewGroup,
   ValidateInviteResponse,
   AcceptInviteRequest,
   AcceptInviteResponse
@@ -951,10 +953,9 @@ export const validateInvite = async (inviteToken: string): Promise<ValidateInvit
   const payload = (typeof data === 'string' ? JSON.parse(data) : data) as {
     is_valid?: boolean;
     error?: string;
-    invite?: Record<string, unknown>;
-    group?: Record<string, unknown>;
-    inviter?: { id?: string; name?: string; avatar_url?: string } | null;
-    email_invites?: { email?: string }[];
+    invite?: { expires_at?: string | null; max_uses?: number | null; current_uses?: number };
+    group?: { id?: string; name?: string; currency?: string; group_type?: string };
+    inviter?: { name?: string } | null;
   } | null;
 
   if (!payload?.is_valid || !payload.invite || !payload.group) {
@@ -964,40 +965,29 @@ export const validateInvite = async (inviteToken: string): Promise<ValidateInvit
     };
   }
 
-  const invite = transformDbInviteToAppInvite(payload.invite);
-  const g = payload.group;
-  const group: Group = {
-    id: String(g.id),
-    name: String(g.name ?? ''),
-    currency: (g.currency as Group['currency']) ?? undefined,
-    groupType: (g.group_type as GroupType) || undefined,
-    tripStartDate: (g.trip_start_date as string) || undefined,
-    tripEndDate: (g.trip_end_date as string) || undefined,
-    createdBy: (g.created_by as string) || undefined,
-    isArchived: Boolean(g.is_archived),
-    members: [],
+  const invite: InvitePreview = {
+    expiresAt: payload.invite.expires_at ?? null,
+    maxUses: payload.invite.max_uses ?? null,
+    currentUses: Number(payload.invite.current_uses ?? 0),
+  };
+  const group: InvitePreviewGroup = {
+    id: String(payload.group.id),
+    name: String(payload.group.name ?? ''),
+    currency: payload.group.currency,
+    groupType: payload.group.group_type as GroupType | undefined,
   };
 
-  const inviter = payload.inviter?.id
+  const inviter = payload.inviter?.name
     ? {
-        id: String(payload.inviter.id),
         name: String(payload.inviter.name || ''),
-        avatarUrl: String(payload.inviter.avatar_url || ''),
       }
     : undefined;
-
-  const emailInvites = Array.isArray(payload.email_invites)
-    ? payload.email_invites
-        .map((e) => ({ email: String(e?.email || '').toLowerCase().trim() }))
-        .filter((e) => e.email)
-    : [];
 
   return {
     isValid: true,
     invite,
     group,
     inviter,
-    emailInvites,
   };
 };
 
@@ -1037,7 +1027,16 @@ export const acceptInvite = async (request: AcceptInviteRequest): Promise<Accept
   if (payload.group_id) {
     const preview = await validateInvite(inviteToken);
     if (preview.isValid && preview.group) {
-      return { success: true, group: preview.group };
+      return {
+        success: true,
+        group: {
+          id: preview.group.id,
+          name: preview.group.name,
+          currency: preview.group.currency || '',
+          groupType: preview.group.groupType || 'other',
+          members: [],
+        },
+      };
     }
     return {
       success: true,

@@ -5,7 +5,7 @@ import { useNativeGoogleSignIn } from '../../hooks/useNativeGoogleSignIn';
 import { isAndroidNativeApp } from '../../services/nativeAuthBridge';
 import { validateInvite } from '../../services/supabaseApiService';
 import { supabase } from '../../lib/supabase';
-import type { Group, Person } from '../../types';
+import type { InvitePreviewGroup, Person } from '../../types';
 import Avatar from '../Avatar';
 
 type InviteStatus = 'loading' | 'invalid' | 'valid' | 'accepted' | 'error';
@@ -20,8 +20,8 @@ const InvitePage: React.FC = () => {
   const [status, setStatus] = useState<InviteStatus>('loading');
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [token, setToken] = useState<string>('');
-  const [group, setGroup] = useState<Group | null>(null);
-  const [inviter, setInviter] = useState<Person | null>(null);
+  const [group, setGroup] = useState<InvitePreviewGroup | null>(null);
+  const [inviter, setInviter] = useState<{ name: string } | null>(null);
   const [members, setMembers] = useState<Person[]>([]);
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
   const [usage, setUsage] = useState<{ current: number; max: number | null } | null>(null);
@@ -47,7 +47,7 @@ const InvitePage: React.FC = () => {
           return;
         }
         setGroup(result.group);
-        // Metadata + inviter/emails come from get_invite_preview RPC (no open table SELECTs)
+        // Public metadata comes from get_invite_preview RPC (no open table SELECTs).
         const inviteAny = result.invite || null;
         if (inviteAny) {
           setExpiresAt(inviteAny.expiresAt || null);
@@ -62,9 +62,7 @@ const InvitePage: React.FC = () => {
         }
         if (result.inviter) {
           setInviter({
-            id: result.inviter.id,
             name: result.inviter.name,
-            avatarUrl: result.inviter.avatarUrl || '',
           });
         }
         // Members preview (may be empty pre-auth under RLS — invite still valid)

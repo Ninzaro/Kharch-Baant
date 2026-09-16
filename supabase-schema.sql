@@ -182,4 +182,5 @@ ALTER TABLE payment_sources ENABLE ROW LEVEL SECURITY;
 --   20260917000000_identity_claim_containment.sql
 --   20260917000001_restrict_person_lookup.sql
 --   20260917000002_restrict_people_visibility.sql
+--   20260917000003_restrict_invite_preview.sql
 -- Fresh installs: run those migrations after this schema file.
