@@ -578,8 +578,7 @@ const App: React.FC = () => {
                 toast.error('Only the group creator can delete this group.');
                 return;
             }
-            await requireFreshGroupSettled(editingGroup.id, 'delete');
-            await deleteGroup(editingGroup.id, currentUserId, true, true);
+            await deleteGroup(editingGroup.id);
             qc.setQueryData<Group[]>(qk.groups(currentUserId), (prev = []) => prev.filter(g => g.id !== editingGroup.id));
             setIsConfirmDeleteModalOpen(false);
             setIsGroupModalOpen(false);

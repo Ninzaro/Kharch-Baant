@@ -15,17 +15,10 @@ export const unarchiveGroup = async (groupId: string): Promise<{ success: boolea
   assertAffected(data, 'Could not unarchive this group.');
   return { success: true };
 };
-// Delete a group (only by owner, only if all balances settled)
-export const deleteGroup = async (groupId: string, userId: string, isOwner: boolean, allSettled: boolean): Promise<{ success: boolean }> => {
-  if (!isOwner) throw new Error('Only the group owner can delete the group.');
-  if (!allSettled) throw new Error('All balances must be settled before deleting the group.');
-  // Delete group_members first (due to FK)
-  await supabase.from('group_members').delete().eq('group_id', groupId);
-  // Delete transactions
-  await supabase.from('transactions').delete().eq('group_id', groupId);
-  const { data, error } = await supabase.from('groups').delete().eq('id', groupId).select('id');
+// Delete only through the server-side settlement and ownership check.
+export const deleteGroup = async (groupId: string): Promise<{ success: boolean }> => {
+  const { error } = await supabase.rpc('delete_group', { p_group_id: groupId });
   if (error) throw error;
-  assertAffected(data, 'Could not delete this group.');
   return { success: true };
 };
 

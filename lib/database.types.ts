@@ -478,6 +478,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_group: { Args: { p_group_id: string }; Returns: undefined }
       claim_person_by_email: {
         Args: { p_clerk_id: string; p_email: string; p_name: string }
         Returns: {
