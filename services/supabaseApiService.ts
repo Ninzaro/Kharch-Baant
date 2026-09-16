@@ -280,12 +280,24 @@ export const updateGroup = async (
   }
 
   if (toRemove.length > 0) {
-    const { error: deleteError } = await supabase
+    const { data: deletedMembers, error: deleteError } = await supabase
       .from('group_members')
       .delete()
       .eq('group_id', groupId)
-      .in('person_id', toRemove);
+      .in('person_id', toRemove)
+      .select('person_id');
     if (deleteError) throw deleteError;
+    if ((deletedMembers?.length ?? 0) !== toRemove.length) {
+      const { data: remainingMembers, error: remainingError } = await supabase
+        .from('group_members')
+        .select('person_id')
+        .eq('group_id', groupId)
+        .in('person_id', toRemove);
+      if (remainingError) throw remainingError;
+      if (remainingMembers && remainingMembers.length > 0) {
+        throw new Error('Could not remove one or more group members.');
+      }
+    }
   }
 
   const finalResult = await transformDbGroupToAppGroup(groupResult);
@@ -540,11 +552,13 @@ export const batchApplyEmojisToGroupTransactions = async (groupId: string): Prom
 
   for (const t of toUpdate) {
     const icon = TAG_EMOJIS[t.tag] ?? '📝';
-    const { error: upErr } = await supabase
+    const { data: updatedRows, error: upErr } = await supabase
       .from('transactions')
       .update({ description: `${t.description} ${icon}` })
-      .eq('id', t.id);
+      .eq('id', t.id)
+      .select('id');
     if (upErr) throw upErr;
+    assertAffected(updatedRows, `Could not update transaction ${t.id}.`);
   }
 };
 
@@ -556,7 +570,16 @@ export const deleteTransaction = async (transactionId: string, groupId?: string)
     .select('id');
 
   if (error) throw error;
-  // 0 rows: already gone (idempotent). RLS-blocked deletes look the same at SQL level.
+  if (!data || data.length === 0) {
+    const { data: existing, error: existingError } = await supabase
+      .from('transactions')
+      .select('id')
+      .eq('id', transactionId);
+    if (existingError) throw existingError;
+    if (existing && existing.length > 0) {
+      throw new Error('Could not delete this transaction.');
+    }
+  }
 
   return { success: true };
 };
@@ -600,23 +623,36 @@ export const addPaymentSource = async (
 };
 
 export const deletePaymentSource = async (paymentSourceId: string): Promise<{ success: boolean }> => {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('payment_sources')
     .delete()
-    .eq('id', paymentSourceId);
+    .eq('id', paymentSourceId)
+    .select('id');
 
   if (error) throw error;
+  if (!data || data.length === 0) {
+    const { data: existing, error: existingError } = await supabase
+      .from('payment_sources')
+      .select('id')
+      .eq('id', paymentSourceId);
+    if (existingError) throw existingError;
+    if (existing && existing.length > 0) {
+      throw new Error('Could not delete this payment source.');
+    }
+  }
 
   return { success: true };
 };
 
 export const archivePaymentSource = async (paymentSourceId: string): Promise<{ success: boolean }> => {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('payment_sources')
     .update({ is_active: false })
-    .eq('id', paymentSourceId);
+    .eq('id', paymentSourceId)
+    .select('id');
 
   if (error) throw error;
+  assertAffected(data, 'Could not archive this payment source.');
 
   return { success: true };
 };
@@ -1048,29 +1084,42 @@ export const acceptInvite = async (request: AcceptInviteRequest): Promise<Accept
  * Deactivate an invite
  */
 export const deactivateInvite = async (inviteId: string): Promise<{ success: boolean }> => {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('group_invites')
     .update({
       is_active: false,
       updated_at: new Date().toISOString(),
     })
-    .eq('id', inviteId);
+    .eq('id', inviteId)
+    .select('id');
 
   if (error) throw error;
+  if (!data || data.length === 0) {
+    const { data: existing, error: existingError } = await supabase
+      .from('group_invites')
+      .select('id')
+      .eq('id', inviteId);
+    if (existingError) throw existingError;
+    if (existing && existing.length > 0) {
+      throw new Error('Could not deactivate this invite.');
+    }
+  }
   return { success: true };
 };
 
 // Update user avatar
 export const updateUserAvatar = async (personId: string, avatarUrl: string | null): Promise<{ success: boolean }> => {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('people')
     .update({ avatar_url: avatarUrl ?? '' }) // null → '' to satisfy NOT NULL constraint; Avatar component shows initials for empty string
-    .eq('id', personId);
+    .eq('id', personId)
+    .select('id');
 
   if (error) {
     console.error('Error updating avatar:', error);
     throw error;
   }
+  assertAffected(data, 'Could not update this profile picture.');
   return { success: true };
 };
 
