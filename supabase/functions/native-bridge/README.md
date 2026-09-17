@@ -8,7 +8,11 @@ Used only by the Capacitor Android app after `clerk-android` sign-in.
 
 `Authorization: Bearer <native Clerk session token>`
 
-The function calls Clerk `verifyToken()` on the Bearer session JWT and derives `userId` only from `sub`. Do not use `authenticateRequest()` here: that helper is for browser cookie handshake and returns signed-out for Capacitor WebView `fetch()` to supabase.co. Client-supplied user ids, emails, session ids, and Google claims are ignored.
+Before verification, the function applies a best-effort in-memory rate limit keyed by a SHA-256 fingerprint of the raw Bearer token. The token itself and its decoded payload are never logged or used as the rate-limit key.
+
+The function then calls Clerk `verifyToken()` on the Bearer session JWT and derives `userId` only from `sub`. Empirical verification found that clerk-android `getToken()` session JWTs omit `azp`, while web Clerk session JWTs include a non-empty `azp`. After cryptographic verification, the bridge therefore rejects any token with a non-empty `azp` and accepts the observed native token shape where `azp` is absent or empty.
+
+Missing `azp` is evidence of the token source, not Android device attestation. A future Clerk Android SDK change that adds `azp` will fail closed until this check is reviewed. Do not use `authenticateRequest()` here: that helper is for browser cookie handshake and returns signed-out for Capacitor WebView `fetch()` to supabase.co. Client-supplied user ids, emails, session ids, and Google claims are ignored.
 
 ## Response
 

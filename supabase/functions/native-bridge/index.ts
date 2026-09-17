@@ -57,6 +57,16 @@ function bearerToken(req: Request): string | null {
   return token.length >= 20 ? token : null;
 }
 
+async function tokenFingerprint(token: string): Promise<string> {
+  const digest = await crypto.subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(token)
+  );
+  return Array.from(new Uint8Array(digest), (byte) =>
+    byte.toString(16).padStart(2, '0')
+  ).join('');
+}
+
 function clerkUserIdFromVerified(verified: unknown): string | null {
   if (!verified || typeof verified !== 'object') return null;
   const direct = (verified as { sub?: unknown }).sub;
@@ -64,6 +74,14 @@ function clerkUserIdFromVerified(verified: unknown): string | null {
   const nested = (verified as { data?: { sub?: unknown } }).data?.sub;
   if (typeof nested === 'string' && nested.startsWith('user_')) return nested;
   return null;
+}
+
+function authorizedPartyFromVerified(verified: unknown): string {
+  if (!verified || typeof verified !== 'object') return '';
+  const direct = (verified as { azp?: unknown }).azp;
+  if (typeof direct === 'string') return direct.trim();
+  const nested = (verified as { data?: { azp?: unknown } }).data?.azp;
+  return typeof nested === 'string' ? nested.trim() : '';
 }
 
 function verifyErrors(verified: unknown): string {
@@ -98,6 +116,11 @@ serve(async (req) => {
   }
 
   try {
+    const fingerprint = await tokenFingerprint(token);
+    if (!rateLimit(`native-bridge:${fingerprint}`, 10, 60_000)) {
+      return jsonResponse({ error: 'Rate limit exceeded' }, 429, cors);
+    }
+
     // Native clerk-android getToken() is a session JWT on Authorization.
     // authenticateRequest() is for browser cookie/handshake (WebView Origin on
     // supabase.co looks signed-out). verifyToken() checks the JWT only.
@@ -112,6 +135,11 @@ serve(async (req) => {
       return jsonResponse({ error: 'Unauthorized' }, 401, cors);
     }
 
+    if (authorizedPartyFromVerified(verified)) {
+      console.error('Native auth bridge verify failed: azp_present');
+      return jsonResponse({ error: 'Unauthorized' }, 401, cors);
+    }
+
     const userId = clerkUserIdFromVerified(verified);
     if (!userId) {
       console.error('Native auth bridge verify failed: missing_sub');
@@ -122,10 +150,6 @@ serve(async (req) => {
       secretKey,
       publishableKey: publishableKey.startsWith('pk_') ? publishableKey : undefined,
     });
-
-    if (!rateLimit(`native-bridge:${userId}`, 10, 60_000)) {
-      return jsonResponse({ error: 'Rate limit exceeded' }, 429, cors);
-    }
 
     const signInToken = await clerk.signInTokens.createSignInToken({
       userId,
