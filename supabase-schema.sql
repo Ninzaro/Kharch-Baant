@@ -181,6 +181,7 @@ ALTER TABLE payment_sources ENABLE ROW LEVEL SECURITY;
 --   20260917000004_disable_ai_cache_reads.sql
 --   20260917000005_delete_group_server_side.sql
 --   20260917170449_restrict_people_insert.sql
+--   20260917212313_preserve_placeholder_on_person_email_collision.sql
 -- Fresh installs: run those migrations after this schema file.
 
 -- R-20 containment: authenticated clients create people only through RPCs.

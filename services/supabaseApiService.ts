@@ -750,58 +750,17 @@ export const findPersonByEmail = async (email: string): Promise<Person | null> =
 };
 
 // USER MANAGEMENT
-export const ensureUserExists = async (authUserId: string, userName: string, userEmail: string): Promise<Person> => {
-  // Identity is taken from the JWT inside the RPC (authUserId is not trusted).
+export const ensureUserExists = async (_authUserId: string, userName: string, userEmail: string): Promise<Person> => {
+  // Identity is taken from the JWT inside the RPC (_authUserId is not trusted).
   const { data, error } = await supabase.rpc('ensure_my_person', {
     p_name: userName || (userEmail ? userEmail.split('@')[0] : 'User'),
     p_email: userEmail ? userEmail.trim().toLowerCase() : null,
   });
 
-  if (!error) {
-    const row = Array.isArray(data) ? data[0] : data;
-    if (row) return transformDbPersonToAppPerson(row);
-  } else {
-    console.warn('ensure_my_person failed, falling back:', error.message);
-  }
-
-  // Fast path if RPC is not deployed yet
-  const { data: byAuthId, error: authIdError } = await supabase
-    .from('people')
-    .select('*')
-    .eq('clerk_user_id', authUserId)
-    .maybeSingle();
-
-  if (authIdError) console.warn('⚠️ Error checking clerk_user_id:', authIdError);
-  if (byAuthId) return transformDbPersonToAppPerson(byAuthId);
-
-  // Do not write clerk text ids into auth_user_id (uuid) — that insert fails
-  const { data: inserted, error: insertError } = await supabase
-    .from('people')
-    .insert({
-      name: userName || userEmail.split('@')[0],
-      clerk_user_id: authUserId,
-      user_id: authUserId,
-      avatar_url: '',
-      email: userEmail ? userEmail.trim().toLowerCase() : null,
-      is_claimed: true,
-      source: 'self',
-    })
-    .select()
-    .single();
-
-  if (insertError) {
-    if (insertError.code === '23505') {
-      const { data: retry } = await supabase
-        .from('people')
-        .select('*')
-        .eq('clerk_user_id', authUserId)
-        .maybeSingle();
-      if (retry) return transformDbPersonToAppPerson(retry);
-    }
-    throw insertError;
-  }
-
-  return transformDbPersonToAppPerson(inserted);
+  if (error) throw error;
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row) throw new Error('ensure_my_person returned no person.');
+  return transformDbPersonToAppPerson(row);
 };
 
 // ============================================================================
