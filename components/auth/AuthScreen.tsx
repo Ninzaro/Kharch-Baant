@@ -1,7 +1,8 @@
-import React from 'react';
-import { SignIn } from '@clerk/clerk-react';
+import React, { useState } from 'react';
+import { SignIn, SignUp } from '@clerk/clerk-react';
 import { NATIVE_HIDE_SOCIAL_CLERK_APPEARANCE } from './clerkAppearance';
 import { useNativeGoogleSignIn } from '../../hooks/useNativeGoogleSignIn';
+import { useNativeGoogleSignUp } from '../../hooks/useNativeGoogleSignUp';
 import { isAndroidNativeApp } from '../../services/nativeAuthBridge';
 
 interface AuthScreenProps {
@@ -31,7 +32,20 @@ const GoogleIcon: React.FC<{ className?: string }> = ({ className = 'w-5 h-5' })
 
 const AuthScreen: React.FC<AuthScreenProps> = ({ onBack }) => {
   const isAndroid = isAndroidNativeApp();
-  const { signInWithGoogle, busy, isLoaded } = useNativeGoogleSignIn();
+  const [authMode, setAuthMode] = useState<'signIn' | 'signUp'>('signIn');
+  const nativeSignIn = useNativeGoogleSignIn();
+  const nativeSignUp = useNativeGoogleSignUp();
+  const nativeGoogle = authMode === 'signIn' ? nativeSignIn : nativeSignUp;
+  const googleBusy = nativeGoogle.busy;
+  const googleLoaded = nativeGoogle.isLoaded;
+
+  const handleNativeGoogle = (): void => {
+    if (authMode === 'signIn') {
+      void nativeSignIn.signInWithGoogle();
+      return;
+    }
+    void nativeSignUp.signUpWithGoogle();
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4 safe-area-top safe-area-bottom">
@@ -59,12 +73,16 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onBack }) => {
           <div className="w-full max-w-sm mb-2">
             <button
               type="button"
-              disabled={busy || !isLoaded}
-              onClick={() => { void signInWithGoogle(); }}
+              disabled={googleBusy || !googleLoaded}
+              onClick={handleNativeGoogle}
               className="w-full py-2.5 px-4 rounded-xl bg-card border border-border text-foreground font-medium flex items-center justify-center gap-3 hover:bg-card/80 transition-colors shadow-sm disabled:opacity-60"
             >
               <GoogleIcon className="w-5 h-5 shrink-0" />
-              <span>{busy ? 'Signing in…' : 'Continue with Google'}</span>
+              <span>
+                {googleBusy
+                  ? authMode === 'signIn' ? 'Signing in…' : 'Creating account…'
+                  : 'Continue with Google'}
+              </span>
             </button>
             <div className="relative w-full my-4 text-center">
               <div className="absolute inset-0 flex items-center">
@@ -77,12 +95,34 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onBack }) => {
           </div>
         )}
 
-        <SignIn
-          routing="virtual"
-          fallbackRedirectUrl="/"
-          signUpFallbackRedirectUrl="/"
-          appearance={isAndroid ? NATIVE_HIDE_SOCIAL_CLERK_APPEARANCE : undefined}
-        />
+        {isAndroid && authMode === 'signUp' ? (
+          <SignUp
+            routing="virtual"
+            fallbackRedirectUrl="/"
+            signInFallbackRedirectUrl="/"
+            appearance={NATIVE_HIDE_SOCIAL_CLERK_APPEARANCE}
+          />
+        ) : (
+          <SignIn
+            routing="virtual"
+            fallbackRedirectUrl="/"
+            signUpFallbackRedirectUrl="/"
+            appearance={isAndroid ? NATIVE_HIDE_SOCIAL_CLERK_APPEARANCE : undefined}
+          />
+        )}
+
+        {isAndroid && (
+          <p className="mt-4 text-sm text-muted-foreground">
+            {authMode === 'signIn' ? 'New to Kharch Baant?' : 'Already have an account?'}{' '}
+            <button
+              type="button"
+              onClick={() => setAuthMode(authMode === 'signIn' ? 'signUp' : 'signIn')}
+              className="font-medium text-primary hover:underline"
+            >
+              {authMode === 'signIn' ? 'Create account' : 'Sign in'}
+            </button>
+          </p>
+        )}
       </div>
     </div>
   );

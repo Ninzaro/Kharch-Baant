@@ -56,6 +56,36 @@ class ClerkNativeAuthPlugin : Plugin() {
         }
     }
 
+    @PluginMethod
+    fun signUpWithGoogle(call: PluginCall) {
+        val publishableKey = call.getString("publishableKey").orEmpty().trim()
+
+        scope.launch {
+            try {
+                ensureClerkReady(publishableKey)
+                authenticateNativeClerkSignUp()
+                Log.i(TAG, "Native Clerk sign-up succeeded")
+
+                val jwt = ClerkResults.stringValue(Clerk.auth.getToken())
+                if (jwt.isNullOrBlank()) {
+                    call.reject("Failed to obtain native Clerk session token.")
+                    return@launch
+                }
+                Log.i(TAG, "Native session token obtained")
+                val ret = JSObject()
+                ret.put("token", jwt)
+                call.resolve(ret)
+            } catch (e: Exception) {
+                Log.e(
+                    TAG,
+                    "Native Clerk sign-up failed: ${e.javaClass.simpleName}",
+                    e
+                )
+                call.reject("Native Clerk sign-up failed.")
+            }
+        }
+    }
+
     private suspend fun ensureClerkReady(publishableKeyFromJs: String) {
         val currentActivity = activity
         if (currentActivity != null) {
@@ -129,6 +159,39 @@ class ClerkNativeAuthPlugin : Plugin() {
                 throw e
             }
             throw IllegalStateException("Native Clerk authentication failed", e)
+        }
+    }
+
+    /** Starts Clerk's sign-up OAuth flow without changing the existing sign-in path. */
+    private suspend fun authenticateNativeClerkSignUp() {
+        if (Clerk.activeSession != null) {
+            Log.i(TAG, "Native Clerk already signed in; reusing session")
+            return
+        }
+
+        try {
+            Log.i(TAG, "Native Clerk oauth_google sign-up starting")
+            val signUpResult = Clerk.auth.signUpWithOAuth(OAuthProvider.GOOGLE)
+            if (!ClerkResults.isSuccess(signUpResult)) {
+                val signUpCode = ClerkResults.failureCode(signUpResult)
+                if (ClerkResults.isSessionExists(signUpCode)) {
+                    Log.i(TAG, "Native Clerk already signed in; reusing session")
+                    return
+                }
+                throw IllegalStateException(
+                    "Native Clerk sign-up failed: ${ClerkResults.failureDetail(signUpResult)}"
+                )
+            }
+
+            val sessionId = ClerkResults.sessionIdFromSuccess(signUpResult)
+            if (!sessionId.isNullOrBlank()) {
+                Clerk.auth.setActive(sessionId = sessionId)
+            }
+        } catch (e: Exception) {
+            if (e is IllegalStateException && e.message?.startsWith("Native Clerk sign-up failed") == true) {
+                throw e
+            }
+            throw IllegalStateException("Native Clerk sign-up failed", e)
         }
     }
 

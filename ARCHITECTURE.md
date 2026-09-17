@@ -65,7 +65,7 @@ Adding a dependency outside this list requires updating this section *first*.
 | Auth | Clerk (`@clerk/clerk-react`) | Permanent IdP. Supabase Auth disabled. |
 | AI | Keywords + optional Edge `suggest-tag` (Gemini server secret) | Category suggestions — no client API key |
 | Email | Edge `send-email` (MailerSend server secret) | Transactional mail — no client API key |
-| Mobile | Capacitor 7 (Android only) | Plugins: App, Browser, Keyboard, SplashScreen, StatusBar, `@capgo/capacitor-social-login`, custom `ClerkNativeAuth`. Android Google: Credential Manager → clerk-android → Edge `native-bridge` Sign-in Token → clerk-react `strategy: 'ticket'`. Web/desktop keep `<SignIn />`. |
+| Mobile | Capacitor 7 (Android only) | Plugins: App, Browser, Keyboard, SplashScreen, StatusBar, `@capgo/capacitor-social-login`, custom `ClerkNativeAuth`. Android Google sign-in/sign-up: clerk-android → Edge `native-bridge` Sign-in Token → clerk-react `strategy: 'ticket'`. Web/desktop keep `<SignIn />`. |
 | Notifications | `react-hot-toast` | |
 | Icons | `lucide-react` + `components/Icons.tsx` | |
 | Image export | `html2canvas` | |
@@ -261,7 +261,7 @@ Responsibilities (today, not ideal):
 ### Routing
 **No router.** Navigation is state-driven via `appStore.selectedGroupId`. The invite flow (`InvitePage.tsx`) is a special case keyed off URL params / localStorage. Introducing real URL routes (e.g. `react-router`, TanStack Router) would require updating this section.
 
-Unauthenticated native launch: `WelcomeScreen` → Get started → `AuthScreen`. On **Android**, Continue with Google runs Credential Manager + `ClerkNativeAuthPlugin` + Edge `native-bridge` + clerk-react ticket; email/password stays on `<SignIn />` with social buttons hidden. Web/desktop/iPhone keep normal `@clerk/clerk-react` `<SignIn />` (including Google). Account Portal / `kharchbaant://sso-callback` remain in the tree but are not used by the Android Google button.
+Unauthenticated native launch: `WelcomeScreen` → Get started → `AuthScreen`. On **Android**, AuthScreen switches locally between Clerk's `<SignIn />` and `<SignUp />`; Continue with Google runs the matching native `ClerkNativeAuthPlugin` flow + Edge `native-bridge` + clerk-react ticket, while email/password remains inside Clerk's components with social buttons hidden. Web/desktop/iPhone keep normal `@clerk/clerk-react` `<SignIn />` (including Google). Account Portal / `kharchbaant://sso-callback` remain in the tree but are not used by the Android Google button.
 
 ---
 

@@ -108,3 +108,35 @@ export async function completeNativeGoogleSignIn(params: {
   await consumeSignInTicket(signIn, setActive, ticket);
   console.log('WebView Clerk ticket authentication succeeded');
 }
+
+/**
+ * Android-only sign-up counterpart to completeNativeGoogleSignIn. It starts
+ * Clerk's native sign-up flow, then uses the same ticket bridge to activate
+ * the resulting session inside clerk-react.
+ */
+export async function completeNativeGoogleSignUp(params: {
+  signIn: TicketSignIn;
+  setActive: SetActiveFn;
+}): Promise<void> {
+  const { signIn, setActive } = params;
+  const publishableKey = getEnvValue('VITE_CLERK_PUBLISHABLE_KEY');
+  if (!publishableKey) {
+    throw new Error('Missing VITE_CLERK_PUBLISHABLE_KEY.');
+  }
+
+  const { token: nativeSessionToken } = await ClerkNativeAuth.signUpWithGoogle({
+    publishableKey,
+  });
+
+  if (!nativeSessionToken) {
+    throw new Error('Native Clerk session token was empty.');
+  }
+  console.log('Native Clerk sign-up succeeded');
+  console.log('Native session token obtained');
+
+  const ticket = await exchangeNativeSessionForTicket(nativeSessionToken);
+  console.log('Backend bridge succeeded');
+
+  await consumeSignInTicket(signIn, setActive, ticket);
+  console.log('WebView Clerk ticket authentication succeeded');
+}

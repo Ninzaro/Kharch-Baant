@@ -7,6 +7,7 @@ vi.mock('@capacitor/core', () => ({
   },
   registerPlugin: vi.fn(() => ({
     signInWithGoogle: vi.fn(),
+    signUpWithGoogle: vi.fn(),
   })),
   WebPlugin: class WebPlugin {},
 }));
@@ -14,6 +15,7 @@ vi.mock('@capacitor/core', () => ({
 vi.mock('../../../services/clerkNativeAuth', () => ({
   default: {
     signInWithGoogle: vi.fn(),
+    signUpWithGoogle: vi.fn(),
   },
 }));
 
@@ -32,6 +34,7 @@ import { Capacitor } from '@capacitor/core';
 import ClerkNativeAuth from '../../../services/clerkNativeAuth';
 import {
   completeNativeGoogleSignIn,
+  completeNativeGoogleSignUp,
   consumeSignInTicket,
   isAndroidNativeApp,
   nativeBridgeUrl,
@@ -133,6 +136,40 @@ describe('nativeAuthBridge', () => {
       ticket: 'sit_one_time',
     });
     expect(setActive).toHaveBeenCalledWith({ session: 'sess_webview_2' });
+
+    vi.unstubAllGlobals();
+  });
+
+  it('uses the separate native Clerk sign-up method before the same ticket bridge', async () => {
+    vi.mocked(ClerkNativeAuth.signUpWithGoogle).mockResolvedValue({
+      token: 'native-sign-up-jwt',
+    });
+
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ ticket: 'sit_sign_up' }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const signIn = {
+      create: vi.fn().mockResolvedValue({
+        status: 'complete',
+        createdSessionId: 'sess_webview_sign_up',
+      }),
+    };
+    const setActive = vi.fn().mockResolvedValue(undefined);
+
+    await completeNativeGoogleSignUp({ signIn, setActive });
+
+    expect(ClerkNativeAuth.signUpWithGoogle).toHaveBeenCalledWith({
+      publishableKey: 'pk_live_test',
+    });
+    expect(ClerkNativeAuth.signInWithGoogle).not.toHaveBeenCalled();
+    expect(signIn.create).toHaveBeenCalledWith({
+      strategy: 'ticket',
+      ticket: 'sit_sign_up',
+    });
+    expect(setActive).toHaveBeenCalledWith({ session: 'sess_webview_sign_up' });
 
     vi.unstubAllGlobals();
   });

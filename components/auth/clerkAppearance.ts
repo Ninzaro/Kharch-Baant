@@ -1,7 +1,8 @@
 /**
- * Hide Clerk social buttons inside the Capacitor Android WebView.
+ * Hide Clerk social buttons and hosted sign-in/sign-up navigation inside the
+ * Capacitor Android WebView.
  * Native Google uses ClerkNativeAuthPlugin (Credential Manager + clerk-android),
- * not embedded <SignIn /> social buttons and not the Account Portal.
+ * while AuthScreen switches locally between Clerk's <SignIn /> and <SignUp />.
  */
 export const NATIVE_HIDE_SOCIAL_CLERK_APPEARANCE = {
   elements: {
@@ -9,6 +10,7 @@ export const NATIVE_HIDE_SOCIAL_CLERK_APPEARANCE = {
     socialButtonsBlockButton: { display: 'none' },
     socialButtonsRoot: { display: 'none' },
     dividerRow: { display: 'none' },
+    footerAction: { display: 'none' },
   },
 };
 
