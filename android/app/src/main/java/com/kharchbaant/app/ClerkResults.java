@@ -37,6 +37,10 @@ final class ClerkResults {
         }
         if (detail.length() == 0 && thrown != null) {
             detail.append(thrown.getClass().getSimpleName());
+            String thrownMessage = thrown.getMessage();
+            if (thrownMessage != null && !thrownMessage.isBlank()) {
+                detail.append(": ").append(thrownMessage);
+            }
         }
         if (httpCode != null) {
             if (detail.length() > 0) {
