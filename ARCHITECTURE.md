@@ -312,8 +312,8 @@ Bridges Clerk → Supabase. Exposes `useAuth()` returning:
 
 - On Clerk user change: calls `setRealtimeAuth(token)` from `lib/supabase.ts` to push the Clerk JWT into Supabase Realtime **before** resolving the Person via `ensureUserExists(user.id, fullName, email)`. Order matters — bridges mounted in `App.tsx` are keyed on `personId`, so the WS must be authenticated before `personId` becomes truthy.
 - Starts a **50 s refresh interval** (`REALTIME_AUTH_REFRESH_MS`) that re-pushes a fresh Clerk JWT so the long-lived WS connection never loses its RLS context (Clerk JWT TTL defaults to 60 s). The interval is owned by the effect and cleared on re-run or unmount.
-- On sign-out: `signOut()` calls `setRealtimeAuth(null)` *before* `clerkSignOut()` (fail-closed).
-- Covered by `src/test/contexts/SupabaseAuthContext.test.tsx` (5 tests).
+- On sign-out: `signOut()` calls `setRealtimeAuth(null)` first, clears the persisted clerk-android session on Android, then calls `clerkSignOut()`. A signed-in → signed-out session transition also clears the native session so Clerk's built-in UserButton cannot bypass cleanup; an initially signed-out launch does not trigger it.
+- Covered by `src/test/contexts/SupabaseAuthContext.test.tsx`.
 
 ### TanStack Query
 Owns all server state. Components and hooks read via the hooks in `services/queries.ts` — never call services directly inside components.

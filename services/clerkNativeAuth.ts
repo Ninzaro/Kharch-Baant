@@ -7,6 +7,7 @@ export interface ClerkNativeAuthPlugin {
   signUpWithGoogle(options: {
     publishableKey: string;
   }): Promise<{ token: string }>;
+  signOut(): Promise<void>;
 }
 
 class ClerkNativeAuthWeb extends WebPlugin implements ClerkNativeAuthPlugin {
@@ -15,6 +16,10 @@ class ClerkNativeAuthWeb extends WebPlugin implements ClerkNativeAuthPlugin {
   }
 
   async signUpWithGoogle(): Promise<{ token: string }> {
+    throw new Error('Native Clerk authentication is only available on Android.');
+  }
+
+  async signOut(): Promise<void> {
     throw new Error('Native Clerk authentication is only available on Android.');
   }
 }

@@ -1,8 +1,9 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { useUser, useClerk, useSession } from '@clerk/clerk-react';
 import { ensureUserExists } from '../services/supabaseApiService';
 import { getClerkSupabaseToken, setRealtimeAuth, setClerkTokenGetter } from '../lib/supabase';
 import { Person } from '../types';
+import { clearNativeClerkSession } from '../services/nativeAuthBridge';
 
 /**
  * Clerk JWTs default to a 60s TTL. We re-push the token into Supabase Realtime
@@ -31,6 +32,8 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
   
   const [person, setPerson] = useState<Person | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  const hadWebSessionRef = useRef(false);
+  const nativeSignOutHandledRef = useRef(false);
   
   const loading = !isUserLoaded || !isSessionLoaded;
 
@@ -42,6 +45,24 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
     setClerkTokenGetter((opts) => session.getToken({ skipCache: opts?.skipCache }));
     return () => setClerkTokenGetter(null);
   }, [session]);
+
+  useEffect(() => {
+    if (!isSessionLoaded) return;
+
+    if (session) {
+      hadWebSessionRef.current = true;
+      nativeSignOutHandledRef.current = false;
+      return;
+    }
+
+    if (!hadWebSessionRef.current || nativeSignOutHandledRef.current) return;
+
+    nativeSignOutHandledRef.current = true;
+    clearNativeClerkSession().catch((error) => {
+      nativeSignOutHandledRef.current = false;
+      console.error('Native Clerk sign-out error:', error);
+    });
+  }, [session, isSessionLoaded]);
 
   useEffect(() => {
     let cancelled = false;
@@ -109,6 +130,17 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
       // Drop Realtime auth first (fail-closed): if Clerk sign-out fails
       // downstream, we still don't want the old JWT driving WS subscriptions.
       await setRealtimeAuth(null);
+
+      try {
+        await clearNativeClerkSession();
+        nativeSignOutHandledRef.current = true;
+      } catch (error) {
+        // WebView logout must still complete. The session-transition effect
+        // gets one more opportunity to clear the persisted native session.
+        nativeSignOutHandledRef.current = false;
+        console.error('Native Clerk sign-out error:', error);
+      }
+
       await clerkSignOut();
       setPerson(null);
     } catch (err) {

@@ -86,6 +86,27 @@ class ClerkNativeAuthPlugin : Plugin() {
         }
     }
 
+    @PluginMethod
+    fun signOut(call: PluginCall) {
+        scope.launch {
+            try {
+                ensureClerkReady("")
+                val result = Clerk.auth.signOut()
+                if (!ClerkResults.isSuccess(result)) {
+                    Log.e(TAG, "Native Clerk sign-out failed: ${ClerkResults.failureDetail(result)}")
+                    call.reject("Native Clerk sign-out failed.")
+                    return@launch
+                }
+
+                Log.i(TAG, "Native Clerk session cleared")
+                call.resolve()
+            } catch (e: Exception) {
+                Log.e(TAG, "Native Clerk sign-out failed: ${e.javaClass.simpleName}", e)
+                call.reject("Native Clerk sign-out failed.")
+            }
+        }
+    }
+
     private suspend fun ensureClerkReady(publishableKeyFromJs: String) {
         val currentActivity = activity
         if (currentActivity != null) {

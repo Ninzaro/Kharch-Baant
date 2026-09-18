@@ -8,6 +8,7 @@ vi.mock('@capacitor/core', () => ({
   registerPlugin: vi.fn(() => ({
     signInWithGoogle: vi.fn(),
     signUpWithGoogle: vi.fn(),
+    signOut: vi.fn(),
   })),
   WebPlugin: class WebPlugin {},
 }));
@@ -16,6 +17,7 @@ vi.mock('../../../services/clerkNativeAuth', () => ({
   default: {
     signInWithGoogle: vi.fn(),
     signUpWithGoogle: vi.fn(),
+    signOut: vi.fn(),
   },
 }));
 
@@ -35,6 +37,7 @@ import ClerkNativeAuth from '../../../services/clerkNativeAuth';
 import {
   completeNativeGoogleSignIn,
   completeNativeGoogleSignUp,
+  clearNativeClerkSession,
   consumeSignInTicket,
   isAndroidNativeApp,
   nativeBridgeUrl,
@@ -56,6 +59,19 @@ describe('nativeAuthBridge', () => {
 
     vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
     expect(isAndroidNativeApp()).toBe(true);
+  });
+
+  it('clears the persisted Clerk session only on native Android', async () => {
+    await clearNativeClerkSession();
+    expect(ClerkNativeAuth.signOut).not.toHaveBeenCalled();
+
+    vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
+    vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
+    vi.mocked(ClerkNativeAuth.signOut).mockResolvedValue(undefined);
+
+    await clearNativeClerkSession();
+
+    expect(ClerkNativeAuth.signOut).toHaveBeenCalledTimes(1);
   });
 
   it('builds the existing Supabase Edge Function URL', () => {

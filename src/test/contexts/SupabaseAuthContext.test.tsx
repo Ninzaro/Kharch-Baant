@@ -21,6 +21,8 @@ const h = vi.hoisted(() => ({
   mockSignOut: vi.fn<() => Promise<void>>(),
   mockEnsureUserExists: vi.fn(),
   setRealtimeAuthSpy: vi.fn<(token?: string | null) => Promise<void>>(),
+  setClerkTokenGetterSpy: vi.fn(),
+  clearNativeClerkSessionSpy: vi.fn<() => Promise<void>>(),
   clerkState: {
     user: null as any,
     session: null as any,
@@ -42,6 +44,11 @@ vi.mock('../../../lib/supabase', () => ({
     return token ?? ''
   },
   setRealtimeAuth: h.setRealtimeAuthSpy,
+  setClerkTokenGetter: h.setClerkTokenGetterSpy,
+}))
+
+vi.mock('../../../services/nativeAuthBridge', () => ({
+  clearNativeClerkSession: h.clearNativeClerkSessionSpy,
 }))
 
 vi.mock('../../../services/supabaseApiService', () => ({
@@ -75,6 +82,8 @@ beforeEach(() => {
   h.setRealtimeAuthSpy.mockReset().mockResolvedValue(undefined)
   h.mockGetToken.mockReset().mockResolvedValue('jwt-token-v1')
   h.mockSignOut.mockReset().mockResolvedValue(undefined)
+  h.setClerkTokenGetterSpy.mockReset()
+  h.clearNativeClerkSessionSpy.mockReset().mockResolvedValue(undefined)
   h.mockEnsureUserExists.mockReset().mockResolvedValue({
     id: 'person-1',
     name: 'Test User',
@@ -167,6 +176,55 @@ describe('SupabaseAuthContext — Realtime auth wiring', () => {
     })
 
     expect(h.setRealtimeAuthSpy).toHaveBeenLastCalledWith(null)
+    expect(h.clearNativeClerkSessionSpy).toHaveBeenCalledTimes(1)
+    expect(h.mockSignOut).toHaveBeenCalledTimes(1)
+  })
+
+  it('clears the native session when Clerk UserButton signs out directly', async () => {
+    h.clerkState.user = { id: 'clerk-user-1', primaryEmailAddress: { emailAddress: 'test@example.com' }, fullName: 'Test User' }
+    h.clerkState.session = { id: 'sess-1', getToken: vi.fn() }
+
+    const view = renderWithProvider()
+    await waitFor(() => expect(h.setRealtimeAuthSpy).toHaveBeenCalledWith('jwt-token-v1'))
+
+    h.clerkState.user = null
+    h.clerkState.session = null
+    view.rerender(
+      <SupabaseAuthProvider>
+        <Probe />
+      </SupabaseAuthProvider>,
+    )
+
+    await waitFor(() => expect(h.clearNativeClerkSessionSpy).toHaveBeenCalledTimes(1))
+  })
+
+  it('still clears the WebView session when native sign-out fails', async () => {
+    h.clerkState.user = { id: 'clerk-user-1', primaryEmailAddress: { emailAddress: 'test@example.com' }, fullName: 'Test User' }
+    h.clerkState.session = { id: 'sess-1' }
+    h.clearNativeClerkSessionSpy.mockRejectedValue(new Error('native failure'))
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+    let authRef: ReturnType<typeof useAuth> | undefined
+    renderWithProvider((v) => { authRef = v })
+    await waitFor(() => expect(h.setRealtimeAuthSpy).toHaveBeenCalledWith('jwt-token-v1'))
+
+    await act(async () => {
+      await authRef!.signOut()
+    })
+
+    expect(h.mockSignOut).toHaveBeenCalledTimes(1)
+    expect(consoleError).toHaveBeenCalledWith(
+      'Native Clerk sign-out error:',
+      expect.any(Error),
+    )
+    consoleError.mockRestore()
+  })
+
+  it('does not clear native Clerk on an initially signed-out launch', async () => {
+    renderWithProvider()
+
+    await waitFor(() => expect(h.setRealtimeAuthSpy).toHaveBeenCalledWith(null))
+    expect(h.clearNativeClerkSessionSpy).not.toHaveBeenCalled()
   })
 
   it('stops refreshing after unmount (no leaked interval)', async () => {

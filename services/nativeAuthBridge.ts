@@ -6,6 +6,12 @@ export function isAndroidNativeApp(): boolean {
   return Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android';
 }
 
+/** Clears clerk-android's persisted session without affecting web clients. */
+export async function clearNativeClerkSession(): Promise<void> {
+  if (!isAndroidNativeApp()) return;
+  await ClerkNativeAuth.signOut();
+}
+
 export function nativeBridgeUrl(supabaseUrl: string): string {
   return `${supabaseUrl.replace(/\/$/, '')}/functions/v1/native-bridge`;
 }
