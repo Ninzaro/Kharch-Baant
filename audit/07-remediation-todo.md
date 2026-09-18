@@ -78,13 +78,16 @@ The migration ledger is exact, but ledger presence alone does not prove that lat
 
 ### Stage 2A — M-09 and M-10
 
-Status: implementation complete; production migration pending explicit deployment approval.
+Status: production deployed and verified; Stage 2B remains pending.
 
 - Expense and settlement submissions retain a client-generated transaction UUID across an identical retry.
 - Direct expense inserts return the existing matching row on a primary-key retry and reject UUID reuse with different content.
 - New settlements use `settle_up(...)`, which locks the group and its transaction rows, checks the client balance snapshot, rejects overpayment, and returns an existing matching settlement for an idempotent retry.
 - Existing settlement edits retain their `updated_at` compare-and-swap path.
 - Production was queried read-only to confirm the RPC balance CTE executes against current transaction shapes; the migration was not applied.
+- Production deployment recorded two ledger entries for the same idempotent function because the first call completed after its permission-review timeout and the permitted retry also succeeded. The duplicate ledger history is preserved and assigned to Item 5 reconciliation.
+- Supabase default privileges granted `anon` direct EXECUTE despite the original `PUBLIC` revocation; follow-up migration `20260918185837_restrict_settle_up_execute.sql` explicitly revokes both. It is a fresh-install no-op until `settle_up` exists; the canonical function migration now performs the same explicit revocation.
+- Live verification: `settle_up` is SECURITY DEFINER with an empty `search_path`, contains the locking/stale-balance/overpayment checks, is executable by `authenticated`, and is not executable by `anon`.
 
 Validation:
 

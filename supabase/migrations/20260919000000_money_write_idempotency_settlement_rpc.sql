@@ -241,7 +241,7 @@ $$;
 
 REVOKE EXECUTE ON FUNCTION public.settle_up(
   uuid, uuid, uuid, uuid, bigint, bigint, bigint, date, text, uuid, text
-) FROM PUBLIC;
+) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.settle_up(
   uuid, uuid, uuid, uuid, bigint, bigint, bigint, date, text, uuid, text
 ) TO authenticated;
