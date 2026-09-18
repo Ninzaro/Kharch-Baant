@@ -12,7 +12,10 @@ import { CalendarIcon, ChevronRightIcon, DeleteIcon, CheckIcon } from './icons/I
 interface TransactionFormModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (transaction: Omit<Transaction, 'id' | 'groupId'>) => void | Promise<void>;
+    onSave: (
+        transaction: Omit<Transaction, 'id' | 'groupId'>,
+        clientTransactionId?: string,
+    ) => void | Promise<void>;
     transaction: Transaction | null;
     people: Person[];
     currentUserId: string;
@@ -97,6 +100,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
     const [paymentSourceId, setPaymentSourceId] = useState<string | undefined>(undefined);
     const [submitting, setSubmitting] = useState(false);
     const [comment, setComment] = useState('');
+    const submissionRef = useRef<{ fingerprint: string; transactionId: string } | null>(null);
 
     // UI State
     const [isSuggestingTag, setIsSuggestingTag] = useState(false);
@@ -373,20 +377,32 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
             finalDescription = `${withoutTrailingEmoji} ${icon}`;
         }
 
+        const transactionData: Omit<Transaction, 'id' | 'groupId'> = {
+            description: finalDescription,
+            amount: Number(amount),
+            paidById: finalPaidById,
+            payers,
+            date,
+            tag: finalTag,
+            paymentSourceId,
+            split: { mode: splitMode, participants },
+            comment,
+            type: transaction?.type ?? 'expense',
+        };
+        const fingerprint = JSON.stringify(transactionData);
+        if (!submissionRef.current || submissionRef.current.fingerprint !== fingerprint) {
+            submissionRef.current = {
+                fingerprint,
+                transactionId: crypto.randomUUID(),
+            };
+        }
+
         setSubmitting(true);
         try {
-            await onSave({
-                description: finalDescription,
-                amount: Number(amount),
-                paidById: finalPaidById,
-                payers,
-                date,
-                tag: finalTag,
-                paymentSourceId,
-                split: { mode: splitMode, participants },
-                comment,
-                type: transaction?.type ?? 'expense',
-            });
+            await onSave(
+                transactionData,
+                transaction ? undefined : submissionRef.current.transactionId,
+            );
         } finally {
             setSubmitting(false);
         }

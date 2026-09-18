@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -479,6 +479,45 @@ export type Database = {
     }
     Functions: {
       delete_group: { Args: { p_group_id: string }; Returns: undefined }
+      settle_up: {
+        Args: {
+          p_amount_minor: number
+          p_comment?: string | null
+          p_date: string
+          p_description: string
+          p_expected_payer_balance_minor: number
+          p_expected_receiver_balance_minor: number
+          p_group_id: string
+          p_payer_id: string
+          p_payment_source_id?: string | null
+          p_receiver_id: string
+          p_transaction_id: string
+        }
+        Returns: {
+          amount: number
+          comment: string | null
+          created_at: string | null
+          created_by: string
+          date: string
+          description: string
+          group_id: string
+          id: string
+          paid_by_id: string
+          payers: Json | null
+          payment_source_id: string | null
+          split_mode: string
+          split_participants: Json
+          tag: string
+          type: string
+          updated_at: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "transactions"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       claim_person_by_email: {
         Args: { p_clerk_id: string; p_email: string; p_name: string }
         Returns: {

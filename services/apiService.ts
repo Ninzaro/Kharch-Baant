@@ -23,7 +23,16 @@ export const subscribeToGroupMembers = (personId: string, callback: (payload: an
 
 // TRANSACTIONS
 export const getTransactions = async (personId?: string): Promise<Transaction[]> => supabaseApi.getTransactions(personId);
-export const addTransaction = async (groupId: string, transactionData: Omit<Transaction, 'id' | 'groupId'>): Promise<Transaction> => supabaseApi.addTransaction(groupId, transactionData);
+export const addTransaction = async (
+  groupId: string,
+  transactionData: Omit<Transaction, 'id' | 'groupId'>,
+  transactionId?: string,
+): Promise<Transaction> => supabaseApi.addTransaction(groupId, transactionData, transactionId);
+export const settleUp = async (
+  groupId: string,
+  transactionData: Omit<Transaction, 'id' | 'groupId'>,
+  context: supabaseApi.SettlementWriteContext,
+): Promise<Transaction> => supabaseApi.settleUp(groupId, transactionData, context);
 export const updateTransaction = async (transactionId: string, transactionData: Partial<Omit<Transaction, 'id' | 'groupId'>>): Promise<Transaction> => supabaseApi.updateTransaction(transactionId, transactionData);
 export const deleteTransaction = async (transactionId: string, groupId?: string): Promise<{ success: boolean }> => supabaseApi.deleteTransaction(transactionId, groupId);
 

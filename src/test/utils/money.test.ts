@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { roundToCents, roundMoneyFields } from '../../../utils/money';
+import { roundToCents, roundMoneyFields, toMinorUnits } from '../../../utils/money';
 
 describe('roundToCents', () => {
   it('rounds 1.005 up to 1.01 (not 1.00 from IEEE * 100)', () => {
@@ -12,6 +12,13 @@ describe('roundToCents', () => {
 
   it('rounds 0.004 down to 0', () => {
     expect(roundToCents(0.004)).toBe(0);
+  });
+});
+
+describe('toMinorUnits', () => {
+  it('uses the same half-up boundary as transaction rounding', () => {
+    expect(toMinorUnits(1.005)).toBe(101);
+    expect(toMinorUnits(25.5)).toBe(2550);
   });
 });
 

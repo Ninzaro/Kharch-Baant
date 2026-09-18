@@ -57,8 +57,23 @@ export const getArchivedGroups = async (userId: string): Promise<Group[]> => {
 import { supabase } from '../lib/supabase';
 import { Group, Transaction, PaymentSource, Person, GroupType, SplitParticipant, Payer } from '../types';
 import type { DbGroup, DbTransaction, DbPaymentSource, DbPerson } from '../lib/supabase';
+import type { Json } from '../lib/database.types';
 import * as emailService from './emailService';
 import { roundMoneyFields, roundToCents } from '../utils/money';
+
+const stableJsonStringify = (value: unknown): string => {
+  if (Array.isArray(value)) {
+    return `[${value.map(stableJsonStringify).join(',')}]`;
+  }
+  if (value !== null && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${stableJsonStringify(record[key])}`)
+      .join(',')}}`;
+  }
+  return JSON.stringify(value);
+};
 
 // Helper function to transform database group to app group
 const transformDbGroupToAppGroup = async (dbGroup: DbGroup): Promise<Group> => {
@@ -439,7 +454,8 @@ export const getTransactions = async (personId?: string): Promise<Transaction[]>
 
 export const addTransaction = async (
   groupId: string,
-  transactionData: Omit<Transaction, 'id' | 'groupId'>
+  transactionData: Omit<Transaction, 'id' | 'groupId'>,
+  transactionId: string = crypto.randomUUID(),
 ): Promise<Transaction> => {
   const { amount, payers } = roundMoneyFields(transactionData.amount, transactionData.payers);
   if (!(amount > 0)) {
@@ -448,11 +464,12 @@ export const addTransaction = async (
   const { data, error } = await supabase
     .from('transactions')
     .insert({
+      id: transactionId,
       group_id: groupId,
       description: transactionData.description,
       amount,
-      paid_by_id: transactionData.paidById, // Still required for FK
-      payers, // New JSONB column
+      paid_by_id: transactionData.paidById,
+      payers: payers as unknown as Json,
       date: transactionData.date,
       tag: transactionData.tag,
       payment_source_id: transactionData.paymentSourceId || null,
@@ -464,11 +481,82 @@ export const addTransaction = async (
     .select()
     .single();
 
+  if (error) {
+    if (error.code !== '23505') throw error;
+
+    const { data: existing, error: existingError } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('id', transactionId)
+      .maybeSingle();
+
+    if (existingError || !existing) throw error;
+
+    const sameWrite =
+      existing.group_id === groupId &&
+      existing.description === transactionData.description &&
+      Number(existing.amount) === amount &&
+      existing.paid_by_id === transactionData.paidById &&
+      existing.date === transactionData.date &&
+      existing.tag === transactionData.tag &&
+      existing.payment_source_id === (transactionData.paymentSourceId || null) &&
+      existing.comment === (transactionData.comment || null) &&
+      existing.type === (transactionData.type ?? 'expense') &&
+      existing.split_mode === transactionData.split.mode &&
+      stableJsonStringify(existing.split_participants) === stableJsonStringify(transactionData.split.participants) &&
+      stableJsonStringify(existing.payers) === stableJsonStringify(payers ?? null);
+
+    if (!sameWrite) {
+      throw new Error('Transaction id is already used for a different write.');
+    }
+
+    return transformDbTransactionToAppTransaction(existing);
+  }
+
+  return transformDbTransactionToAppTransaction(data);
+};
+
+export interface SettlementWriteContext {
+  transactionId: string;
+  expectedPayerBalanceMinor: number;
+  expectedReceiverBalanceMinor: number;
+}
+
+export const settleUp = async (
+  groupId: string,
+  transactionData: Omit<Transaction, 'id' | 'groupId'>,
+  context: SettlementWriteContext,
+): Promise<Transaction> => {
+  const amountMinor = Math.round(Number(`${transactionData.amount}e2`));
+  if (!(amountMinor > 0)) {
+    throw new Error('Settlement amount must be at least 0.01.');
+  }
+
+  const receiver = transactionData.split.participants.find(
+    (participant) => participant.personId !== transactionData.paidById,
+  );
+  if (!receiver) {
+    throw new Error('Settlement receiver is required.');
+  }
+
+  const { data, error } = await supabase
+    .rpc('settle_up', {
+      p_transaction_id: context.transactionId,
+      p_group_id: groupId,
+      p_payer_id: transactionData.paidById,
+      p_receiver_id: receiver.personId,
+      p_amount_minor: amountMinor,
+      p_expected_payer_balance_minor: context.expectedPayerBalanceMinor,
+      p_expected_receiver_balance_minor: context.expectedReceiverBalanceMinor,
+      p_date: transactionData.date,
+      p_description: transactionData.description,
+      p_payment_source_id: transactionData.paymentSourceId || null,
+      p_comment: transactionData.comment || null,
+    })
+    .single();
+
   if (error) throw error;
-
-  const transaction = transformDbTransactionToAppTransaction(data);
-
-  return transaction;
+  return transformDbTransactionToAppTransaction(data);
 };
 
 export const updateTransaction = async (

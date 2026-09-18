@@ -10,6 +10,7 @@ vi.mock('../../../services/supabaseApiService', () => ({
   updateGroup: vi.fn(),
   getTransactions: vi.fn(),
   addTransaction: vi.fn(),
+  settleUp: vi.fn(),
   updateTransaction: vi.fn(),
   deleteTransaction: vi.fn(),
   getPaymentSources: vi.fn(),
@@ -155,9 +156,43 @@ describe('apiService', () => {
       
       vi.mocked(supabaseApi.addTransaction).mockResolvedValue(mockTransaction)
       
-      const result = await apiService.addTransaction(groupId, transactionData)
+      const result = await apiService.addTransaction(groupId, transactionData, 'tx-client-id')
       
-      expect(supabaseApi.addTransaction).toHaveBeenCalledWith(groupId, transactionData)
+      expect(supabaseApi.addTransaction).toHaveBeenCalledWith(groupId, transactionData, 'tx-client-id')
+      expect(result).toEqual(mockTransaction)
+    })
+
+    it('should create a settlement through the guarded RPC facade', async () => {
+      const transactionData: Omit<Transaction, 'id' | 'groupId'> = {
+        description: 'Settlement: Bob → Alice',
+        amount: 25,
+        paidById: 'p2',
+        date: '2024-01-02',
+        tag: 'Other',
+        split: {
+          mode: 'unequal',
+          participants: [
+            { personId: 'p2', value: 0 },
+            { personId: 'p1', value: 25 },
+          ],
+        },
+        type: 'settlement',
+      }
+      const context = {
+        transactionId: 'tx-settlement',
+        expectedPayerBalanceMinor: -5000,
+        expectedReceiverBalanceMinor: 5000,
+      }
+      const mockTransaction: Transaction = {
+        id: context.transactionId,
+        groupId: 'g1',
+        ...transactionData,
+      }
+      vi.mocked(supabaseApi.settleUp).mockResolvedValue(mockTransaction)
+
+      const result = await apiService.settleUp('g1', transactionData, context)
+
+      expect(supabaseApi.settleUp).toHaveBeenCalledWith('g1', transactionData, context)
       expect(result).toEqual(mockTransaction)
     })
 

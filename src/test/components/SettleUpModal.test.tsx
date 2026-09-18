@@ -5,7 +5,7 @@ import type { Person, PaymentSource, Transaction } from '../../../types';
 
 // Mock dynamic import of apiService used inside the modal
 vi.mock('../../../services/apiService', () => ({
-  addTransaction: vi.fn(async (_groupId: string, data: any) => {
+  settleUp: vi.fn(async (_groupId: string, data: any) => {
     const created: Transaction = {
       id: 'tx_new',
       groupId: _groupId,
@@ -78,7 +78,24 @@ describe('SettleUpModal', () => {
   it('creates settlement transaction via api and calls onCreated', async () => {
     const onCreated = vi.fn();
     const onClose = vi.fn();
-    const { addTransaction } = await import('../../../services/apiService');
+    const { settleUp } = await import('../../../services/apiService');
+    const expense: Transaction = {
+      id: 'tx_exp',
+      groupId: 'g1',
+      description: 'Dinner',
+      amount: 100,
+      paidById: 'p1',
+      date: '2024-01-01',
+      tag: 'Food',
+      type: 'expense',
+      split: {
+        mode: 'equal',
+        participants: [
+          { personId: 'p1', value: 1 },
+          { personId: 'p2', value: 1 },
+        ],
+      },
+    };
 
     render(
       <SettleUpModal
@@ -87,11 +104,11 @@ describe('SettleUpModal', () => {
         groupId="g1"
         members={members}
         paymentSources={paymentSources}
-        transactions={[]}
+        transactions={[expense]}
         currency="USD"
         onCreated={onCreated}
-        defaultPayerId="p1"
-        defaultReceiverId="p2"
+        defaultPayerId="p2"
+        defaultReceiverId="p1"
       />
     );
 
@@ -102,21 +119,80 @@ describe('SettleUpModal', () => {
     expect(recordBtn).not.toBeDisabled();
     fireEvent.click(recordBtn);
 
-  await waitFor(() => expect(addTransaction).toHaveBeenCalledTimes(1));
-    expect(addTransaction).toHaveBeenCalledWith(
+    await waitFor(() => expect(settleUp).toHaveBeenCalledTimes(1));
+    expect(settleUp).toHaveBeenCalledWith(
       'g1',
       expect.objectContaining({
         type: 'settlement',
         amount: 25.50,
         // The payer (who hands the money over) is recorded as paidById; the
         // split then credits the receiver with the full amount.
-        paidById: 'p1',
+        paidById: 'p2',
         split: expect.objectContaining({ mode: 'unequal' })
-      })
+      }),
+      expect.objectContaining({
+        transactionId: expect.any(String),
+        expectedPayerBalanceMinor: -5000,
+        expectedReceiverBalanceMinor: 5000,
+      }),
     );
 
     expect(onCreated).toHaveBeenCalledTimes(1);
     expect(onClose).toHaveBeenCalled();
+  });
+
+  it('allows only one settlement submission while the RPC is in flight', async () => {
+    const expense: Transaction = {
+      id: 'tx_exp',
+      groupId: 'g1',
+      description: 'Dinner',
+      amount: 100,
+      paidById: 'p1',
+      date: '2024-01-01',
+      tag: 'Food',
+      type: 'expense',
+      split: {
+        mode: 'equal',
+        participants: [
+          { personId: 'p1', value: 1 },
+          { personId: 'p2', value: 1 },
+        ],
+      },
+    };
+    let resolveSubmit!: (transaction: Transaction) => void;
+    const onSubmit = vi.fn(() => new Promise<Transaction>((resolve) => {
+      resolveSubmit = resolve;
+    }));
+
+    render(
+      <SettleUpModal
+        open
+        onClose={() => {}}
+        groupId="g1"
+        members={members}
+        paymentSources={paymentSources}
+        transactions={[expense]}
+        defaultPayerId="p2"
+        defaultReceiverId="p1"
+        defaultAmount={50}
+        onSubmit={onSubmit}
+      />
+    );
+
+    const recordButton = screen.getByRole('button', { name: /record settlement/i });
+    fireEvent.click(recordButton);
+    fireEvent.click(recordButton);
+
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    resolveSubmit({
+      ...expense,
+      id: 'tx_settlement',
+      description: 'Settlement: Bob → Alice',
+      paidById: 'p2',
+      amount: 50,
+      type: 'settlement',
+    });
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
   });
 
   it('edit mode does not double-count an existing settlement in the preview', async () => {

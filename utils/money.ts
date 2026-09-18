@@ -19,6 +19,12 @@ export function roundToCents(n: number): number {
   return Number(Math.round(Number(`${n}e2`)) + 'e-2');
 }
 
+/** Convert a display-unit amount to an integer number of minor units. */
+export function toMinorUnits(n: number): number {
+  if (!Number.isFinite(n)) return n;
+  return Math.round(Number(`${n}e2`));
+}
+
 /**
  * Round a transaction total and each payer amount to cents.
  * Put leftover drift on the last payer so rounded payers still sum to the total.

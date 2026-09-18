@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import BaseModal from './BaseModal';
 import { Person, Transaction, PaymentSource } from '../types';
-import { addTransaction } from '../services/apiService';
+import { settleUp } from '../services/apiService';
 import { calculateGroupBalances, simplifyGroupDebts } from '../utils/calculations';
+import { toMinorUnits } from '../utils/money';
 import { ArrowRightIcon, ChevronDownIcon, CalendarIcon } from './icons/Icons';
 import toast from 'react-hot-toast';
 
@@ -19,7 +20,14 @@ interface SettleUpModalProps {
   defaultReceiverId?: string;
   defaultAmount?: number;
   initialTransaction?: Transaction; // For editing
-  onSubmit?(transaction: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>): Promise<Transaction>; // Override internal API call
+  onSubmit?(
+    transaction: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>,
+    context?: {
+      transactionId: string;
+      expectedPayerBalanceMinor: number;
+      expectedReceiverBalanceMinor: number;
+    },
+  ): Promise<Transaction>;
 }
 
 const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, members, paymentSources, transactions, currency = 'USD', onCreated, defaultPayerId, defaultReceiverId, defaultAmount, initialTransaction, onSubmit }) => {
@@ -44,6 +52,7 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
   const [submitting, setSubmitting] = useState(false);
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const amountInputRef = useRef<HTMLInputElement>(null);
+  const submissionRef = useRef<{ fingerprint: string; transactionId: string } | null>(null);
 
   // Seed state when modal opens: use initialTransaction for edit mode, or defaults for new settlement
   useEffect(() => {
@@ -167,11 +176,32 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
         type: 'settlement',
       };
 
+      const expectedPayerBalanceMinor = toMinorUnits(baseBalances.get(payerId) ?? 0);
+      const expectedReceiverBalanceMinor = toMinorUnits(baseBalances.get(receiverId) ?? 0);
+      const fingerprint = JSON.stringify({
+        txBase,
+        expectedPayerBalanceMinor,
+        expectedReceiverBalanceMinor,
+      });
+      if (!submissionRef.current || submissionRef.current.fingerprint !== fingerprint) {
+        submissionRef.current = {
+          fingerprint,
+          transactionId: crypto.randomUUID(),
+        };
+      }
+      const context = {
+        transactionId: submissionRef.current.transactionId,
+        expectedPayerBalanceMinor,
+        expectedReceiverBalanceMinor,
+      };
+
       let created: Transaction;
       if (onSubmit) {
-        created = await onSubmit(txBase);
+        created = isEditing
+          ? await onSubmit(txBase)
+          : await onSubmit(txBase, context);
       } else {
-        created = await addTransaction(groupId, txBase);
+        created = await settleUp(groupId, txBase, context);
       }
 
       toast.success(initialTransaction ? 'Settlement updated ✓' : 'Settlement recorded ✓');

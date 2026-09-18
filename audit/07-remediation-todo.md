@@ -16,7 +16,7 @@ Status meanings:
 | # | Workstream | Status | Completion evidence |
 |---|---|---|---|
 | 1 | Reconcile committed migrations against production | **complete** | All 34 timestamped migrations are present in production; live-state drift is classified below. Reconciliation was read-only. |
-| 2 | Finish the three remaining money guarantees | pending | M-09 durable idempotency, M-10 duplicate-settlement protection, and M-13 exact-cent invariants verified by database-backed tests. |
+| 2 | Finish the three remaining money guarantees | **in progress** | 2A (M-09/M-10) implemented locally and validated; production migration and 2B (M-13) remain. |
 | 3 | Close membership/ownership authorization gaps | pending | Ownership cannot be reassigned; transaction participants are group members; consent/leave semantics are explicitly decided and enforced. |
 | 4 | Finish sign-out data cleanup and auth-failure UX | pending | Logout clears private client state; a second user cannot inherit it; auth failures do not render as empty data. |
 | 5 | Add backup/restore and migration-state tracking | pending | Backup policy documented, one restore tested, and migration application has an authoritative repeatable workflow. |
@@ -75,6 +75,31 @@ The migration ledger is exact, but ledger presence alone does not prove that lat
 - M-09: design durable idempotency for transaction and settlement creation.
 - M-10: reject duplicate settlements in addition to the existing cap, prefill, and update CAS.
 - M-13: replace the `< 0.01` acceptance window with exact minor-unit validation.
+
+### Stage 2A — M-09 and M-10
+
+Status: implementation complete; production migration pending explicit deployment approval.
+
+- Expense and settlement submissions retain a client-generated transaction UUID across an identical retry.
+- Direct expense inserts return the existing matching row on a primary-key retry and reject UUID reuse with different content.
+- New settlements use `settle_up(...)`, which locks the group and its transaction rows, checks the client balance snapshot, rejects overpayment, and returns an existing matching settlement for an idempotent retry.
+- Existing settlement edits retain their `updated_at` compare-and-swap path.
+- Production was queried read-only to confirm the RPC balance CTE executes against current transaction shapes; the migration was not applied.
+
+Validation:
+
+- `npm run test:run` — 20 files and 129 tests passed.
+- `npm run build` — passed.
+- `npm run typecheck` — still fails on the pre-existing repository baseline tracked by Item 6; no new 2A error remained after the focused correction.
+
+Git:
+
+- Checkpoint: `9dfb2f8`
+- Implementation: pending commit
+
+### Stage 2B — M-13
+
+Status: pending. Exact minor-unit validation remains deliberately unchanged in 2A.
 
 ## Item 3 — membership and ownership authorization
 

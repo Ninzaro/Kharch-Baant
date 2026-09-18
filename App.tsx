@@ -370,7 +370,10 @@ const App: React.FC = () => {
         }
     };
 
-    const handleSaveTransaction = async (transactionData: Omit<Transaction, 'id' | 'groupId'>) => {
+    const handleSaveTransaction = async (
+        transactionData: Omit<Transaction, 'id' | 'groupId'>,
+        clientTransactionId?: string,
+    ) => {
         if (!selectedGroupId && !editingTransaction) return;
         try {
             if (editingTransaction) {
@@ -380,7 +383,7 @@ const App: React.FC = () => {
                 });
                 qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) => prev.map(t => t.id === editingTransaction.id ? updatedTransaction : t));
             } else if (selectedGroupId) {
-                const created = await api.addTransaction(selectedGroupId, transactionData);
+                const created = await api.addTransaction(selectedGroupId, transactionData, clientTransactionId);
                 qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) =>
                     prev.some(t => t.id === created.id) ? prev : [created, ...prev]
                 );
@@ -836,7 +839,7 @@ const App: React.FC = () => {
                     defaultReceiverId={defaultSettleReceiver}
                     defaultAmount={defaultSettleAmount}
                     initialTransaction={editingTransaction?.type === 'settlement' ? editingTransaction : undefined}
-                    onSubmit={async (tx) => {
+                    onSubmit={async (tx, context) => {
                         if (editingTransaction && editingTransaction.type === 'settlement') {
                             const updated = await api.updateTransaction(editingTransaction.id, {
                                 ...tx,
@@ -845,7 +848,8 @@ const App: React.FC = () => {
                             qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) => prev.map(t => t.id === editingTransaction.id ? updated : t));
                             return updated;
                         } else {
-                            const created = await api.addTransaction(selectedGroup.id, tx);
+                            if (!context) throw new Error('Settlement write context is required.');
+                            const created = await api.settleUp(selectedGroup.id, tx, context);
                             // Immediately add to cache so the screen updates without waiting for realtime
                             qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) =>
                                 prev.some(t => t.id === created.id) ? prev : [created, ...prev]
