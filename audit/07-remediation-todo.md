@@ -68,7 +68,7 @@ The migration ledger is exact, but ledger presence alone does not prove that lat
 ### Git
 
 - Checkpoint: `6750a7a`
-- Reconciliation record: pending commit
+- Reconciliation record: `fc03766`
 
 ## Item 2 — remaining money guarantees
 
