@@ -95,7 +95,7 @@ Validation:
 Git:
 
 - Checkpoint: `9dfb2f8`
-- Implementation: pending commit
+- Implementation: `9f56625`
 
 ### Stage 2B — M-13
 
