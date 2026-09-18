@@ -73,6 +73,7 @@ jobs:
 
       # 7. Build signed AAB with auto-incremented versionCode
       - name: Build Android release bundle
+        working-directory: android
         env:
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
         run: |
