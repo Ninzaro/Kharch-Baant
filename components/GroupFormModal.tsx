@@ -20,7 +20,7 @@ interface GroupFormModalProps {
     userSettled?: boolean;
     isProcessingGroupAction?: boolean;
     onDeleteGroup?: () => void;
-    onArchiveGroup?: () => void;
+    onLeaveGroup?: () => void;
     onOpenPaymentSources?: () => void;
     hasTransactions?: boolean;
 }
@@ -38,7 +38,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
     userSettled,
     isProcessingGroupAction,
     onDeleteGroup,
-    onArchiveGroup,
+    onLeaveGroup,
     onOpenPaymentSources,
     hasTransactions = false,
 }) => {
@@ -223,6 +223,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
     if (!isOpen) return null;
 
     const peopleMap = new Map(localPeople.map(p => [p.id, p]));
+    const canManageMembers = !group || group.createdBy === currentUserId;
 
     // CRITICAL FIX: Handle missing current user with fallback
     const currentMembers = members.map(id => {
@@ -250,7 +251,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
                 description={<span className="text-muted-foreground text-sm">Configure group details and manage members.</span>}
                 footer={
                     <>
-                        {/* Delete (creator) / Archive (member): only when editing an existing group */}
+                        {/* Delete (creator) / Leave (member): only when editing an existing group */}
                         {group && (
                             <div className="flex flex-col gap-2 mb-2">
                                 {group.createdBy === currentUserId ? (
@@ -266,24 +267,26 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
                                 ) : (
                                     <button
                                         type="button"
-                                        className="px-3 py-2 bg-warning/90 hover:bg-warning text-warning-foreground text-sm rounded-md disabled:opacity-50"
-                                        disabled={!userSettled || !allSettled || isProcessingGroupAction}
-                                        title={!userSettled || !allSettled ? 'You must settle your balance and all balances must be settled to archive.' : ''}
-                                        onClick={onArchiveGroup}
+                                        className="px-3 py-2 bg-destructive/90 hover:bg-destructive text-destructive-foreground text-sm rounded-md disabled:opacity-50"
+                                        disabled={!userSettled || isProcessingGroupAction}
+                                        title={!userSettled ? 'You must settle your balance before leaving.' : ''}
+                                        onClick={onLeaveGroup}
                                     >
-                                        {isProcessingGroupAction ? 'Archiving...' : 'Archive Group'}
+                                        {isProcessingGroupAction ? 'Leaving...' : 'Leave Group'}
                                     </button>
                                 )}
                             </div>
                         )}
                         <button type="button" onClick={onClose} className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80">Cancel</button>
-                        <button
-                            type="submit"
-                            form="group-form"
-                            className="px-4 py-2 bg-gradient-to-br from-primary to-accent text-foreground rounded-md hover:from-primary/90 hover:to-accent/90"
-                        >
-                            Save Group
-                        </button>
+                        {canManageMembers && (
+                            <button
+                                type="submit"
+                                form="group-form"
+                                className="px-4 py-2 bg-gradient-to-br from-primary to-accent text-foreground rounded-md hover:from-primary/90 hover:to-accent/90"
+                            >
+                                Save Group
+                            </button>
+                        )}
                     </>
                 }
             >
@@ -391,7 +394,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
                                         <Avatar id={p.id} name={p.name} avatarUrl={p.avatarUrl} size="md" />
                                         <span className="font-medium">{p.name}</span>
                                     </div>
-                                    {p.id !== currentUserId && (
+                                    {canManageMembers && p.id !== currentUserId && (
                                         <button type="button" onClick={() => removeMember(p.id)} className="p-1 text-muted-foreground hover:text-foreground hover:bg-destructive/50 rounded-full">
                                             <CloseIcon />
                                         </button>
@@ -416,30 +419,36 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
                                 </button>
                             )}
 
-                            <button
-                                type="button"
-                                onClick={() => setShowAddMemberModal(true)}
-                                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary/20 text-primary rounded-md hover:bg-primary/90/40 transition-colors"
-                            >
-                                <PlusIcon className="h-5 w-5" />
-                                <span>Add New Member</span>
-                            </button>
+                            {canManageMembers && (
+                                <>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowAddMemberModal(true)}
+                                        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary/20 text-primary rounded-md hover:bg-primary/90/40 transition-colors"
+                                    >
+                                        <PlusIcon className="h-5 w-5" />
+                                        <span>Add New Member</span>
+                                    </button>
 
-                            <h4 className="text-sm font-medium text-muted-foreground pt-2">Add from contacts</h4>
-                            <div className="space-y-2">
-                                {availableContacts.map(p => (
-                                    <div key={p.id} className="flex items-center justify-between bg-foreground/5 p-2 rounded-md">
-                                        <div className="flex items-center gap-3">
-                                            <Avatar id={p.id} name={p.name} avatarUrl={p.avatarUrl} size="md" />
-                                            <span className="font-medium">{p.name}</span>
-                                        </div>
-                                        <button type="button" onClick={() => addMember(p.id)} className="p-1 text-muted-foreground hover:text-foreground hover:bg-primary/90/50 rounded-full">
-                                            <PlusIcon className="h-5 w-5" />
-                                        </button>
+                                    <h4 className="text-sm font-medium text-muted-foreground pt-2">Add unclaimed contacts</h4>
+                                    <div className="space-y-2">
+                                        {availableContacts.filter(p => !p.isClaimed).map(p => (
+                                            <div key={p.id} className="flex items-center justify-between bg-foreground/5 p-2 rounded-md">
+                                                <div className="flex items-center gap-3">
+                                                    <Avatar id={p.id} name={p.name} avatarUrl={p.avatarUrl} size="md" />
+                                                    <span className="font-medium">{p.name}</span>
+                                                </div>
+                                                <button type="button" onClick={() => addMember(p.id)} className="p-1 text-muted-foreground hover:text-foreground hover:bg-primary/90/50 rounded-full">
+                                                    <PlusIcon className="h-5 w-5" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                        {availableContacts.filter(p => !p.isClaimed).length === 0 && (
+                                            <p className="text-xs text-muted-foreground text-center py-2">Use an invite link for registered users.</p>
+                                        )}
                                     </div>
-                                ))}
-                                {availableContacts.length === 0 && <p className="text-xs text-muted-foreground text-center py-2">All your contacts are in this group.</p>}
-                            </div>
+                                </>
+                            )}
                         </div>
 
                     </div>

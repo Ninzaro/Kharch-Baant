@@ -14,6 +14,7 @@ export const updateGroup = async (
   groupData: Omit<Group, 'id'>,
   loadedMembers?: string[],
 ): Promise<Group> => supabaseApi.updateGroup(groupId, groupData, loadedMembers);
+export const leaveGroup = async (groupId: string): Promise<{ success: boolean }> => supabaseApi.leaveGroup(groupId);
 export const batchApplyEmojisToGroupTransactions = async (groupId: string): Promise<void> => supabaseApi.batchApplyEmojisToGroupTransactions(groupId);
 export const subscribeToGroups = (personId: string, callback: (payload: any) => void) => supabaseApi.subscribeToGroups(personId, callback);
 export const subscribeToTransactions = (personId: string, callback: (payload: any) => void) => supabaseApi.subscribeToTransactions(personId, callback);
@@ -61,6 +62,9 @@ export const addPersonToGroup = async (
   if (data.email) {
     const existing = await supabaseApi.findPersonByEmail(data.email);
     if (existing) {
+      if (existing.isClaimed) {
+        throw new Error('This user must join through an invite link.');
+      }
       // Reuse existing person — just link to group (ignore if already a member)
       const { error } = await supabase
         .from('group_members')

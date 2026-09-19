@@ -26,6 +26,7 @@ const h = vi.hoisted(() => {
 // Mock the supabaseApi module
 vi.mock('../../../services/supabaseApiService', () => ({
   addPerson: vi.fn(),
+  findPersonByEmail: vi.fn(),
 }))
 
 vi.mock('../../../lib/supabase', () => ({
@@ -37,6 +38,44 @@ const mockSupabase = h.mockSupabase
 describe('addPersonToGroup', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.mocked(supabaseApi.findPersonByEmail).mockResolvedValue(null)
+  })
+
+  it('requires claimed users to join through an invite link', async () => {
+    vi.mocked(supabaseApi.findPersonByEmail).mockResolvedValue({
+      id: 'claimed-person',
+      name: 'Registered User',
+      avatarUrl: '',
+      isClaimed: true,
+    })
+
+    await expect(addPersonToGroup('g1', {
+      name: 'Registered User',
+      email: 'registered@example.com',
+    })).rejects.toThrow('This user must join through an invite link.')
+
+    expect(mockSupabase.from).not.toHaveBeenCalled()
+  })
+
+  it('allows an existing unclaimed placeholder to be linked', async () => {
+    const placeholder = {
+      id: 'placeholder-person',
+      name: 'Future Member',
+      avatarUrl: '',
+      isClaimed: false,
+    }
+    vi.mocked(supabaseApi.findPersonByEmail).mockResolvedValue(placeholder)
+    mockSupabase.from().insert.mockResolvedValue({ error: null })
+
+    await expect(addPersonToGroup('g1', {
+      name: 'Future Member',
+      email: 'future@example.com',
+    })).resolves.toEqual(placeholder)
+
+    expect(mockSupabase.from().insert).toHaveBeenCalledWith({
+      group_id: 'g1',
+      person_id: 'placeholder-person',
+    })
   })
 
   it('should add person to group with custom avatar URL', async () => {

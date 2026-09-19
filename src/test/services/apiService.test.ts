@@ -8,6 +8,7 @@ vi.mock('../../../services/supabaseApiService', () => ({
   getGroups: vi.fn(),
   addGroup: vi.fn(),
   updateGroup: vi.fn(),
+  leaveGroup: vi.fn(),
   getTransactions: vi.fn(),
   addTransaction: vi.fn(),
   settleUp: vi.fn(),
@@ -103,6 +104,14 @@ describe('apiService', () => {
       
       expect(supabaseApi.updateGroup).toHaveBeenCalledWith(groupId, groupData, undefined)
       expect(result).toEqual(mockGroup)
+    })
+
+    it('should leave a group through the guarded RPC facade', async () => {
+      vi.mocked(supabaseApi.leaveGroup).mockResolvedValue({ success: true })
+
+      await expect(apiService.leaveGroup('g1')).resolves.toEqual({ success: true })
+
+      expect(supabaseApi.leaveGroup).toHaveBeenCalledWith('g1')
     })
   })
 

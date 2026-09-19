@@ -117,7 +117,12 @@ Status: implemented in the repository; production deployment remains pending sep
   - Transaction writes now require `paid_by_id`, every `payers[].personId`, and every `split_participants[].personId` to be current members of the transaction's group.
   - Production preflight found no existing transaction with an out-of-group payer or participant; the migration still aborts rather than rewriting data if drift appears before deployment.
   - Validation: `npm run test:run` passed 20 files / 133 tests; `npm run build` passed. `npm run typecheck` remains on the pre-existing Item 6 baseline and reports no Stage 3A file.
-- Decide and then implement membership consent and non-creator leave behavior.
+- Stage 3B implemented in the repository; production deployment remains pending separate approval.
+  - Direct `group_members` inserts are limited to group creators adding unclaimed placeholder people; claimed users must join through `accept_group_invite`.
+  - `leave_group(uuid)` binds the caller to their Clerk identity, rejects group creators, locks concurrent group/transaction writes, and removes the caller only when their exact minor-unit balance is zero.
+  - The client now blocks direct addition of claimed users, hides member-management controls from non-creators, and replaces the unusable non-creator archive action with a confirmed Leave Group flow.
+  - Existing transactions are preserved. Historical-name preservation after a member leaves remains deferred to Item 7, as approved.
+  - Validation: production preflight found no duplicate split participants or payers; SQL rounding probes matched the client allocation; `npm run test:run` passed 21 files / 138 tests; `npm run build` passed. `npm run typecheck` remains on the pre-existing Item 6 baseline with no new Stage 3B errors.
 
 ## Item 4 — logout and auth failures
 

@@ -10,7 +10,7 @@ import HomeScreen from './components/HomeScreen';
 import ModalShell from './components/ModalShell';
 import BaseModal from './components/BaseModal';
 import { preloadComponent } from './utils/preload';
-import { deleteGroup, archiveGroup, validateInvite, acceptInvite } from './services/supabaseApiService';
+import { deleteGroup, validateInvite, acceptInvite } from './services/supabaseApiService';
 import { assertSupabaseEnvironment } from './services/apiService';
 import { SettingsIcon } from './components/icons/Icons';
 import { useAuth } from './contexts/SupabaseAuthContext';
@@ -25,7 +25,7 @@ const ConfirmDeleteModal = React.lazy(() => import('./components/ConfirmDeleteMo
 const PaymentSourceFormModal = React.lazy(() => import('./components/PaymentSourceFormModal'));
 const PaymentSourceManageModal = React.lazy(() => import('./components/PaymentSourceManageModal'));
 const SettleUpModal = React.lazy(() => import('./components/SettleUpModal'));
-const ArchivePromptModal = React.lazy(() => import('./components/ArchivePromptModal'));
+const LeaveGroupModal = React.lazy(() => import('./components/LeaveGroupModal'));
 const AddActionModal = React.lazy(() => import('./components/AddActionModal'));
 const SettingsModal = React.lazy(() => import('./components/SettingsModal'));
 const TransactionDetailModal = React.lazy(() => import('./components/TransactionDetailModal'));
@@ -131,7 +131,7 @@ const App: React.FC = () => {
     const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
     const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
     const [isConfirmDeleteModalOpen, setIsConfirmDeleteModalOpen] = useState(false);
-    const [isConfirmArchiveModalOpen, setIsConfirmArchiveModalOpen] = useState(false);
+    const [isConfirmLeaveModalOpen, setIsConfirmLeaveModalOpen] = useState(false);
     const [isAddActionModalOpen, setIsAddActionModalOpen] = useState(false);
     const [isPaymentSourceModalOpen, setIsPaymentSourceModalOpen] = useState(false);
     const [isPaymentSourceManageOpen, setIsPaymentSourceManageOpen] = useState(false);
@@ -550,29 +550,6 @@ const App: React.FC = () => {
         setIsTransactionDetailOpen(true);
     };
 
-    const requireFreshGroupSettled = async (groupId: string, action: 'delete' | 'archive') => {
-        let txs: Transaction[];
-        try {
-            txs = await qc.fetchQuery({
-                queryKey: qk.transactions(currentUserId),
-                queryFn: () => api.getTransactions(currentUserId),
-            });
-        } catch {
-            throw new Error('Could not refresh balances. Try again before this action.');
-        }
-        const balances = calculateGroupBalances(txs.filter(t => t.groupId === groupId));
-        const settled = [...balances.values()].every(b => Math.abs(b) < 0.01);
-        if (!settled) {
-            throw new Error(
-                action === 'delete'
-                    ? 'All balances must be settled before deleting the group.'
-                    : 'All balances must be settled before archiving.'
-            );
-        }
-        const userBal = balances.get(currentUserId) ?? 0;
-        return { userSettled: Math.abs(userBal) < 0.01 };
-    };
-
     const handleConfirmDeleteGroup = async () => {
         if (!editingGroup) return;
         setIsProcessingGroupAction(true);
@@ -593,17 +570,17 @@ const App: React.FC = () => {
         }
     };
 
-    const handleConfirmArchiveGroup = async () => {
+    const handleConfirmLeaveGroup = async () => {
         if (!editingGroup) return;
         setIsProcessingGroupAction(true);
         try {
-            const { userSettled: freshUserSettled } = await requireFreshGroupSettled(editingGroup.id, 'archive');
-            await archiveGroup(editingGroup.id, currentUserId, editingGroup.createdBy === currentUserId, freshUserSettled, true);
-            qc.setQueryData<Group[]>(qk.groups(currentUserId), (prev = []) => prev.map(g => g.id === editingGroup.id ? { ...g, isArchived: true } : g));
-            setIsConfirmArchiveModalOpen(false);
+            await api.leaveGroup(editingGroup.id);
+            qc.setQueryData<Group[]>(qk.groups(currentUserId), (prev = []) => prev.filter(g => g.id !== editingGroup.id));
+            setIsConfirmLeaveModalOpen(false);
             setIsGroupModalOpen(false);
+            setSelectedGroupId(null);
         } catch (e) {
-            toast.error(e.message || 'Failed to archive group.');
+            toast.error(e.message || 'Failed to leave group.');
         } finally {
             setIsProcessingGroupAction(false);
         }
@@ -750,9 +727,9 @@ const App: React.FC = () => {
                             if (!editingGroup) return;
                             setIsConfirmDeleteModalOpen(true);
                         }}
-                        onArchiveGroup={() => {
+                        onLeaveGroup={() => {
                             if (!editingGroup) return;
-                            setIsConfirmArchiveModalOpen(true);
+                            setIsConfirmLeaveModalOpen(true);
                         }}
                         onOpenPaymentSources={() => {
                             setIsGroupModalOpen(false);
@@ -921,12 +898,13 @@ const App: React.FC = () => {
                 </Suspense>
             )}
 
-            {isConfirmArchiveModalOpen && editingGroup && (
+            {isConfirmLeaveModalOpen && editingGroup && (
                 <Suspense fallback={<ModalShell />}>
-                    <ArchivePromptModal
-                        isOpen={isConfirmArchiveModalOpen}
-                        onClose={() => setIsConfirmArchiveModalOpen(false)}
-                        onArchive={handleConfirmArchiveGroup}
+                    <LeaveGroupModal
+                        isOpen={isConfirmLeaveModalOpen}
+                        loading={isProcessingGroupAction}
+                        onClose={() => setIsConfirmLeaveModalOpen(false)}
+                        onLeave={handleConfirmLeaveGroup}
                     />
                 </Suspense>
             )}

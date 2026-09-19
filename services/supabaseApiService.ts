@@ -22,6 +22,12 @@ export const deleteGroup = async (groupId: string): Promise<{ success: boolean }
   return { success: true };
 };
 
+export const leaveGroup = async (groupId: string): Promise<{ success: boolean }> => {
+  const { error } = await supabase.rpc('leave_group', { p_group_id: groupId });
+  if (error) throw error;
+  return { success: true };
+};
+
 // Archive a group (for non-owners, only if their balance is zero and all settled)
 export const archiveGroup = async (groupId: string, userId: string, isOwner: boolean, userSettled: boolean, allSettled: boolean): Promise<{ success: boolean }> => {
   if (isOwner) throw new Error('Owner cannot archive, only delete.');

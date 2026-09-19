@@ -479,6 +479,7 @@ export type Database = {
     }
     Functions: {
       delete_group: { Args: { p_group_id: string }; Returns: undefined }
+      leave_group: { Args: { p_group_id: string }; Returns: undefined }
       settle_up: {
         Args: {
           p_amount_minor: number
@@ -592,6 +593,7 @@ export type Database = {
       i_am_member_of: { Args: { p_group_id: string }; Returns: boolean }
       i_can_see_person: { Args: { p_person_id: string }; Returns: boolean }
       i_created_group: { Args: { p_group_id: string }; Returns: boolean }
+      person_is_unclaimed: { Args: { p_person_id: string }; Returns: boolean }
       requesting_user_id: { Args: never; Returns: string }
     }
     Enums: {
