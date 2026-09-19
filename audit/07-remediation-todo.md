@@ -112,8 +112,11 @@ Status: implemented in the repository; production deployment remains pending sep
 
 ## Item 3 — membership and ownership authorization
 
-- Protect `groups.created_by` with database `WITH CHECK` semantics.
-- Require `paid_by_id`, `payers[].personId`, and `split_participants[].personId` to belong to the transaction's group.
+- Stage 3A implemented in the repository; production deployment remains pending separate approval.
+  - `groups` UPDATE now requires the resulting `created_by` to remain the authenticated caller's person row.
+  - Transaction writes now require `paid_by_id`, every `payers[].personId`, and every `split_participants[].personId` to be current members of the transaction's group.
+  - Production preflight found no existing transaction with an out-of-group payer or participant; the migration still aborts rather than rewriting data if drift appears before deployment.
+  - Validation: `npm run test:run` passed 20 files / 133 tests; `npm run build` passed. `npm run typecheck` remains on the pre-existing Item 6 baseline and reports no Stage 3A file.
 - Decide and then implement membership consent and non-creator leave behavior.
 
 ## Item 4 — logout and auth failures
