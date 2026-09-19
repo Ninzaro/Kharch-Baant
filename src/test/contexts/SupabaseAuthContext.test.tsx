@@ -57,6 +57,8 @@ vi.mock('../../../services/supabaseApiService', () => ({
 
 // Import AFTER mocks are registered.
 import { SupabaseAuthProvider, useAuth } from '../../../contexts/SupabaseAuthContext'
+import { queryClient } from '../../../lib/queryClient'
+import { useAppStore } from '../../../store/appStore'
 
 // --- Test harness ------------------------------------------------------------
 
@@ -95,6 +97,9 @@ beforeEach(() => {
   h.clerkState.session = null
   h.clerkState.isUserLoaded = true
   h.clerkState.isSessionLoaded = true
+  queryClient.clear()
+  localStorage.clear()
+  useAppStore.getState().setSelectedGroupId(null)
 })
 
 afterEach(() => {
@@ -171,6 +176,10 @@ describe('SupabaseAuthContext — Realtime auth wiring', () => {
 
     await waitFor(() => expect(h.setRealtimeAuthSpy).toHaveBeenCalledWith('jwt-token-v1'))
 
+    queryClient.setQueryData(['groups', 'person-1'], [{ id: 'private-group' }])
+    localStorage.setItem('pendingInviteToken', 'private-invite')
+    useAppStore.getState().setSelectedGroupId('private-group')
+
     await act(async () => {
       await authRef!.signOut()
     })
@@ -178,6 +187,9 @@ describe('SupabaseAuthContext — Realtime auth wiring', () => {
     expect(h.setRealtimeAuthSpy).toHaveBeenLastCalledWith(null)
     expect(h.clearNativeClerkSessionSpy).toHaveBeenCalledTimes(1)
     expect(h.mockSignOut).toHaveBeenCalledTimes(1)
+    expect(queryClient.getQueryCache().getAll()).toHaveLength(0)
+    expect(localStorage.getItem('pendingInviteToken')).toBeNull()
+    expect(useAppStore.getState().selectedGroupId).toBeNull()
   })
 
   it('clears the native session when Clerk UserButton signs out directly', async () => {
@@ -186,6 +198,10 @@ describe('SupabaseAuthContext — Realtime auth wiring', () => {
 
     const view = renderWithProvider()
     await waitFor(() => expect(h.setRealtimeAuthSpy).toHaveBeenCalledWith('jwt-token-v1'))
+
+    queryClient.setQueryData(['people', 'person-1'], [{ id: 'person-1' }])
+    localStorage.setItem('pendingInviteToken', 'private-invite')
+    useAppStore.getState().setSelectedGroupId('private-group')
 
     h.clerkState.user = null
     h.clerkState.session = null
@@ -196,6 +212,28 @@ describe('SupabaseAuthContext — Realtime auth wiring', () => {
     )
 
     await waitFor(() => expect(h.clearNativeClerkSessionSpy).toHaveBeenCalledTimes(1))
+    expect(queryClient.getQueryCache().getAll()).toHaveLength(0)
+    expect(localStorage.getItem('pendingInviteToken')).toBeNull()
+    expect(useAppStore.getState().selectedGroupId).toBeNull()
+  })
+
+  it('exposes profile-sync failures and retries without showing an empty account', async () => {
+    h.clerkState.user = { id: 'clerk-user-1', primaryEmailAddress: { emailAddress: 'test@example.com' }, fullName: 'Test User' }
+    h.clerkState.session = { id: 'sess-1' }
+    h.mockGetToken.mockRejectedValueOnce(new Error('token unavailable'))
+
+    let authRef: ReturnType<typeof useAuth> | undefined
+    renderWithProvider((value) => { authRef = value })
+
+    await waitFor(() => expect(authRef?.authError?.message).toBe('token unavailable'))
+    expect(authRef?.person).toBeNull()
+
+    h.mockGetToken.mockResolvedValue('jwt-token-recovered')
+    act(() => authRef!.retryAuth())
+
+    await waitFor(() => expect(authRef?.person?.id).toBe('person-1'))
+    expect(authRef?.authError).toBeNull()
+    expect(h.setRealtimeAuthSpy).toHaveBeenCalledWith('jwt-token-recovered')
   })
 
   it('still clears the WebView session when native sign-out fails', async () => {

@@ -40,20 +40,36 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from './store/appStore';
 import { useBackButton } from './hooks/useBackButton';
 import { resumeAfterBackground } from './lib/resumeSync';
+import { isClerkTokenError } from './lib/supabase';
+import AuthFailureScreen from './components/auth/AuthFailureScreen';
 
 const App: React.FC = () => {
     if (import.meta.env.DEV) {
         assertSupabaseEnvironment();
     }
 
-    const { user, person, isSyncing } = useAuth();
+    const { user, person, isSyncing, signOut } = useAuth();
     const currentUserId = person?.id || '';
 
     const qc = useQueryClient();
-    const { data: groups = [], isLoading: groupsLoading } = useGroupsQuery(person?.id);
-    const { data: transactions = [], isLoading: txLoading } = useTransactionsQuery(person?.id);
-    const { data: paymentSources = [] } = usePaymentSourcesQuery(person?.id);
-    const { data: people = [] } = usePeopleQuery(person?.id);
+    const groupsQuery = useGroupsQuery(person?.id);
+    const transactionsQuery = useTransactionsQuery(person?.id);
+    const paymentSourcesQuery = usePaymentSourcesQuery(person?.id);
+    const peopleQuery = usePeopleQuery(person?.id);
+    const { data: groups = [], isLoading: groupsLoading } = groupsQuery;
+    const { data: transactions = [], isLoading: txLoading } = transactionsQuery;
+    const { data: paymentSources = [] } = paymentSourcesQuery;
+    const { data: people = [] } = peopleQuery;
+    const authQueryError = [
+        groupsQuery.error,
+        transactionsQuery.error,
+        paymentSourcesQuery.error,
+        peopleQuery.error,
+    ].find(isClerkTokenError);
+
+    useEffect(() => {
+        if (authQueryError) Sentry.captureException(authQueryError);
+    }, [authQueryError]);
 
     // Identify the user in Sentry so error reports show who was affected
     useEffect(() => {
@@ -587,6 +603,22 @@ const App: React.FC = () => {
     };
 
     const loading = isLoading || groupsLoading || txLoading;
+    if (authQueryError) {
+        return (
+            <AuthFailureScreen
+                retrying={groupsQuery.isFetching || transactionsQuery.isFetching || paymentSourcesQuery.isFetching || peopleQuery.isFetching}
+                onRetry={async () => {
+                    await Promise.all([
+                        groupsQuery.refetch(),
+                        transactionsQuery.refetch(),
+                        paymentSourcesQuery.refetch(),
+                        peopleQuery.refetch(),
+                    ]);
+                }}
+                onSignOut={signOut}
+            />
+        );
+    }
     if (loading) {
         return (
             <div className="h-screen w-screen flex items-center justify-center bg-background text-foreground font-sans">
@@ -922,7 +954,7 @@ import { useNativeOAuth } from './hooks/useNativeOAuth';
 import { isSsoFlowPending } from './utils/nativeDeepLinks';
 
 const AppWithAuth: React.FC = () => {
-    const { user, loading, isSyncing } = useAuth();
+    const { user, person, loading, isSyncing, authError, retryAuth, signOut } = useAuth();
     const { isNative } = useNativeOAuth();
     const [showEmailAuth, setShowEmailAuth] = useState(false);
     const [takingLong, setTakingLong] = useState(false);
@@ -1001,7 +1033,17 @@ const AppWithAuth: React.FC = () => {
         return <SsoFinish />;
     }
 
-    if (loading) {
+    if (user && authError) {
+        return (
+            <AuthFailureScreen
+                retrying={isSyncing}
+                onRetry={retryAuth}
+                onSignOut={signOut}
+            />
+        );
+    }
+
+    if (loading || (user && isSyncing && !person)) {
         return (
             <div className="h-screen w-screen flex items-center justify-center bg-background text-foreground font-sans p-6">
                 <div className="text-center max-w-sm">
@@ -1049,4 +1091,4 @@ const AppWithAuth: React.FC = () => {
 };
 
 
-export default AppWithAuth;
+export default AppWithAuth;

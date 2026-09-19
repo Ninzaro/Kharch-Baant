@@ -1,6 +1,6 @@
 # Post-audit remediation tracker
 
-Last updated: 2026-09-18
+Last updated: 2026-09-19
 
 Process: follow [`Master Guideline.md`](./Master%20Guideline.md). Work on one item at a time. Before implementation, document scope, exclusions, risks, decisions, and success criteria; wait for explicit approval; create and push a checkpoint; implement surgically; validate; record production evidence and commit IDs; then assess the next item.
 
@@ -16,9 +16,9 @@ Status meanings:
 | # | Workstream | Status | Completion evidence |
 |---|---|---|---|
 | 1 | Reconcile committed migrations against production | **complete** | All 34 timestamped migrations are present in production; live-state drift is classified below. Reconciliation was read-only. |
-| 2 | Finish the three remaining money guarantees | **in progress** | 2A (M-09/M-10) implemented locally and validated; production migration and 2B (M-13) remain. |
-| 3 | Close membership/ownership authorization gaps | pending | Ownership cannot be reassigned; transaction participants are group members; consent/leave semantics are explicitly decided and enforced. |
-| 4 | Finish sign-out data cleanup and auth-failure UX | pending | Logout clears private client state; a second user cannot inherit it; auth failures do not render as empty data. |
+| 2 | Finish the three remaining money guarantees | **complete** | M-09/M-10 and M-13 are deployed; production migration ledger includes the idempotency, settlement, execute-grant, and exact-minor-unit migrations. |
+| 3 | Close membership/ownership authorization gaps | **complete** | Stages 3A and 3B are deployed and live policy/function/grant checks passed. |
+| 4 | Finish sign-out data cleanup and auth-failure UX | **in progress** | Repository implementation is validated; web deployment and Android release verification remain. |
 | 5 | Add backup/restore and migration-state tracking | pending | Backup policy documented, one restore tested, and migration application has an authoritative repeatable workflow. |
 | 6 | Make typecheck/tests clean, then gate Android deployment | pending | `npm run typecheck` and `npm run test:run` pass and both gate the Android publish job. |
 | 7 | Add audit/history and durable rate limiting | pending | Append-only actor-attributed history and cross-isolate durable limits have tests and production evidence. |
@@ -102,7 +102,7 @@ Git:
 
 ### Stage 2B — M-13
 
-Status: implemented in the repository; production deployment remains pending separate approval.
+Status: deployed to production as migration `20260919010000_exact_minor_unit_invariants`.
 
 - Transaction, unequal-split, and payer amounts are rejected when they contain sub-cent precision; they are no longer silently rounded on write.
 - Unequal splits and payer arrays must sum to the transaction amount in exact minor units.
@@ -117,18 +117,24 @@ Status: implemented in the repository; production deployment remains pending sep
   - Transaction writes now require `paid_by_id`, every `payers[].personId`, and every `split_participants[].personId` to be current members of the transaction's group.
   - Production preflight found no existing transaction with an out-of-group payer or participant; the migration still aborts rather than rewriting data if drift appears before deployment.
   - Validation: `npm run test:run` passed 20 files / 133 tests; `npm run build` passed. `npm run typecheck` remains on the pre-existing Item 6 baseline and reports no Stage 3A file.
-- Stage 3B implemented in the repository; production deployment remains pending separate approval.
+- Stage 3B implemented and deployed to production as migration `20260919065846_restrict_membership_and_leave_group`.
   - Direct `group_members` inserts are limited to group creators adding unclaimed placeholder people; claimed users must join through `accept_group_invite`.
   - `leave_group(uuid)` binds the caller to their Clerk identity, rejects group creators, locks concurrent group/transaction writes, and removes the caller only when their exact minor-unit balance is zero.
   - The client now blocks direct addition of claimed users, hides member-management controls from non-creators, and replaces the unusable non-creator archive action with a confirmed Leave Group flow.
   - Existing transactions are preserved. Historical-name preservation after a member leaves remains deferred to Item 7, as approved.
   - Validation: production preflight found no duplicate split participants or payers; SQL rounding probes matched the client allocation; `npm run test:run` passed 21 files / 138 tests; `npm run build` passed. `npm run typecheck` remains on the pre-existing Item 6 baseline with no new Stage 3B errors.
+  - Live verification: the restricted insert policy is active, the old insert policy is absent, both helper functions exist, RLS is enabled, and only `authenticated` can execute `leave_group(uuid)`.
 
 ## Item 4 — logout and auth failures
 
-- Clear TanStack Query data, pending invite state, and selected group on logout.
-- Keep the synchronized WebView/native Clerk logout already implemented.
-- Render token/profile-sync failure separately from a legitimate empty account.
+Status: complete in the repository; production validation requires the normal web deployment and a new Android bundle.
+
+- Successful custom logout and Clerk `UserButton` session transitions clear TanStack Query data, `pendingInviteToken`, selected group state, and the in-memory person.
+- The synchronized WebView/native Clerk logout remains intact; the custom path reloads `/` after cleanup.
+- Clerk token acquisition no longer converts failures into anonymous Supabase requests.
+- Token/profile-sync failures render a dedicated error state with Retry and Sign out actions instead of an empty account.
+- Validation: focused auth tests passed 2 files / 12 tests; full `npm run test:run` passed 22 files / 142 tests; `npm run build` passed. `npm run typecheck` remains on the pre-existing Item 6 baseline and reports no Item 4 file.
+- Git checkpoint: `a32011a`.
 
 ## Item 5 — recovery and migration operations
 

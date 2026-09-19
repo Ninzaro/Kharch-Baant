@@ -36,6 +36,16 @@ type ClerkTokenGetter = (opts?: ClerkTokenOpts) => Promise<string | null | undef
 
 let clerkTokenGetter: ClerkTokenGetter | null = null;
 
+export class ClerkTokenError extends Error {
+  constructor() {
+    super('Unable to authenticate with Clerk.');
+    this.name = 'ClerkTokenError';
+  }
+}
+
+export const isClerkTokenError = (error: unknown): error is ClerkTokenError =>
+  error instanceof ClerkTokenError;
+
 /** Register Clerk `session.getToken` from React so REST/Realtime do not depend on `window.Clerk`. */
 export const setClerkTokenGetter = (getter: ClerkTokenGetter | null): void => {
   clerkTokenGetter = getter;
@@ -46,14 +56,17 @@ export const getClerkSupabaseToken = async (opts?: ClerkTokenOpts): Promise<stri
     if (clerkTokenGetter) {
       const fromSession = await clerkTokenGetter(opts);
       if (fromSession) return fromSession;
+      throw new ClerkTokenError();
     }
     const clerk = (window as any).Clerk;
+    if (!clerk?.session) return '';
     const fromWindow = await clerk?.session?.getToken?.(opts?.skipCache ? { skipCache: true } : undefined);
     if (fromWindow) return fromWindow;
-  } catch (e) {
-    console.warn('Failed to get Clerk session token:', e);
+    throw new ClerkTokenError();
+  } catch (error) {
+    if (isClerkTokenError(error)) throw error;
+    throw new ClerkTokenError();
   }
-  return '';
 };
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {

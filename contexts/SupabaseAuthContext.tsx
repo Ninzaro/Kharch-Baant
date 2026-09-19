@@ -1,7 +1,10 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import * as Sentry from '@sentry/react';
 import { useUser, useClerk, useSession } from '@clerk/clerk-react';
 import { ensureUserExists } from '../services/supabaseApiService';
 import { getClerkSupabaseToken, setRealtimeAuth, setClerkTokenGetter } from '../lib/supabase';
+import { queryClient } from '../lib/queryClient';
+import { useAppStore } from '../store/appStore';
 import { Person } from '../types';
 import { clearNativeClerkSession } from '../services/nativeAuthBridge';
 
@@ -19,6 +22,8 @@ interface AuthContextType {
   session: any | null; // Clerk Session
   loading: boolean;
   isSyncing: boolean;
+  authError: Error | null;
+  retryAuth: () => void;
   signOut: () => Promise<void>;
   updateLocalPerson: (updated: Person) => void;
 }
@@ -32,10 +37,21 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
   
   const [person, setPerson] = useState<Person | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [authError, setAuthError] = useState<Error | null>(null);
+  const [syncAttempt, setSyncAttempt] = useState(0);
   const hadWebSessionRef = useRef(false);
   const nativeSignOutHandledRef = useRef(false);
   
   const loading = !isUserLoaded || !isSessionLoaded;
+
+  const clearSignedOutClientState = useCallback(() => {
+    queryClient.clear();
+    localStorage.removeItem('pendingInviteToken');
+    useAppStore.getState().setSelectedGroupId(null);
+    setPerson(null);
+    setAuthError(null);
+    setIsSyncing(false);
+  }, []);
 
   useEffect(() => {
     if (!session) {
@@ -55,14 +71,18 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
       return;
     }
 
-    if (!hadWebSessionRef.current || nativeSignOutHandledRef.current) return;
+    if (!hadWebSessionRef.current) return;
+
+    clearSignedOutClientState();
+
+    if (nativeSignOutHandledRef.current) return;
 
     nativeSignOutHandledRef.current = true;
     clearNativeClerkSession().catch((error) => {
       nativeSignOutHandledRef.current = false;
       console.error('Native Clerk sign-out error:', error);
     });
-  }, [session, isSessionLoaded]);
+  }, [session, isSessionLoaded, clearSignedOutClientState]);
 
   useEffect(() => {
     let cancelled = false;
@@ -71,6 +91,7 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const syncUser = async () => {
       if (user) {
         setIsSyncing(true);
+        setAuthError(null);
         try {
           // 1. Prime Supabase Realtime with the Clerk JWT BEFORE resolving the
           //    Person. App.tsx mounts realtime bridges keyed on `personId`;
@@ -104,7 +125,14 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
           }, REALTIME_AUTH_REFRESH_MS);
         } catch (error) {
           console.error('Error syncing user profile:', error);
-          if (!cancelled) setPerson(null);
+          if (!cancelled) {
+            const authFailure = error instanceof Error
+              ? error
+              : new Error('Unable to authenticate your account.');
+            setPerson(null);
+            setAuthError(authFailure);
+            Sentry.captureException(authFailure);
+          }
         } finally {
           if (!cancelled) setIsSyncing(false);
         }
@@ -113,6 +141,7 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
         await setRealtimeAuth(null);
         if (cancelled) return;
         setPerson(null);
+        setAuthError(null);
         setIsSyncing(false);
       }
     };
@@ -123,7 +152,9 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
       cancelled = true;
       if (refreshTimer) clearInterval(refreshTimer);
     };
-  }, [user, isUserLoaded]);
+  }, [user, isUserLoaded, syncAttempt]);
+
+  const retryAuth = () => setSyncAttempt((attempt) => attempt + 1);
 
   const signOut = async () => {
     try {
@@ -142,7 +173,8 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
       }
 
       await clerkSignOut();
-      setPerson(null);
+      clearSignedOutClientState();
+      window.location.replace('/');
     } catch (err) {
       console.error('Sign out error:', err);
     }
@@ -160,6 +192,8 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
         session,
         loading,
         isSyncing,
+        authError,
+        retryAuth,
         signOut,
         updateLocalPerson,
       }}

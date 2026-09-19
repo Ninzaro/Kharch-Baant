@@ -305,6 +305,8 @@ Bridges Clerk → Supabase. Exposes `useAuth()` returning:
   session: any | null,     // Clerk Session ⚠ typed as any (debt §15)
   loading: boolean,        // !isUserLoaded || !isSessionLoaded
   isSyncing: boolean,      // true while ensureUserExists runs
+  authError: Error | null, // token/profile sync failed; not a signed-out state
+  retryAuth: () => void,
   signOut: () => Promise<void>,
   updateLocalPerson: (updated: Person) => void,
 }
@@ -312,7 +314,8 @@ Bridges Clerk → Supabase. Exposes `useAuth()` returning:
 
 - On Clerk user change: calls `setRealtimeAuth(token)` from `lib/supabase.ts` to push the Clerk JWT into Supabase Realtime **before** resolving the Person via `ensureUserExists(user.id, fullName, email)`. Order matters — bridges mounted in `App.tsx` are keyed on `personId`, so the WS must be authenticated before `personId` becomes truthy.
 - Starts a **50 s refresh interval** (`REALTIME_AUTH_REFRESH_MS`) that re-pushes a fresh Clerk JWT so the long-lived WS connection never loses its RLS context (Clerk JWT TTL defaults to 60 s). The interval is owned by the effect and cleared on re-run or unmount.
-- On sign-out: `signOut()` calls `setRealtimeAuth(null)` first, clears the persisted clerk-android session on Android, then calls `clerkSignOut()`. A signed-in → signed-out session transition also clears the native session so Clerk's built-in UserButton cannot bypass cleanup; an initially signed-out launch does not trigger it.
+- On sign-out: `signOut()` calls `setRealtimeAuth(null)` first, clears the persisted clerk-android session on Android, then calls `clerkSignOut()`. Successful logout clears the TanStack Query cache, pending invite token, selected group, and in-memory person before reloading `/`. A signed-in → signed-out session transition performs the same client cleanup and clears the native session so Clerk's built-in UserButton cannot bypass it; an initially signed-out launch does not trigger it.
+- Clerk token and profile-sync failures are exposed through `authError` with an explicit retry. They do not fall back to anonymous Supabase reads or render as a legitimate empty account.
 - Covered by `src/test/contexts/SupabaseAuthContext.test.tsx`.
 
 ### TanStack Query
