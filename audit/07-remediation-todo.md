@@ -112,7 +112,7 @@ Status: implemented in the repository; production deployment remains pending sep
 
 ## Item 3 — membership and ownership authorization
 
-- Stage 3A implemented in the repository; production deployment remains pending separate approval.
+- Stage 3A implemented and deployed to production as migration `20260919063927_protect_group_ownership_and_transaction_membership`.
   - `groups` UPDATE now requires the resulting `created_by` to remain the authenticated caller's person row.
   - Transaction writes now require `paid_by_id`, every `payers[].personId`, and every `split_participants[].personId` to be current members of the transaction's group.
   - Production preflight found no existing transaction with an out-of-group payer or participant; the migration still aborts rather than rewriting data if drift appears before deployment.
