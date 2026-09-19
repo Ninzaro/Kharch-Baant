@@ -1,4 +1,5 @@
 import { Transaction, SplitMode, SplitParticipant } from '../types';
+import { isCentExact, toMinorUnits } from './money';
 
 // Net balance per person across all transactions. Positive = is owed money, negative = owes money.
 export function calculateGroupBalances(transactions: Transaction[]): Map<string, number> {
@@ -63,12 +64,16 @@ export function validateSplit(mode: SplitMode, amount: number, participants: Spl
             return { valid: true };
         case 'unequal': {
             const sum = participants.reduce((s,p)=> s + p.value, 0);
-            if (Math.abs(sum - amount) > 0.01) return { valid: false, reason: `Unequal shares (${sum.toFixed(2)}) must total amount (${amount.toFixed(2)})` };
+            if (!isCentExact(amount) || participants.some(p => !isCentExact(p.value))) {
+                return { valid: false, reason: 'Unequal shares must use no more than 2 decimal places' };
+            }
+            const sumMinor = participants.reduce((s,p)=> s + toMinorUnits(p.value), 0);
+            if (sumMinor !== toMinorUnits(amount)) return { valid: false, reason: `Unequal shares (${sum.toFixed(2)}) must total amount (${amount.toFixed(2)})` };
             return { valid: true };
         }
         case 'percentage': {
             const sumPct = participants.reduce((s,p)=> s + p.value, 0);
-            if (Math.abs(sumPct - 100) > 0.01) return { valid: false, reason: `Percentages (${sumPct.toFixed(2)}%) must total 100%` };
+            if (sumPct !== 100) return { valid: false, reason: `Percentages (${sumPct.toFixed(2)}%) must total 100%` };
             return { valid: true };
         }
         case 'shares': {

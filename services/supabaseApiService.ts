@@ -59,7 +59,7 @@ import { Group, Transaction, PaymentSource, Person, GroupType, SplitParticipant,
 import type { DbGroup, DbTransaction, DbPaymentSource, DbPerson } from '../lib/supabase';
 import type { Json } from '../lib/database.types';
 import * as emailService from './emailService';
-import { roundMoneyFields, roundToCents } from '../utils/money';
+import { assertExactMoneyFields, isCentExact, toMinorUnits } from '../utils/money';
 
 const stableJsonStringify = (value: unknown): string => {
   if (Array.isArray(value)) {
@@ -457,9 +457,27 @@ export const addTransaction = async (
   transactionData: Omit<Transaction, 'id' | 'groupId'>,
   transactionId: string = crypto.randomUUID(),
 ): Promise<Transaction> => {
-  const { amount, payers } = roundMoneyFields(transactionData.amount, transactionData.payers);
+  const { amount, payers } = assertExactMoneyFields(transactionData.amount, transactionData.payers);
   if (!(amount > 0)) {
-    throw new Error('Amount must be at least 0.01 after rounding to cents.');
+    throw new Error('Amount must be at least 0.01.');
+  }
+  if (transactionData.split.mode === 'unequal') {
+    if (transactionData.split.participants.some((participant) => !isCentExact(participant.value))) {
+      throw new Error('Unequal split amounts must use no more than 2 decimal places.');
+    }
+    const splitTotalMinor = transactionData.split.participants.reduce(
+      (sum, participant) => sum + toMinorUnits(participant.value),
+      0,
+    );
+    if (splitTotalMinor !== toMinorUnits(amount)) {
+      throw new Error('Unequal split amounts must sum exactly to the transaction amount.');
+    }
+  }
+  if (
+    transactionData.split.mode === 'percentage' &&
+    transactionData.split.participants.reduce((sum, participant) => sum + participant.value, 0) !== 100
+  ) {
+    throw new Error('Percentage splits must sum exactly to 100.');
   }
   const { data, error } = await supabase
     .from('transactions')
@@ -567,23 +585,26 @@ export const updateTransaction = async (
 
   if (transactionData.description !== undefined) updateData.description = transactionData.description;
   if (transactionData.amount !== undefined && transactionData.payers !== undefined) {
-    const { amount, payers } = roundMoneyFields(transactionData.amount, transactionData.payers);
+    const { amount, payers } = assertExactMoneyFields(transactionData.amount, transactionData.payers);
     if (!(amount > 0)) {
-      throw new Error('Amount must be at least 0.01 after rounding to cents.');
+      throw new Error('Amount must be at least 0.01.');
     }
     updateData.amount = amount;
     updateData.payers = payers;
   } else if (transactionData.amount !== undefined) {
-    const amount = roundToCents(transactionData.amount);
+    const amount = transactionData.amount;
+    if (!isCentExact(amount)) {
+      throw new Error('Amount must use no more than 2 decimal places.');
+    }
     if (!(amount > 0)) {
-      throw new Error('Amount must be at least 0.01 after rounding to cents.');
+      throw new Error('Amount must be at least 0.01.');
     }
     updateData.amount = amount;
   } else if (transactionData.payers !== undefined) {
-    updateData.payers = transactionData.payers.map((p) => ({
-      ...p,
-      amount: roundToCents(p.amount),
-    }));
+    if (transactionData.payers.some((payer) => !isCentExact(payer.amount))) {
+      throw new Error('Payer amounts must use no more than 2 decimal places.');
+    }
+    updateData.payers = transactionData.payers;
   }
   if (transactionData.paidById !== undefined) updateData.paid_by_id = transactionData.paidById;
   if (transactionData.date !== undefined) updateData.date = transactionData.date;
@@ -594,6 +615,18 @@ export const updateTransaction = async (
   if (transactionData.comment !== undefined) updateData.comment = transactionData.comment;
   if (transactionData.type !== undefined) updateData.type = transactionData.type;
   if (transactionData.split !== undefined) {
+    if (
+      transactionData.split.mode === 'unequal' &&
+      transactionData.split.participants.some((participant) => !isCentExact(participant.value))
+    ) {
+      throw new Error('Unequal split amounts must use no more than 2 decimal places.');
+    }
+    if (
+      transactionData.split.mode === 'percentage' &&
+      transactionData.split.participants.reduce((sum, participant) => sum + participant.value, 0) !== 100
+    ) {
+      throw new Error('Percentage splits must sum exactly to 100.');
+    }
     updateData.split_mode = transactionData.split.mode;
     updateData.split_participants = transactionData.split.participants;
   }
@@ -1202,4 +1235,3 @@ export const anonymizeMyAccount = async (): Promise<{ success: boolean; error?: 
   }
   return { success: true };
 };
-

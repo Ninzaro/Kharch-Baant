@@ -260,6 +260,17 @@ describe('validateSplit', () => {
     expect(result.reason).toContain('Unequal shares')
   })
 
+  it('should reject sub-cent unequal values even when within the old epsilon', () => {
+    const result = validateSplit('unequal', 100, [
+      { personId: 'p1', value: 33.334 },
+      { personId: 'p2', value: 33.334 },
+      { personId: 'p3', value: 33.334 }
+    ])
+
+    expect(result.valid).toBe(false)
+    expect(result.reason).toContain('2 decimal places')
+  })
+
   it('should validate percentage split when values sum to 100', () => {
     const result = validateSplit('percentage', 100, [
       { personId: 'p1', value: 30 },
@@ -277,6 +288,16 @@ describe('validateSplit', () => {
     
     expect(result.valid).toBe(false)
     expect(result.reason).toContain('Percentages')
+  })
+
+  it('should reject percentage totals inside the old epsilon', () => {
+    const result = validateSplit('percentage', 100, [
+      { personId: 'p1', value: 33.331 },
+      { personId: 'p2', value: 33.331 },
+      { personId: 'p3', value: 33.331 }
+    ])
+
+    expect(result.valid).toBe(false)
   })
 
   it('should validate shares split when total shares > 0', () => {

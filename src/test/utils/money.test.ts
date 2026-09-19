@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { roundToCents, roundMoneyFields, toMinorUnits } from '../../../utils/money';
+import { assertExactMoneyFields, isCentExact, roundToCents, toMinorUnits } from '../../../utils/money';
 
 describe('roundToCents', () => {
   it('rounds 1.005 up to 1.01 (not 1.00 from IEEE * 100)', () => {
@@ -22,16 +22,35 @@ describe('toMinorUnits', () => {
   });
 });
 
-describe('roundMoneyFields', () => {
-  it('puts remainder on the last payer so 10.01 with three equal pays still sums', () => {
-    const share = 10.01 / 3;
-    const { amount, payers } = roundMoneyFields(10.01, [
-      { personId: 'a', amount: share },
-      { personId: 'b', amount: share },
-      { personId: 'c', amount: share },
-    ]);
-    expect(amount).toBe(10.01);
-    const sum = payers!.reduce((s, p) => s + p.amount, 0);
-    expect(roundToCents(sum)).toBe(10.01);
+describe('exact minor-unit validation', () => {
+  it('identifies values that are already cent-exact', () => {
+    expect(isCentExact(10.01)).toBe(true);
+    expect(isCentExact(33.334)).toBe(false);
+  });
+
+  it('rejects sub-cent transaction and payer amounts instead of rounding them', () => {
+    expect(() => assertExactMoneyFields(0.005)).toThrow(/2 decimal places/);
+    expect(() => assertExactMoneyFields(100, [
+      { personId: 'a', amount: 33.334 },
+      { personId: 'b', amount: 66.666 },
+    ])).toThrow(/Payer amounts/);
+  });
+
+  it('requires payer minor units to sum exactly to the transaction amount', () => {
+    expect(() => assertExactMoneyFields(10.01, [
+      { personId: 'a', amount: 5 },
+      { personId: 'b', amount: 5 },
+    ])).toThrow(/sum exactly/);
+
+    expect(assertExactMoneyFields(10.01, [
+      { personId: 'a', amount: 5 },
+      { personId: 'b', amount: 5.01 },
+    ])).toEqual({
+      amount: 10.01,
+      payers: [
+        { personId: 'a', amount: 5 },
+        { personId: 'b', amount: 5.01 },
+      ],
+    });
   });
 });

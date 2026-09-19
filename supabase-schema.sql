@@ -54,7 +54,7 @@ CREATE TABLE transactions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     group_id UUID NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
     description TEXT NOT NULL,
-    amount DECIMAL(12,2) NOT NULL CHECK (amount > 0),
+    amount DECIMAL(14,4) NOT NULL CHECK (amount > 0) CHECK (amount = ROUND(amount, 2)),
     paid_by_id UUID NOT NULL REFERENCES people(id),
     date DATE NOT NULL,
     tag TEXT NOT NULL CHECK (tag IN ('Food', 'Groceries', 'Transport', 'Travel', 'Housing', 'Utilities', 'Entertainment', 'Shopping', 'Health', 'Other')),
@@ -184,6 +184,7 @@ ALTER TABLE payment_sources ENABLE ROW LEVEL SECURITY;
 --   20260917212313_preserve_placeholder_on_person_email_collision.sql
 --   20260918185837_restrict_settle_up_execute.sql
 --   20260919000000_money_write_idempotency_settlement_rpc.sql
+--   20260919010000_exact_minor_unit_invariants.sql
 -- Fresh installs: run those migrations after this schema file.
 
 -- R-20 containment: authenticated clients create people only through RPCs.

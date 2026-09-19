@@ -102,7 +102,13 @@ Git:
 
 ### Stage 2B — M-13
 
-Status: pending. Exact minor-unit validation remains deliberately unchanged in 2A.
+Status: implemented in the repository; production deployment remains pending separate approval.
+
+- Transaction, unequal-split, and payer amounts are rejected when they contain sub-cent precision; they are no longer silently rounded on write.
+- Unequal splits and payer arrays must sum to the transaction amount in exact minor units.
+- Percentage splits must total exactly 100; percentage values remain ratios and are not restricted to two decimals.
+- The database amount column preserves four decimals so its constraint and trigger can reject sub-cent input before PostgreSQL rounds it.
+- Production preflight found 5 transactions and no sub-cent amounts or inexact split/payer totals, so no data repair is expected.
 
 ## Item 3 — membership and ownership authorization
 

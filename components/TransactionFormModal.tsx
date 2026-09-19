@@ -6,6 +6,7 @@ import { getIconForCategory } from '../services/geminiService';
 import CalendarModal from './CalendarModal';
 import Avatar from './Avatar';
 import { CalendarIcon, ChevronRightIcon, DeleteIcon, CheckIcon } from './icons/Icons'; // Assuming CheckIcon exists or I'll implement it
+import { isCentExact, toMinorUnits } from '../utils/money';
 
 // --- Types & Constants ---
 
@@ -203,7 +204,8 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
             return { splitTotal: amount || 0, isSplitValid: splitParticipants.length > 0, validationReason: splitParticipants.length > 0 ? undefined : 'Select participants' };
         }
 
-        const total = Array.from(customSplitValues.entries())
+        const splitEntries = Array.from(customSplitValues.entries()) as Array<[string, number]>;
+        const total: number = splitEntries
             .filter(([personId]) => splitParticipants.includes(personId))
             .reduce((sum: number, [, value]) => sum + value, 0);
 
@@ -216,11 +218,18 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
         }
 
         if (splitMode === 'unequal') {
-            const ok = Math.abs(total - numericAmount) < 0.01;
+            const values: number[] = splitEntries
+                .filter(([personId]) => splitParticipants.includes(personId))
+                .map(([, value]: [string, number]) => value);
+            if (!isCentExact(numericAmount) || values.some(value => !isCentExact(value))) {
+                return { splitTotal: total, isSplitValid: false, validationReason: 'Use no more than 2 decimal places' };
+            }
+            const totalMinor = values.reduce((sum, value) => sum + toMinorUnits(value), 0);
+            const ok = totalMinor === toMinorUnits(numericAmount);
             return { splitTotal: total, isSplitValid: ok, validationReason: ok ? undefined : `Total: ${total.toFixed(2)} / ${numericAmount.toFixed(2)}` };
         }
         if (splitMode === 'percentage') {
-            const ok = Math.abs(total - 100) < 0.01;
+            const ok = total === 100;
             return { splitTotal: total, isSplitValid: ok, validationReason: ok ? undefined : `Total: ${total.toFixed(0)}% / 100%` };
         }
         if (splitMode === 'shares') {
@@ -233,14 +242,21 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
     const { payersTotal, isPayerValid, payerValidationReason } = useMemo(() => {
         if (payerMode === 'single') return { payersTotal: Number(amount), isPayerValid: !!paidById, payerValidationReason: undefined };
 
-        const total = Array.from(customPayerValues.values()).reduce((sum: number, val) => sum + val, 0);
         const numericAmount = Number(amount);
-        const isValid = Math.abs(total - numericAmount) < 0.01 && total > 0;
+        const payerValues: number[] = Array.from(customPayerValues.values());
+        const total: number = payerValues.reduce((sum: number, val: number) => sum + val, 0);
+        const hasSubcentValue = !isCentExact(numericAmount) || payerValues.some(value => !isCentExact(value));
+        const totalMinor = payerValues.reduce((sum, value) => sum + toMinorUnits(value), 0);
+        const isValid = !hasSubcentValue && totalMinor === toMinorUnits(numericAmount) && total > 0;
 
         return {
             payersTotal: total,
             isPayerValid: isValid,
-            payerValidationReason: isValid ? undefined : `Total: ${total.toFixed(2)} / ${numericAmount.toFixed(2)}`
+            payerValidationReason: isValid
+                ? undefined
+                : hasSubcentValue
+                    ? 'Use no more than 2 decimal places'
+                    : `Total: ${total.toFixed(2)} / ${numericAmount.toFixed(2)}`
         };
     }, [payerMode, paidById, customPayerValues, amount]);
 
@@ -252,7 +268,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
         if (step === 'split' && !isSplitValid && touchedSteps.has('split')) return 'error';
 
         // Completion Conditions
-        if (step === 'amount' && Number(amount) > 0) return 'completed';
+        if (step === 'amount' && Number(amount) > 0 && isCentExact(Number(amount))) return 'completed';
         if (step === 'description' && description.trim().length > 0) return 'completed';
         if (step === 'split' && isSplitValid) return 'completed';
         if (step === 'paidBy' && paidById) return 'completed';
@@ -264,7 +280,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
 
     // Auto-advance logic
     const handleAmountSubmit = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && Number(amount) > 0) {
+        if (e.key === 'Enter' && Number(amount) > 0 && isCentExact(Number(amount))) {
             e.preventDefault();
             descRef.current?.focus();
         }
@@ -311,7 +327,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
         if (e) e.preventDefault();
 
         if (submitting) return;
-        if (!isSplitValid || !isPayerValid || !description || !(Number(amount) > 0) || !paidById || splitParticipants.length === 0) return;
+        if (!isSplitValid || !isPayerValid || !description || !(Number(amount) > 0) || !isCentExact(Number(amount)) || !paidById || splitParticipants.length === 0) return;
 
         // Final categorize pass if user never blurred description / left default Food
         let finalTag = tag;
@@ -457,6 +473,9 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                     autoFocus
                                 />
                             </div>
+                            {amount !== '' && !isCentExact(Number(amount)) && (
+                                <p className="mt-1 text-xs text-destructive">Use no more than 2 decimal places.</p>
+                            )}
                         </div>
                     </div>
 
