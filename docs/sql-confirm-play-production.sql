@@ -21,7 +21,7 @@ ORDER BY 1;
 -- 3) D-31 unused functions (want 0 rows)
 SELECT proname
 FROM pg_proc
-WHERE pronamespace = 'public'::regclass
+WHERE pronamespace = 'public'::regnamespace
   AND proname IN ('cleanup_expired_invites', 'debug_auth_check', 'generate_invite_token');
 
 -- 4) R-01 / M-12: DELETE on transactions must NOT be "any member of group"
@@ -37,4 +37,4 @@ WHERE polrelid = 'public.transactions'::regclass
 SELECT pg_get_functiondef(oid)
 FROM pg_proc
 WHERE proname = 'delete_group'
-  AND pronamespace = 'public'::regclass;
+  AND pronamespace = 'public'::regnamespace;
