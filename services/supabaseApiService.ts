@@ -229,18 +229,22 @@ export const addGroup = async (groupData: Omit<Group, 'id'>, personId?: string):
   );
 
   if (validMembers.length > 0) {
-    const { error: membersError } = await supabase
+    const { data: insertedMembers, error: membersError } = await supabase
       .from('group_members')
       .insert(
         validMembers.map(memberId => ({
           group_id: created.id,
           person_id: memberId,
         }))
-      );
+      )
+      .select('person_id');
 
     if (membersError) {
       console.error('❌ Failed to add group members:', membersError);
       throw membersError;
+    }
+    if ((insertedMembers?.length ?? 0) !== validMembers.length) {
+      throw new Error('Could not add one or more group members.');
     }
     console.log('✅ Successfully added members to group');
   } else {
@@ -294,10 +298,14 @@ export const updateGroup = async (
   const toRemove = [...current].filter((id) => loaded.has(id) && !desiredSet.has(id));
 
   if (toAdd.length > 0) {
-    const { error: membersError } = await supabase
+    const { data: insertedMembers, error: membersError } = await supabase
       .from('group_members')
-      .insert(toAdd.map((personId) => ({ group_id: groupId, person_id: personId })));
+      .insert(toAdd.map((personId) => ({ group_id: groupId, person_id: personId })))
+      .select('person_id');
     if (membersError) throw membersError;
+    if ((insertedMembers?.length ?? 0) !== toAdd.length) {
+      throw new Error('Could not add one or more group members.');
+    }
   }
 
   if (toRemove.length > 0) {
@@ -1223,6 +1231,9 @@ export const updatePerson = async (personId: string, updates: Partial<Person>): 
     .single();
 
   if (error) throw error;
+  if (!data) {
+    throw new Error('Could not update this profile.');
+  }
   return transformDbPersonToAppPerson(data);
 };
 
