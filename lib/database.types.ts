@@ -566,7 +566,6 @@ export type Database = {
         }
         Returns: unknown
       }
-      get_current_user_person_id: { Args: never; Returns: string }
       /** Exact-token invite preview (anon + authenticated). Phase B. */
       get_invite_preview: { Args: { p_token: string }; Returns: Json }
       /** JWT-bound invite accept. Phase B. */

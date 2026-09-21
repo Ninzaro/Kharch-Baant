@@ -188,7 +188,19 @@ ALTER TABLE payment_sources ENABLE ROW LEVEL SECURITY;
 --   20260919063927_protect_group_ownership_and_transaction_membership.sql
 --   20260919065846_restrict_membership_and_leave_group.sql
 --   20260920000000_r01_transaction_delete_authorship.sql
+--   20260922000000_revoke_anon_people_insert.sql
+--   20260922000001_revoke_anon_rpc_execute.sql
+--   20260922000002_drop_get_current_user_person_id.sql
 -- Fresh installs: run those migrations after this schema file.
 
--- R-20 containment: authenticated clients create people only through RPCs.
+-- R-20 containment: clients create people only through RPCs.
 REVOKE INSERT ON TABLE public.people FROM authenticated;
+REVOKE INSERT ON TABLE public.people FROM anon;
+REVOKE INSERT ON TABLE public.people FROM PUBLIC;
+
+REVOKE EXECUTE ON FUNCTION public.i_am_person(uuid) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.i_am_person(uuid) FROM anon;
+GRANT EXECUTE ON FUNCTION public.i_am_person(uuid) TO authenticated;
+REVOKE EXECUTE ON FUNCTION public.set_transaction_author() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.set_transaction_author() FROM anon;
+GRANT EXECUTE ON FUNCTION public.set_transaction_author() TO authenticated;
