@@ -2,10 +2,9 @@ import React from 'react';
 
 interface DataExportProps {
   onExport: () => void;
-  onImport?: (file: File) => void;
 }
 
-const DataExport: React.FC<DataExportProps> = ({ onExport, onImport }) => (
+const DataExport: React.FC<DataExportProps> = ({ onExport }) => (
   <div className="flex flex-col gap-2">
     <label className="text-muted-foreground text-sm font-medium">Data Management</label>
     <div className="flex gap-2">
@@ -16,17 +15,6 @@ const DataExport: React.FC<DataExportProps> = ({ onExport, onImport }) => (
       >
         Export Data
       </button>
-      {onImport && (
-        <label className="px-3 py-2 bg-secondary text-secondary-foreground border border-border text-sm rounded-md cursor-pointer hover:bg-secondary/80">
-          Import Data
-          <input
-            type="file"
-            accept=".json,.csv"
-            className="hidden"
-            onChange={e => e.target.files && e.target.files[0] && onImport(e.target.files[0])}
-          />
-        </label>
-      )}
     </div>
   </div>
 );

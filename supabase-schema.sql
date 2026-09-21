@@ -187,6 +187,7 @@ ALTER TABLE payment_sources ENABLE ROW LEVEL SECURITY;
 --   20260919010000_exact_minor_unit_invariants.sql
 --   20260919063927_protect_group_ownership_and_transaction_membership.sql
 --   20260919065846_restrict_membership_and_leave_group.sql
+--   20260920000000_r01_transaction_delete_authorship.sql
 -- Fresh installs: run those migrations after this schema file.
 
 -- R-20 containment: authenticated clients create people only through RPCs.
