@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import * as apiService from '../../../services/apiService'
 import * as supabaseApi from '../../../services/supabaseApiService'
+import * as env from '../../../utils/env'
 import { Group, Transaction, PaymentSource, Person } from '../../../types'
 
 // Mock the supabaseApi module
@@ -379,20 +380,12 @@ describe('apiService', () => {
   })
 
   describe('Utility Functions', () => {
-    it('should assert Supabase environment with missing variables', () => {
-      // assertSupabaseEnvironment falls back to process.env when import.meta.env
-      // is empty, so we have to stub both sources. Otherwise the test-setup env
-      // still satisfies the check and no warning fires.
-      const originalEnv = import.meta.env
-      const originalProcUrl = process.env.VITE_SUPABASE_URL
-      const originalProcKey = process.env.VITE_SUPABASE_ANON_KEY
-      Object.defineProperty(import.meta, 'env', {
-        value: {},
-        writable: true
-      })
-      delete process.env.VITE_SUPABASE_URL
-      delete process.env.VITE_SUPABASE_ANON_KEY
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
 
+    it('should assert Supabase environment with missing variables', () => {
+      vi.spyOn(env, 'getEnvValue').mockReturnValue(undefined)
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
       apiService.assertSupabaseEnvironment()
@@ -401,38 +394,15 @@ describe('apiService', () => {
         '[Supabase] Missing environment variables:',
         'VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY'
       )
-
-      consoleSpy.mockRestore()
-      Object.defineProperty(import.meta, 'env', {
-        value: originalEnv,
-        writable: true
-      })
-      if (originalProcUrl !== undefined) process.env.VITE_SUPABASE_URL = originalProcUrl
-      if (originalProcKey !== undefined) process.env.VITE_SUPABASE_ANON_KEY = originalProcKey
     })
 
     it('should assert Supabase environment with present variables', () => {
-      // Mock environment variables as present
-      const originalEnv = import.meta.env
-      Object.defineProperty(import.meta, 'env', {
-        value: {
-          VITE_SUPABASE_URL: 'https://test.supabase.co',
-          VITE_SUPABASE_ANON_KEY: 'test-key'
-        },
-        writable: true
-      })
-      
+      vi.spyOn(env, 'getEnvValue').mockReturnValue('https://test.supabase.co')
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-      
+
       apiService.assertSupabaseEnvironment()
-      
+
       expect(consoleSpy).not.toHaveBeenCalled()
-      
-      consoleSpy.mockRestore()
-      Object.defineProperty(import.meta, 'env', {
-        value: originalEnv,
-        writable: true
-      })
     })
   })
 })

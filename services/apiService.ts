@@ -5,6 +5,7 @@
 import { Group, Transaction, PaymentSource, Person } from '../types';
 import { supabase } from '../lib/supabase';
 import * as supabaseApi from './supabaseApiService';
+import * as env from '../utils/env';
 
 // GROUPS
 export const getGroups = async (personId?: string): Promise<Group[]> => supabaseApi.getGroups(personId);
@@ -92,10 +93,9 @@ export const addPersonToGroup = async (
 // Warning helper: can be invoked at app bootstrap to ensure envs are present.
 export const assertSupabaseEnvironment = () => {
   const missing: string[] = [];
-  if (!import.meta.env.VITE_SUPABASE_URL) missing.push('VITE_SUPABASE_URL');
-  if (!import.meta.env.VITE_SUPABASE_ANON_KEY) missing.push('VITE_SUPABASE_ANON_KEY');
+  if (!env.getEnvValue('VITE_SUPABASE_URL', 'REACT_APP_SUPABASE_URL')) missing.push('VITE_SUPABASE_URL');
+  if (!env.getEnvValue('VITE_SUPABASE_ANON_KEY', 'REACT_APP_SUPABASE_ANON_KEY')) missing.push('VITE_SUPABASE_ANON_KEY');
   if (missing.length) {
-    // eslint-disable-next-line no-console
     console.warn('[Supabase] Missing environment variables:', missing.join(', '));
   }
 };

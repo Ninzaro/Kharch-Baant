@@ -10,13 +10,14 @@
 
 import { TAGS, Tag } from '../types';
 import { supabase } from '../lib/supabase';
+import { getEnvValue } from '../utils/env';
 
 /**
  * True when the app can attempt AI (Edge Function). Always true if Supabase
  * is configured — missing secrets just no-op on the server.
  */
 export const isAiTaggingConfigured = (): boolean => {
-  const url = import.meta.env.VITE_SUPABASE_URL;
+  const url = getEnvValue('VITE_SUPABASE_URL', 'REACT_APP_SUPABASE_URL');
   return typeof url === 'string' && url.length > 0;
 };
 

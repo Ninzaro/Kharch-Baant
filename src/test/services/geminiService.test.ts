@@ -11,6 +11,7 @@ vi.mock('../../../lib/supabase', () => ({
 describe('geminiService (no client API key)', () => {
   beforeEach(() => {
     vi.resetModules();
+    vi.unstubAllEnvs();
   });
 
   it('suggestTagForDescription returns empty when edge function is unavailable', async () => {
@@ -32,6 +33,7 @@ describe('geminiService (no client API key)', () => {
   });
 
   it('uses tag from edge function when present', async () => {
+    vi.stubEnv('VITE_SUPABASE_URL', 'https://test.supabase.co');
     const { supabase } = await import('../../../lib/supabase');
     vi.mocked(supabase.functions.invoke).mockResolvedValueOnce({
       data: { tag: 'Travel' },
