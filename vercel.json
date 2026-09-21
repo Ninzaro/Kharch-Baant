@@ -25,6 +25,14 @@
       "destination": "/account-deletion.html"
     },
     {
+      "source": "/T&C.html",
+      "destination": "/T&C.html"
+    },
+    {
+      "source": "/T&C",
+      "destination": "/T&C.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
