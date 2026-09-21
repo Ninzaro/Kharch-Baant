@@ -1,6 +1,6 @@
 # Post-audit remediation tracker
 
-Last updated: 2026-09-19
+Last updated: 2026-09-22
 
 Process: follow [`Master Guideline.md`](./Master%20Guideline.md). Work on one item at a time. Before implementation, document scope, exclusions, risks, decisions, and success criteria; wait for explicit approval; create and push a checkpoint; implement surgically; validate; record production evidence and commit IDs; then assess the next item.
 
@@ -18,9 +18,9 @@ Status meanings:
 | 1 | Reconcile committed migrations against production | **complete** | All 34 timestamped migrations are present in production; live-state drift is classified below. Reconciliation was read-only. |
 | 2 | Finish the three remaining money guarantees | **complete** | M-09/M-10 and M-13 are deployed; production migration ledger includes the idempotency, settlement, execute-grant, and exact-minor-unit migrations. |
 | 3 | Close membership/ownership authorization gaps | **complete** | Stages 3A and 3B are deployed and live policy/function/grant checks passed. |
-| 4 | Finish sign-out data cleanup and auth-failure UX | **in progress** | Repository implementation is validated; web deployment and Android release verification remain. |
+| 4 | Finish sign-out data cleanup and auth-failure UX | **complete** | Web production bundle `index-CuLhEhC-.js` contains AuthFailureScreen copy + `pendingInviteToken` clear + ClerkTokenError. Android CI run 173 (`398a662`, 2026-09-21) succeeded and uploaded Play internal. |
 | 5 | Add backup/restore and migration-state tracking | pending | Backup policy documented, one restore tested, and migration application has an authoritative repeatable workflow. |
-| 6 | Make typecheck/tests clean, then gate Android deployment | pending | `npm run typecheck` and `npm run test:run` pass and both gate the Android publish job. |
+| 6 | Make typecheck/tests clean, then gate Android deployment | **complete** (repo) | `npm run typecheck` and `npm run test:run` pass locally (145 tests). Android CI runs both after `npm ci` and before web build / `bundleRelease` / Play upload. First green workflow run is production evidence. |
 | 7 | Add audit/history and durable rate limiting | pending | Append-only actor-attributed history and cross-isolate durable limits have tests and production evidence. |
 
 ## Item 1 — production reconciliation
@@ -54,7 +54,7 @@ The migration ledger is exact, but ledger presence alone does not prove that lat
 
 | Severity | Live-state finding | Evidence | Disposition |
 |---|---|---|---|
-| high | Production `send-email` is stale. | The deployed function still contains `member_added`, `settle_up`, and `new_expense`; the repository function accepts only `group_invite`. | Redeploy the current repository function as a separately approved production action. Do not combine with a database migration. |
+| high | Production `send-email` is stale. | Was v6 (2026-08-11) with dead `member_added` / `settle_up` / `new_expense` handlers. Redeployed 2026-09-21 as **v7** from repo (`group_invite` only; foreign `inviteUrl` rejected). JWT verification left on. `native-bridge` / `suggest-tag` not deployed. Smoke: unauthenticated and anon-key probes still 401. | Closed. Remaining R-10 “correct fix” (look up invite server-side) is later work. |
 | high | Anonymous callers retain direct `people` insert privilege. | `authenticated` has no INSERT privilege after R-20, but `anon` still does; the public INSERT policy accepts an unclaimed row with a null Clerk id. | Authorization containment follow-up under Item 3. Revoke only after checking the placeholder RPC path. |
 | high | Execute grants do not match the R-20/R-21-era least-privilege intent. | `i_am_person(uuid)` has a direct `anon` grant even though its migration revoked `PUBLIC`; `set_transaction_author()` has both `PUBLIC` and direct `anon` grants. Effective privilege checks return true for `anon`. | Create a surgical grant-cleanup migration under Item 3 after enumerating every policy/trigger dependency. |
 | medium | Obsolete Supabase-Auth helper survives outside the canonical ledger. | `get_current_user_person_id()` is SECURITY DEFINER, uses `auth.uid()`/`people.auth_user_id`, has no fixed `search_path`, and is executable by `PUBLIC`, `anon`, and `authenticated`. Its source is only in historical `migrations/`, not canonical timestamped migrations. | Remove only after dependency search and production usage check; track with Item 3. |
@@ -127,7 +127,11 @@ Status: deployed to production as migration `20260919010000_exact_minor_unit_inv
 
 ## Item 4 — logout and auth failures
 
-Status: complete in the repository; production validation requires the normal web deployment and a new Android bundle.
+Status: **complete** in production (web + Play internal).
+
+- Implementation: `f7be9b6` (`fix: clear logout state and surface auth failures`); on `main` through `398a662`.
+- Web: `https://www.motamaati.in/assets/index-CuLhEhC-.js` includes “We couldn't connect your account”, `pendingInviteToken`, and `Unable to authenticate with Clerk`.
+- Android: workflow run [173](https://github.com/Ninzaro/Kharch-Baant/actions/runs/35643418953) on `398a662` completed successfully (Play internal upload). Testers must install that AAB if they still have an older build.
 
 - Successful custom logout and Clerk `UserButton` session transitions clear TanStack Query data, `pendingInviteToken`, selected group state, and the in-memory person.
 - The synchronized WebView/native Clerk logout remains intact; the custom path reloads `/` after cleanup.
@@ -144,9 +148,11 @@ Status: complete in the repository; production validation requires the normal we
 
 ## Item 6 — release gates
 
-- Fix the existing TypeScript baseline without unrelated refactors.
-- Fix the existing `SettleUpModal` test failure.
-- Run unit tests and typecheck before `bundleRelease` and Play upload.
+Status: complete in the repository; first Android CI run after merge is the production evidence.
+
+- `tsconfig.json` excludes Deno Edge Functions / `android` / `dist`. App typecheck is clean (`tsc --noEmit`).
+- Vitest 23 files / 145 tests pass (`SettleUpModal` included).
+- `.github/workflows/android-ci.yml` runs `npm run typecheck` then `npm run test:run` after `npm ci`, before secrets/build/Play. A failing check blocks `bundleRelease` and the internal-track upload.
 
 ## Item 7 — audit and rate limits
 

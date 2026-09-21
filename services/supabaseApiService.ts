@@ -347,12 +347,16 @@ const mapDbGroupRowBasic = (dbGroup: any) => ({
   members: [], // Default empty array - will be populated by full query or transformDbGroupToAppGroup
 });
 
+// S-11 leftover: private join flag. Dashboard "Allow public access" is still ON, so
+// this is not enforced until that setting is off and realtime.messages RLS exists.
+const PRIVATE_CHANNEL = { config: { private: true as const } };
+
 export const subscribeToGroups = (personId: string, callback: (payload: any) => void) => {
   const onRow = (payload: any) => {
     const basic = mapDbGroupRowBasic(payload.new);
     callback({ ...payload, new: basic });
   };
-  const channel = supabase.channel('public:groups')
+  const channel = supabase.channel('public:groups', PRIVATE_CHANNEL)
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'groups' }, onRow)
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'groups' }, onRow)
     .subscribe();
@@ -369,7 +373,7 @@ export const subscribeToTransactions = (
     callback({ ...payload, new: transformedTransaction });
   };
   const channel = supabase
-    .channel('public:transactions')
+    .channel('public:transactions', PRIVATE_CHANNEL)
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'transactions' }, onRow)
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'transactions' }, onRow)
     .subscribe();
@@ -383,7 +387,7 @@ export const subscribeToPaymentSources = (personId: string, callback: (payload: 
     callback({ ...payload, new: transformedPaymentSource });
   };
   const channel = supabase
-    .channel('public:payment_sources')
+    .channel('public:payment_sources', PRIVATE_CHANNEL)
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'payment_sources' }, onRow)
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'payment_sources' }, onRow)
     .subscribe();
@@ -397,7 +401,7 @@ export const subscribeToPeople = (personId: string, callback: (payload: any) => 
     callback({ ...payload, new: transformedPerson });
   };
   const channel = supabase
-    .channel('public:people')
+    .channel('public:people', PRIVATE_CHANNEL)
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'people' }, onRow)
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'people' }, onRow)
     .subscribe();
@@ -407,7 +411,7 @@ export const subscribeToPeople = (personId: string, callback: (payload: any) => 
 // Realtime: Group Members (to reflect membership changes in UI)
 export const subscribeToGroupMembers = (personId: string, callback: (payload: any) => void) => {
   const channel = supabase
-    .channel('public:group_members')
+    .channel('public:group_members', PRIVATE_CHANNEL)
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'group_members' }, (payload) => {
       callback(payload);
     })
@@ -697,7 +701,7 @@ export const batchApplyEmojisToGroupTransactions = async (groupId: string): Prom
   }
 };
 
-export const deleteTransaction = async (transactionId: string, groupId?: string): Promise<{ success: boolean }> => {
+export const deleteTransaction = async (transactionId: string): Promise<{ success: boolean }> => {
   const { data, error } = await supabase
     .from('transactions')
     .delete()

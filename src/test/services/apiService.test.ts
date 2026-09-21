@@ -68,7 +68,7 @@ describe('apiService', () => {
         name: 'New Group',
         currency: 'EUR',
         members: ['p1'],
-        groupType: 'household'
+        groupType: 'expense_management'
       }
       
       const mockGroup: Group = {
@@ -243,7 +243,7 @@ describe('apiService', () => {
       
       const result = await apiService.deleteTransaction(transactionId)
       
-      expect(supabaseApi.deleteTransaction).toHaveBeenCalledWith(transactionId, undefined)
+      expect(supabaseApi.deleteTransaction).toHaveBeenCalledWith(transactionId)
       expect(result).toEqual(mockResult)
     })
   })
@@ -254,8 +254,8 @@ describe('apiService', () => {
         {
           id: 'ps1',
           name: 'Credit Card',
-          type: 'card',
-          details: { last4: '1234' },
+          type: 'Credit Card',
+          details: { issuer: 'Visa', last4: '1234' },
           isActive: true
         }
       ]
@@ -268,37 +268,37 @@ describe('apiService', () => {
       expect(result).toEqual(mockPaymentSources)
     })
 
-    it('should get payment sources with options', async () => {
+    it('should get payment sources for a person', async () => {
       const mockPaymentSources: PaymentSource[] = [
         {
           id: 'ps1',
           name: 'Credit Card',
-          type: 'card',
-          details: { last4: '1234' },
+          type: 'Credit Card',
+          details: { issuer: 'Visa', last4: '1234' },
           isActive: true
         },
         {
           id: 'ps2',
           name: 'Old Card',
-          type: 'card',
-          details: { last4: '5678' },
+          type: 'Credit Card',
+          details: { issuer: 'Mastercard', last4: '5678' },
           isActive: false
         }
       ]
       
       vi.mocked(supabaseApi.getPaymentSources).mockResolvedValue(mockPaymentSources)
       
-      const result = await apiService.getPaymentSources({ includeArchived: true })
+      const result = await apiService.getPaymentSources('p1')
       
-      expect(supabaseApi.getPaymentSources).toHaveBeenCalledWith({ includeArchived: true })
+      expect(supabaseApi.getPaymentSources).toHaveBeenCalledWith('p1')
       expect(result).toEqual(mockPaymentSources)
     })
 
     it('should add payment source', async () => {
       const sourceData: Omit<PaymentSource, 'id'> = {
         name: 'New Card',
-        type: 'card',
-        details: { last4: '9999' },
+        type: 'Credit Card',
+        details: { issuer: 'Visa', last4: '9999' },
         isActive: true
       }
       

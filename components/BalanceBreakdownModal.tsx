@@ -32,8 +32,8 @@ const BalanceBreakdownModal: React.FC<BalanceBreakdownModalProps> = ({
     try {
       const debts = getUserFacingDebts(currentUserId, groups, transactions);
       const raw = type === 'owed' ? debts.owedToUser : debts.userOwes;
-      const peopleMap = new Map(people.map(p => [p.id, p]));
-      const groupMap = new Map(groups.map(g => [g.id, g]));
+      const peopleMap = new Map<string, Person>(people.map(p => [p.id, p]));
+      const groupMap = new Map<string, Group>(groups.map(g => [g.id, g]));
 
       const lines = raw
         .map(line => {

@@ -102,7 +102,11 @@ export const setRealtimeAuth = async (token?: string | null): Promise<void> => {
   const authToken = token === undefined ? await getClerkSupabaseToken() : token
   // supabase-js v2's setAuth accepts string | null; its type surface isn't
   // re-exported cleanly, hence the cast.
-  ;(supabase.realtime as any).setAuth(authToken || null)
+  try {
+    await (supabase.realtime as any).setAuth(authToken || null)
+  } catch (error) {
+    console.error('setRealtimeAuth failed', error)
+  }
 }
 
 // Types for our database

@@ -21,7 +21,7 @@ interface SettleUpModalProps {
   defaultAmount?: number;
   initialTransaction?: Transaction; // For editing
   onSubmit?(
-    transaction: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>,
+    transaction: Omit<Transaction, 'id' | 'groupId'>,
     context?: {
       transactionId: string;
       expectedPayerBalanceMinor: number;

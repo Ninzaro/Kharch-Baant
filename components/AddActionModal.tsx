@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import BaseModal from './BaseModal';
-import { Group, Person } from '../types';
+import { Group } from '../types';
 import { PlusIcon, UsersIcon } from './icons/Icons';
 import GroupSelectionList from './GroupSelectionList';
 
@@ -117,7 +117,6 @@ const AddActionModal: React.FC<AddActionModalProps> = ({
       >
         <GroupSelectionList
           groups={groups}
-          people={people}
           onSelectGroup={handleSelectGroup}
           currentGroupId={currentGroupId}
         />

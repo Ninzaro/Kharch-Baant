@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, type FC } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { registerSW } from 'virtual:pwa-register';
 import toast from 'react-hot-toast';
@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
  * Refresh must call updateSW(true) so the waiting worker skipWaiting then reloads.
  * Native Capacitor builds do not register a service worker.
  */
-const PwaUpdatePrompt: React.FC = () => {
+const PwaUpdatePrompt: FC = () => {
   useEffect(() => {
     if (Capacitor.isNativePlatform()) return undefined;
 

@@ -35,7 +35,7 @@ export const settleUp = async (
   context: supabaseApi.SettlementWriteContext,
 ): Promise<Transaction> => supabaseApi.settleUp(groupId, transactionData, context);
 export const updateTransaction = async (transactionId: string, transactionData: Partial<Omit<Transaction, 'id' | 'groupId'>>): Promise<Transaction> => supabaseApi.updateTransaction(transactionId, transactionData);
-export const deleteTransaction = async (transactionId: string, groupId?: string): Promise<{ success: boolean }> => supabaseApi.deleteTransaction(transactionId, groupId);
+export const deleteTransaction = async (transactionId: string): Promise<{ success: boolean }> => supabaseApi.deleteTransaction(transactionId);
 
 // PAYMENT SOURCES
 export const getPaymentSources = async (personId?: string): Promise<PaymentSource[]> => supabaseApi.getPaymentSources(personId);

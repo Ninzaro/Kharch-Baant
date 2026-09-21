@@ -92,16 +92,9 @@ const App: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        let running = false;
-        const onResume = async () => {
+        const onResume = () => {
             if (document.visibilityState !== 'visible') return;
-            if (running) return;
-            running = true;
-            try {
-                await resumeAfterBackground();
-            } finally {
-                running = false;
-            }
+            void resumeAfterBackground();
         };
         document.addEventListener('visibilitychange', onResume);
         window.addEventListener('online', onResume);
@@ -376,11 +369,13 @@ const App: React.FC = () => {
         if (!pendingDeleteTransaction) return;
         setIsDeletingTransaction(true);
         try {
-            await api.deleteTransaction(pendingDeleteTransaction.id, pendingDeleteTransaction.groupId);
+            await api.deleteTransaction(pendingDeleteTransaction.id);
             qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) => prev.filter(t => t.id !== pendingDeleteTransaction.id));
             setPendingDeleteTransaction(null);
         } catch (error) {
             console.error('Failed to delete transaction', error);
+            Sentry.captureException(error);
+            toast.error(error instanceof Error ? error.message : 'Could not delete expense. Try again.');
         } finally {
             setIsDeletingTransaction(false);
         }
@@ -526,6 +521,8 @@ const App: React.FC = () => {
             setIsPaymentSourceModalOpen(false);
         } catch (error) {
             console.error("Failed to save payment source", error);
+            Sentry.captureException(error);
+            toast.error(error instanceof Error ? error.message : 'Could not save payment source. Try again.');
         }
     };
 
@@ -540,6 +537,8 @@ const App: React.FC = () => {
             qc.setQueryData<PaymentSource[]>(qk.paymentSources(currentUserId), (prev = []) => prev.map(ps => ps.id === id ? { ...ps, isActive: false } : ps));
         } catch (error) {
             console.error('Failed to archive payment source', error);
+            Sentry.captureException(error);
+            toast.error(error instanceof Error ? error.message : 'Could not archive payment source. Try again.');
         }
     };
 
@@ -555,6 +554,7 @@ const App: React.FC = () => {
             setPendingDeletePaymentSource(null);
         } catch (error) {
             console.error('Failed to delete payment source', error);
+            Sentry.captureException(error);
             toast.error('Failed to delete payment source. It might be referenced by transactions.');
         } finally {
             setIsDeletingPaymentSource(false);
@@ -905,7 +905,6 @@ const App: React.FC = () => {
                     open={isAddActionModalOpen}
                     onClose={() => setIsAddActionModalOpen(false)}
                     groups={activeGroups}
-                    people={people}
                     onCreateGroup={handleCreateGroupFromAddAction}
                     onSelectGroupForExpense={handleSelectGroupForExpense}
                     currentGroupId={selectedGroupId}
