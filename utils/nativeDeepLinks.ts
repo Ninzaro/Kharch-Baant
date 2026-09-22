@@ -54,6 +54,13 @@ export function queryAndHashFromAppUrl(rawUrl: string): { query: string; hash: s
   return { query, hash };
 }
 
+/** Opens the installed Android app from the invite page. ?web=1 stays in the browser. */
+export function androidInviteIntentUrl(token: string): string {
+  const safeToken = encodeURIComponent(token);
+  const fallback = encodeURIComponent(`https://www.motamaati.in/invite/${safeToken}?web=1`);
+  return `intent://www.motamaati.in/invite/${safeToken}#Intent;scheme=https;package=com.kharchbaant.app;S.browser_fallback_url=${fallback};end`;
+}
+
 export function historyPathForAppUrl(rawUrl: string): string | null {
   const inviteMatch = rawUrl.match(/invite\/([^/?#]+)/i);
   if (inviteMatch) {

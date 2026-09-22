@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  androidInviteIntentUrl,
   consumeCapturedSsoCallback,
   historyPathForAppUrl,
   isSsoCallbackUrl,
@@ -23,6 +24,12 @@ describe('nativeDeepLinks', () => {
   it('preserves hash parameters from Clerk redirects', () => {
     const next = historyPathForAppUrl('kharchbaant://sso-callback#__clerk_status=complete');
     expect(next).toBe('/sso-callback#__clerk_status=complete');
+  });
+
+  it('builds an Android intent that opens the invite in the app', () => {
+    expect(androidInviteIntentUrl('abc 1')).toBe(
+      'intent://www.motamaati.in/invite/abc%201#Intent;scheme=https;package=com.kharchbaant.app;S.browser_fallback_url=https%3A%2F%2Fwww.motamaati.in%2Finvite%2Fabc%25201%3Fweb%3D1;end',
+    );
   });
 
   it('maps invite deep links without treating them as SSO', () => {

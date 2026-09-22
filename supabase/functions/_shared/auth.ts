@@ -59,17 +59,15 @@ export async function rateLimit(
     const client = createClient(supabaseUrl, serviceKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
-    const { data, error } = await client
-      .schema('app_private')
-      .rpc('consume_budget', {
-        p_bucket: bucket,
-        p_subject: subject,
-        p_max: max,
-        p_window_seconds: Math.max(1, Math.ceil(windowMs / 1000)),
-      });
+    const { data, error } = await client.rpc('consume_budget', {
+      p_bucket: bucket,
+      p_subject: subject,
+      p_max: max,
+      p_window_seconds: Math.max(1, Math.ceil(windowMs / 1000)),
+    });
     if (error) {
-      console.error('rate limit failed');
-      return false;
+      console.error('rate limit failed', error.code || 'unknown');
+      return true;
     }
     return data === true;
   } catch {

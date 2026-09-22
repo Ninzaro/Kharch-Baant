@@ -1075,6 +1075,9 @@ export const createGroupInvite = async (request: CreateInviteRequest & { invited
       if (reason === 'Email is not configured on server') {
         throw new Error('Invite email is not set up yet. Nothing was saved.');
       }
+      if (reason && reason !== 'Failed to send email') {
+        throw new Error(`${reason} Nothing was saved.`);
+      }
       throw new Error('Could not send the invite. Nothing was saved.');
     }
   }

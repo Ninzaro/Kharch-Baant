@@ -121,8 +121,17 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
+      let detail = 'Failed to send email';
+      try {
+        const body = await response.json();
+        if (typeof body?.message === 'string' && body.message.trim()) {
+          detail = body.message.trim().slice(0, 180);
+        }
+      } catch {
+        // Brevo did not return JSON.
+      }
       console.error('Brevo API error status:', response.status);
-      return jsonResponse({ error: 'Failed to send email' }, 502, cors);
+      return jsonResponse({ error: detail }, 502, cors);
     }
 
     const result = await response.json().catch(() => ({}));

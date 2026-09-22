@@ -3,6 +3,7 @@ import { SignIn } from '@clerk/clerk-react';
 import { NATIVE_HIDE_SOCIAL_CLERK_APPEARANCE } from '../auth/clerkAppearance';
 import { useNativeGoogleSignIn } from '../../hooks/useNativeGoogleSignIn';
 import { isAndroidNativeApp } from '../../services/nativeAuthBridge';
+import { androidInviteIntentUrl } from '../../utils/nativeDeepLinks';
 import { validateInvite } from '../../services/supabaseApiService';
 import { supabase } from '../../lib/supabase';
 import type { InvitePreviewGroup, Person } from '../../types';
@@ -33,6 +34,13 @@ const InvitePage: React.FC = () => {
     const t = m ? decodeURIComponent(m[1]) : '';
     setToken(t);
   }, []);
+
+  useEffect(() => {
+    if (!token || isAndroidNativeApp()) return;
+    if (new URLSearchParams(window.location.search).get('web') === '1') return;
+    if (!/Android/i.test(navigator.userAgent)) return;
+    window.location.replace(androidInviteIntentUrl(token));
+  }, [token]);
 
   // Validate invite and fetch preview data
   useEffect(() => {

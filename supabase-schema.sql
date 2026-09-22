@@ -197,6 +197,8 @@ ALTER TABLE payment_sources ENABLE ROW LEVEL SECURITY;
 --   20260923000001_verified_email_claim.sql
 --   20260923000002_durable_rate_limits.sql
 --   20260923000003_consent_before_add.sql
+--   20260923000004_public_consume_budget.sql
+--   20260923000005_realtime_topic_names.sql
 -- Fresh installs: run those migrations after this schema file.
 
 -- R-20 containment: clients create people only through RPCs.
