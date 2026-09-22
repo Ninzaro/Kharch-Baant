@@ -619,6 +619,9 @@ export const updateTransaction = async (
       throw new Error('Amount must be at least 0.01.');
     }
     updateData.amount = amount;
+    if (transactionData.paidById) {
+      updateData.payers = [{ personId: transactionData.paidById, amount }];
+    }
   } else if (transactionData.payers !== undefined) {
     if (transactionData.payers.some((payer) => !isCentExact(payer.amount))) {
       throw new Error('Payer amounts must use no more than 2 decimal places.');

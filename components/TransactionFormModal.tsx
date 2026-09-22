@@ -378,8 +378,10 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
             activePayers.sort((a, b) => b.amount - a.amount);
             finalPaidById = activePayers[0].personId;
         } else {
-            // Single mode validation
             if (!paidById) return;
+            // Persist one payer for the full amount. An edit that changes only
+            // the amount otherwise leaves the previous payers array in place.
+            payers = [{ personId: paidById, amount: Number(amount) }];
         }
 
         // Cute Icons: append category emoji on create (replace any trailing emoji first)
