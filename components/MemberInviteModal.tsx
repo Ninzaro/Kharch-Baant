@@ -11,9 +11,10 @@ export interface MemberInviteModalProps {
   existingPeople: Person[];
   onClose(): void;
   onAdded(person: Person): void;
+  onQueueInvite?(invite: { name: string; email: string }): void;
 }
 
-const MemberInviteModal: React.FC<MemberInviteModalProps> = ({ open, groupId, currentUserId, existingPeople, onClose, onAdded }) => {
+const MemberInviteModal: React.FC<MemberInviteModalProps> = ({ open, groupId, currentUserId, existingPeople, onClose, onAdded, onQueueInvite }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [matchedPerson, setMatchedPerson] = useState<Person | null>(null);
@@ -72,7 +73,17 @@ const MemberInviteModal: React.FC<MemberInviteModalProps> = ({ open, groupId, cu
       let person: Person;
       if (matchedPerson?.isClaimed) {
         if (!groupId) {
-          setError('Save the group first, then send the invite.');
+          if (!email.trim()) {
+            setError('An email is required to invite a registered user.');
+            return;
+          }
+          if (!onQueueInvite) {
+            setError('Save the group first, then send the invite.');
+            return;
+          }
+          onQueueInvite({ name: matchedPerson.name, email: email.trim().toLowerCase() });
+          toast.success(`${matchedPerson.name} will be invited when you save the group.`);
+          onClose();
           return;
         }
         if (!currentUserId) {

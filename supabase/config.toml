@@ -3,3 +3,8 @@
 # anon keys) with 401, which the browser reports as a CORS failure.
 [functions.native-bridge]
 verify_jwt = false
+
+# send-email checks the Clerk session JWT itself. The platform check
+# rejects that token and returns 401 before the function runs.
+[functions.send-email]
+verify_jwt = false

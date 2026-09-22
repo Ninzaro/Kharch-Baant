@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 interface GroupFormModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (group: Omit<Group, 'id'>) => void;
+    onSave: (group: Omit<Group, 'id'>, pendingInvites?: { name: string; email: string }[]) => void;
     group: Group | null;
     allPeople: Person[];
     currentUserId: string;
@@ -49,6 +49,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
     const [tripStartDate, setTripStartDate] = useState('');
     const [tripEndDate, setTripEndDate] = useState('');
     const [enableCuteIcons, setEnableCuteIcons] = useState(true);
+    const [pendingInvites, setPendingInvites] = useState<{ name: string; email: string }[]>([]);
     const [showAddMemberModal, setShowAddMemberModal] = useState(false);
     // Local copy of people so we can optimistically add newly created person without parent refresh
     const [localPeople, setLocalPeople] = useState<Person[]>(allPeople);
@@ -76,6 +77,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
             setTripStartDate('');
             setTripEndDate('');
             setEnableCuteIcons(true);
+            setPendingInvites([]);
         }
     }, [group, currentUserId, isOpen]);
 
@@ -155,7 +157,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
             enableCuteIcons,
         };
 
-        onSave(payload);
+        onSave(payload, pendingInvites);
         // Don't call onClose() here - let the parent handle it after API success
     };
 
@@ -388,6 +390,22 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
 
                         {/* Current Members List */}
                         <div className="space-y-2">
+                            {pendingInvites.map(invite => (
+                                <div key={invite.email} className="flex items-center justify-between bg-muted p-2 rounded-md">
+                                    <div className="min-w-0">
+                                        <span className="font-medium">{invite.name}</span>
+                                        <p className="text-xs text-muted-foreground truncate">Invite sends when you save</p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setPendingInvites(prev => prev.filter(item => item.email !== invite.email))}
+                                        className="p-1 text-muted-foreground hover:text-foreground rounded-full"
+                                        aria-label={`Remove invite for ${invite.name}`}
+                                    >
+                                        <CloseIcon />
+                                    </button>
+                                </div>
+                            ))}
                             {currentMembers.map(p => (
                                 <div key={p.id} className="flex items-center justify-between bg-foreground/5 p-2 rounded-md">
                                     <div className="flex items-center gap-3">
@@ -460,6 +478,10 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
                 currentUserId={currentUserId}
                 existingPeople={localPeople}
                 onClose={() => setShowAddMemberModal(false)}
+                onQueueInvite={(invite) => {
+                    setPendingInvites(prev => prev.some(item => item.email === invite.email) ? prev : [...prev, invite]);
+                    setShowAddMemberModal(false);
+                }}
                 onAdded={(person) => {
                     setLocalPeople(prev => [...prev, person]);
                     setMembers(prev => prev.includes(person.id) ? prev : [...prev, person.id]);

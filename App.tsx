@@ -446,7 +446,7 @@ const App: React.FC = () => {
         }
     };
 
-    const handleSaveGroup = async (groupData: Omit<Group, 'id'>) => {
+    const handleSaveGroup = async (groupData: Omit<Group, 'id'>, pendingInvites: { name: string; email: string }[] = []) => {
         try {
             // Validate currentUserId before proceeding
             if (!currentUserId || currentUserId.trim() === '') {
@@ -463,6 +463,14 @@ const App: React.FC = () => {
                 }
 
                 const newGroup = await api.addGroup(groupData, currentUserId);
+                for (const invite of pendingInvites) {
+                    try {
+                        await api.inviteClaimedMember(newGroup.id, currentUserId, invite.email);
+                        toast.success(`${invite.name} must accept the email invite before joining.`);
+                    } catch (inviteError) {
+                        toast.error(inviteError instanceof Error ? inviteError.message : `Could not invite ${invite.name}.`);
+                    }
+                }
 
                 qc.setQueryData<Group[]>(qk.groups(currentUserId), (prev = []) => {
                     if (prev.some(g => g.id === newGroup.id)) return prev;
