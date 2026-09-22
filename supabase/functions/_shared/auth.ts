@@ -7,6 +7,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
+import { verifyToken } from 'https://esm.sh/@clerk/backend@2.16.0';
 import * as jose from 'https://deno.land/x/jose@v5.9.6/index.ts';
 
 export function corsHeadersFor(req: Request): Record<string, string> {
@@ -126,6 +127,19 @@ export async function requireAuthSub(req: Request): Promise<string | null> {
       if (!error && data?.user?.id) return data.user.id;
     } catch (e) {
       console.warn('Supabase auth verify failed:', e);
+    }
+  }
+
+  const secretKey = Deno.env.get('CLERK_SECRET_KEY') || '';
+  if (secretKey.startsWith('sk_')) {
+    try {
+      const verified = await verifyToken(token, { secretKey, clockSkewInMs: 10_000 });
+      const direct = (verified as { sub?: unknown }).sub;
+      const nested = (verified as { data?: { sub?: unknown } }).data?.sub;
+      const sub = typeof direct === 'string' ? direct : typeof nested === 'string' ? nested : '';
+      if (sub.startsWith('user_')) return sub;
+    } catch {
+      // Not a Clerk session token.
     }
   }
 

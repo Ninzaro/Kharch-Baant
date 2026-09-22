@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('../../../lib/supabase', () => ({
+  getClerkSupabaseToken: vi.fn().mockResolvedValue('test-session-token'),
   supabase: {
     functions: {
       invoke: vi.fn().mockResolvedValue({ data: null, error: { message: 'not deployed' } }),

@@ -9,7 +9,7 @@
  */
 
 import { TAGS, Tag } from '../types';
-import { supabase } from '../lib/supabase';
+import { getClerkSupabaseToken, supabase } from '../lib/supabase';
 import { getEnvValue } from '../utils/env';
 
 /**
@@ -32,8 +32,10 @@ export const suggestTagForDescription = async (description: string): Promise<Tag
   }
 
   try {
+    const token = await getClerkSupabaseToken();
     const { data, error } = await supabase.functions.invoke('suggest-tag', {
       body: { description: trimmed },
+      headers: { Authorization: `Bearer ${token}` },
     });
 
     if (error) {

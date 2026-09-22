@@ -5,7 +5,7 @@
  * reads BREVO_API_KEY / BREVO_SENDER_EMAIL from function secrets only.
  */
 
-import { supabase } from '../lib/supabase';
+import { getClerkSupabaseToken, supabase } from '../lib/supabase';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -53,8 +53,10 @@ async function invokeSendEmail(type: EmailType, data: unknown): Promise<EmailRes
   }
 
   try {
+    const token = await getClerkSupabaseToken();
     const { data: result, error } = await supabase.functions.invoke('send-email', {
       body: { type, data },
+      headers: { Authorization: `Bearer ${token}` },
     });
 
     if (error) {
