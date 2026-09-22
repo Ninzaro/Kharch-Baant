@@ -29,6 +29,7 @@ export function dataChannelsStatus(
 
 export const RealtimeStatus: React.FC = () => {
   const [status, setStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
+  const [browserOnline, setBrowserOnline] = useState(() => navigator.onLine);
 
   useEffect(() => {
     let seen = false;
@@ -42,37 +43,32 @@ export const RealtimeStatus: React.FC = () => {
     return () => window.clearInterval(id);
   }, []);
 
-  if (status === 'connected') {
-    return (
-      <div 
-        title="Data channels joined"
-        className="fixed top-3.5 right-32 md:right-36 bg-success/20 text-success border border-success/30 px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider z-[60] opacity-80 hover:opacity-100 transition-opacity cursor-default select-none pointer-events-none"
-      >
-        <div className="w-1.5 h-1.5 bg-success rounded-full animate-pulse"></div>
-        Live
-      </div>
-    );
-  }
+  useEffect(() => {
+    const on = () => setBrowserOnline(true);
+    const off = () => setBrowserOnline(false);
+    window.addEventListener('online', on);
+    window.addEventListener('offline', off);
+    return () => {
+      window.removeEventListener('online', on);
+      window.removeEventListener('offline', off);
+    };
+  }, []);
 
-  if (status === 'disconnected') {
-    return (
-      <div 
-        title="Data channels not joined. Changes may require refresh."
-        className="fixed top-3.5 right-32 md:right-36 bg-destructive/20 text-destructive border border-destructive/30 px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider z-[60] pointer-events-none"
-      >
-        <div className="w-1.5 h-1.5 bg-destructive rounded-full"></div>
-        Offline
-      </div>
-    );
-  }
+  if (status === 'connected') return null;
+
+  const offline = status === 'disconnected' && !browserOnline;
+  const label = offline ? 'Offline' : status === 'disconnected' ? 'Not live' : 'Syncing';
+  const tone = offline
+    ? 'bg-destructive/15 text-destructive border-destructive/30'
+    : 'bg-card/90 text-muted-foreground border-border';
 
   return (
-    <div 
-      title="Connecting to Realtime..."
-      className="fixed top-3.5 right-32 md:right-36 bg-warning/20 text-warning border border-warning/30 px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider z-[60] pointer-events-none"
+    <div
+      title={offline ? 'No network. Changes may not save.' : 'Live updates are not connected. Your expenses still load.'}
+      className={`fixed bottom-4 right-4 z-30 px-2 py-0.5 rounded-full border shadow-sm flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider pointer-events-none ${tone}`}
     >
-      <div className="w-1.5 h-1.5 bg-warning rounded-full animate-spin"></div>
-      Syncing
+      <div className={`w-1.5 h-1.5 rounded-full ${offline ? 'bg-destructive' : 'bg-muted-foreground'}`}></div>
+      {label}
     </div>
   );
 };
