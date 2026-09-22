@@ -2,7 +2,7 @@
  * Client email façade — never holds MailerSend secrets.
  *
  * All sending goes through the Supabase Edge Function `send-email`, which
- * reads MAILERSEND_API_KEY / MAILERSEND_FROM_EMAIL from function secrets only.
+ * reads BREVO_API_KEY / BREVO_SENDER_EMAIL from function secrets only.
  */
 
 import { supabase } from '../lib/supabase';
@@ -26,6 +26,13 @@ export interface EmailResult {
 }
 
 type EmailType = 'group_invite';
+
+export const PUBLIC_INVITE_ORIGIN = 'https://www.motamaati.in';
+
+/** Link the edge function will accept. Local origins are rejected by send-email. */
+export function inviteLink(token: string): string {
+  return `${PUBLIC_INVITE_ORIGIN}/invite/${token}`;
+}
 
 // ============================================================================
 // CORE
@@ -51,8 +58,15 @@ async function invokeSendEmail(type: EmailType, data: unknown): Promise<EmailRes
     });
 
     if (error) {
-      console.warn('[email] Edge function error:', error.message);
-      return { success: false, error: error.message };
+      let message = error.message;
+      try {
+        const body = await (error as { context?: Response }).context?.clone().json();
+        if (body && typeof body.error === 'string' && body.error) message = body.error;
+      } catch {
+        // The function body was not JSON.
+      }
+      console.warn('[email] Edge function error:', message);
+      return { success: false, error: message };
     }
 
     if (result?.error) {

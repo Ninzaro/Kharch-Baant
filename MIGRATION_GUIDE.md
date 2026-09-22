@@ -91,7 +91,7 @@ After migration, your new database will have:
 1. Go to https://www.mailersend.com/
 2. Create account and verify domain
 3. Get API key from dashboard
-4. Set Edge secrets (not `VITE_*`): `MAILERSEND_API_KEY` and `MAILERSEND_FROM_EMAIL` in the Supabase dashboard. See `.env.example`.
+4. Set Edge secrets (not `VITE_*`): `BREVO_API_KEY` and `BREVO_SENDER_EMAIL` in the Supabase dashboard. See `.env.example`.
 
 ## 🚨 Important Notes
 

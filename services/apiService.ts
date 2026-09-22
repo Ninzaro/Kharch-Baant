@@ -55,6 +55,21 @@ export const anonymizeMyAccount = (): Promise<{ success: boolean; error?: string
   supabaseApi.anonymizeMyAccount();
 
 // MEMBERSHIP HELPERS
+/** Claimed accounts are not inserted. They get a one-use email invite and join on accept. */
+export const inviteClaimedMember = async (
+  groupId: string,
+  invitedBy: string,
+  email: string,
+): Promise<void> => {
+  await supabaseApi.createGroupInvite({
+    groupId,
+    invitedBy,
+    emails: [email.trim().toLowerCase()],
+    maxUses: 1,
+    expiresInDays: 7,
+  });
+};
+
 export const addPersonToGroup = async (
   groupId: string,
   data: { name: string; email?: string; avatarUrl?: string }

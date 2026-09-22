@@ -38,7 +38,7 @@ In your Vercel dashboard, add these environment variables:
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
 - `VITE_CLERK_PUBLISHABLE_KEY`
-- Do **not** set `VITE_GEMINI_API_KEY` / `VITE_MAILERSEND_*` (inlined into the browser). Use Edge secrets `GEMINI_API_KEY` / `MAILERSEND_API_KEY` in the Supabase dashboard.
+- Do **not** set `VITE_GEMINI_API_KEY` or a Brevo key in the browser. Use Edge secrets `GEMINI_API_KEY`, `BREVO_API_KEY`, and `BREVO_SENDER_EMAIL`.
 
 ## Monitoring & Maintenance
 

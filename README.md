@@ -44,7 +44,7 @@ The application uses **only Supabase** (PostgreSQL + Row Level Security) for dat
    VITE_SUPABASE_URL=your_supabase_url
    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
    VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
-   # MailerSend / Gemini are Edge secrets (MAILERSEND_*, GEMINI_API_KEY) — never VITE_*
+   # Brevo / Gemini are Edge secrets (BREVO_API_KEY, BREVO_SENDER_EMAIL, GEMINI_API_KEY) — never VITE_*
    ```
 
 3. **Run the app:**

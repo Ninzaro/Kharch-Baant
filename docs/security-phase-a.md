@@ -14,7 +14,7 @@
 
 ### 1. Rotate keys (do this today if keys ever shipped in a web/APK build)
 
-1. **MailerSend** → API Tokens → revoke old `mlsn…` → create new → set only as Supabase secret `MAILERSEND_API_KEY`.
+1. **Brevo** → SMTP & API → create a key → set only as Supabase secret `BREVO_API_KEY`. Set `BREVO_SENDER_EMAIL` to a verified sender.
 2. **Google AI Studio** → revoke old Gemini key → create new → set only as Supabase secret `GEMINI_API_KEY`.
 3. Remove from local `.env.local` any of: `VITE_MAILERSEND_API_KEY`, `VITE_GEMINI_API_KEY`, bare `GEMINI_API_KEY` used for the app.
 4. If those values ever hit git history or a public deploy env, treat them as burned.
@@ -25,8 +25,8 @@
 supabase login
 supabase link --project-ref YOUR_REF
 
-supabase secrets set MAILERSEND_API_KEY=mlsn.NEW_KEY
-supabase secrets set MAILERSEND_FROM_EMAIL=noreply@your-domain.com
+supabase secrets set BREVO_API_KEY=xkeysib-NEW_KEY
+supabase secrets set BREVO_SENDER_EMAIL=noreply@your-domain.com
 supabase secrets set GEMINI_API_KEY=AIza.NEW_KEY
 # optional:
 supabase secrets set GEMINI_MODEL=gemini-2.0-flash

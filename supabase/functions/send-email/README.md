@@ -1,13 +1,15 @@
 # send-email Edge Function
 
-Sends transactional email via MailerSend. **API key stays in Supabase secrets only.**
+Sends transactional email via Brevo. **API key stays in Supabase secrets only.**
 
 ## Secrets
 
 ```bash
-supabase secrets set MAILERSEND_API_KEY=mlsn.your_rotated_key
-supabase secrets set MAILERSEND_FROM_EMAIL=noreply@your-domain.com
+supabase secrets set BREVO_API_KEY=xkeysib-your_key
+supabase secrets set BREVO_SENDER_EMAIL=noreply@your-domain.com
 ```
+
+`BREVO_SENDER_EMAIL` must be a sender already verified in Brevo.
 
 Do **not** put these in `VITE_*` or `.env.local` for the browser.
 

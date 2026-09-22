@@ -117,7 +117,7 @@ serve(async (req) => {
 
   try {
     const fingerprint = await tokenFingerprint(token);
-    if (!rateLimit(`native-bridge:${fingerprint}`, 10, 60_000)) {
+    if (!(await rateLimit('native-bridge', fingerprint, 10, 60_000))) {
       return jsonResponse({ error: 'Rate limit exceeded' }, 429, cors);
     }
 

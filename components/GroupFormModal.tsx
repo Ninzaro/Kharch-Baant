@@ -457,6 +457,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
             <MemberInviteModal
                 open={showAddMemberModal}
                 groupId={group?.id}
+                currentUserId={currentUserId}
                 existingPeople={localPeople}
                 onClose={() => setShowAddMemberModal(false)}
                 onAdded={(person) => {

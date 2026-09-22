@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { addPersonToGroup } from '../../../services/apiService'
+import { addPersonToGroup, inviteClaimedMember } from '../../../services/apiService'
 import * as supabaseApi from '../../../services/supabaseApiService'
 
 // `vi.mock` factories run before any top-level `const` initializers because
@@ -27,6 +27,7 @@ const h = vi.hoisted(() => {
 vi.mock('../../../services/supabaseApiService', () => ({
   addPerson: vi.fn(),
   findPersonByEmail: vi.fn(),
+  createGroupInvite: vi.fn(),
 }))
 
 vi.mock('../../../lib/supabase', () => ({
@@ -54,6 +55,24 @@ describe('addPersonToGroup', () => {
       email: 'registered@example.com',
     })).rejects.toThrow('This user must join through an invite link.')
 
+    expect(mockSupabase.from).not.toHaveBeenCalled()
+  })
+
+  it('invites a claimed member instead of inserting them', async () => {
+    vi.mocked(supabaseApi.createGroupInvite).mockResolvedValue({
+      invite: { id: 'inv' } as any,
+      inviteUrl: 'https://www.motamaati.in/invite/token',
+    })
+
+    await inviteClaimedMember('g1', 'me', 'Registered@Example.com')
+
+    expect(supabaseApi.createGroupInvite).toHaveBeenCalledWith({
+      groupId: 'g1',
+      invitedBy: 'me',
+      emails: ['registered@example.com'],
+      maxUses: 1,
+      expiresInDays: 7,
+    })
     expect(mockSupabase.from).not.toHaveBeenCalled()
   })
 

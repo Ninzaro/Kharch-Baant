@@ -67,6 +67,10 @@ Unclaimed placeholders (people who have never signed up) can stay as todayâ€™s â
 
 Do **not** block the MVP on push. Email is the safety gate.
 
+### Status
+
+Claimed-user email consent is implemented. Add Member sends a one-use invite instead of inserting a membership. `accept_group_invite` rejects that invite when the signed-in email does not match. Unclaimed placeholders can still be added directly. Push notifications are not started.
+
 ### Existing pieces
 
 - `createGroupInvite` / `email_invites` / `sendGroupInviteEmail` / `accept_group_invite`

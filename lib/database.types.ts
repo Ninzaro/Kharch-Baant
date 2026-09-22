@@ -589,11 +589,7 @@ export type Database = {
           user_id: string | null
         }[]
       }
-      i_am_member_of: { Args: { p_group_id: string }; Returns: boolean }
-      i_can_see_person: { Args: { p_person_id: string }; Returns: boolean }
-      i_created_group: { Args: { p_group_id: string }; Returns: boolean }
-      person_is_unclaimed: { Args: { p_person_id: string }; Returns: boolean }
-      requesting_user_id: { Args: never; Returns: string }
+
     }
     Enums: {
       [_ in never]: never

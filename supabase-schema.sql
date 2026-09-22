@@ -192,6 +192,11 @@ ALTER TABLE payment_sources ENABLE ROW LEVEL SECURITY;
 --   20260922000001_revoke_anon_rpc_execute.sql
 --   20260922000002_drop_get_current_user_person_id.sql
 --   20260922000003_revoke_anon_table_dml.sql
+--   20260922000004_hide_rls_helpers.sql
+--   20260923000000_realtime_private_topics.sql
+--   20260923000001_verified_email_claim.sql
+--   20260923000002_durable_rate_limits.sql
+--   20260923000003_consent_before_add.sql
 -- Fresh installs: run those migrations after this schema file.
 
 -- R-20 containment: clients create people only through RPCs.

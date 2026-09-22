@@ -347,8 +347,8 @@ const mapDbGroupRowBasic = (dbGroup: any) => ({
   members: [], // Default empty array - will be populated by full query or transformDbGroupToAppGroup
 });
 
-// S-11 leftover: private join flag. Dashboard "Allow public access" is still ON, so
-// this is not enforced until that setting is off and realtime.messages RLS exists.
+// Private topics. realtime.messages allows authenticated SELECT on these names only.
+// Enforcement also needs Realtime Settings → Allow public access OFF.
 const PRIVATE_CHANNEL = { config: { private: true as const } };
 
 export const subscribeToGroups = (personId: string, callback: (payload: any) => void) => {
@@ -978,6 +978,26 @@ export const createGroupInvite = async (request: CreateInviteRequest & { invited
     throw new Error('You must be a group member to create invites');
   }
 
+  let groupName = '';
+  let inviterName = '';
+  if (emails && emails.length > 0) {
+    const { data: groupData } = await supabase
+      .from('groups')
+      .select('name')
+      .eq('id', groupId)
+      .single();
+    const { data: inviterData } = await supabase
+      .from('people')
+      .select('name')
+      .eq('id', invitedBy)
+      .single();
+    groupName = groupData?.name || '';
+    inviterName = inviterData?.name || '';
+    if (!groupName || !inviterName) {
+      throw new Error('Could not send the invite. Nothing was saved.');
+    }
+  }
+
   // Generate unique invite token
   const inviteToken = generateInviteToken();
   const expiresAt = new Date();
@@ -1001,64 +1021,60 @@ export const createGroupInvite = async (request: CreateInviteRequest & { invited
   if (inviteError) throw inviteError;
 
   const invite = transformDbInviteToAppInvite(inviteData);
-  const inviteUrl = `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/invite/${inviteToken}`;
+  const shareUrl = `${typeof window !== 'undefined' ? window.location.origin : emailService.PUBLIC_INVITE_ORIGIN}/invite/${inviteToken}`;
+  const mailedUrl = emailService.inviteLink(inviteToken);
+
+  const discardUnsentInvite = async () => {
+    await supabase.from('email_invites').delete().eq('group_invite_id', invite.id);
+    await supabase.from('group_invites').delete().eq('id', invite.id);
+  };
 
   // If emails provided, create email invites and send emails
   let emailInvites: EmailInvite[] = [];
   if (emails && emails.length > 0) {
-    // Get group and inviter info for email
-    const { data: groupData } = await supabase
-      .from('groups')
-      .select('name')
-      .eq('id', groupId)
-      .single();
+    try {
+      const emailInvitePromises = emails.map(async (email) => {
+        const { data: emailInviteData, error: emailError } = await supabase
+          .from('email_invites')
+          .insert({
+            group_id: groupId,
+            group_invite_id: invite.id,
+            email: email.toLowerCase().trim(),
+            invited_by: invitedBy,
+          })
+          .select()
+          .single();
 
-    const { data: inviterData } = await supabase
-      .from('people')
-      .select('name')
-      .eq('id', invitedBy)
-      .single();
+        if (emailError) throw emailError;
 
-    const emailInvitePromises = emails.map(async (email) => {
-      const { data: emailInviteData, error: emailError } = await supabase
-        .from('email_invites')
-        .insert({
-          group_id: groupId,
-          group_invite_id: invite.id,
-          email: email.toLowerCase().trim(),
-          invited_by: invitedBy,
-        })
-        .select()
-        .single();
-
-      if (emailError) throw emailError;
-
-      // Send email invitation
-      if (emailService.isEmailServiceEnabled() && groupData && inviterData) {
-        emailService.sendGroupInviteEmail({
+        const sent = await emailService.sendGroupInviteEmail({
           inviteeEmail: email,
-          inviterName: inviterData.name,
-          groupName: groupData.name,
-          inviteUrl,
+          inviterName,
+          groupName,
+          inviteUrl: mailedUrl,
           expiresInDays,
-        }).then(result => {
-          if (!result.success) {
-            console.warn('⚠️ Group invite email failed:', result.error);
-          }
-        }).catch(err => {
-          console.error('❌ Group invite email error:', err);
         });
+        if (!sent.success) {
+          throw new Error(sent.error || 'Could not send the invite email.');
+        }
+
+        return transformDbEmailInviteToAppEmailInvite(emailInviteData);
+      });
+
+      emailInvites = await Promise.all(emailInvitePromises);
+    } catch (err) {
+      await discardUnsentInvite();
+      const reason = err instanceof Error ? err.message : '';
+      if (reason === 'Email is not configured on server') {
+        throw new Error('Invite email is not set up yet. Nothing was saved.');
       }
-
-      return transformDbEmailInviteToAppEmailInvite(emailInviteData);
-    });
-
-    emailInvites = await Promise.all(emailInvitePromises);
+      throw new Error('Could not send the invite. Nothing was saved.');
+    }
   }
 
   return {
     invite,
-    inviteUrl,
+    inviteUrl: shareUrl,
     emailInvites: emailInvites.length > 0 ? emailInvites : undefined,
   };
 };

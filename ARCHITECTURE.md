@@ -438,7 +438,7 @@ Reads come from three layers (any one may resolve a key):
 | `VITE_CLERK_PUBLISHABLE_KEY` | yes | Clerk publishable key — `index.tsx` throws if missing |
 | `VITE_API_MODE` | listed required by `envValidation.ts`; ⚠ unclear if still used | Was `'supabase' \| 'mock'`; mock allegedly removed |
 | ~~`VITE_GEMINI_API_KEY`~~ | **removed** | Use Edge secret `GEMINI_API_KEY` only |
-| ~~`VITE_MAILERSEND_*`~~ | **removed** | Use Edge secrets `MAILERSEND_API_KEY` / `MAILERSEND_FROM_EMAIL` |
+| ~~`VITE_MAILERSEND_*`~~ | **removed** | Use Edge secrets `BREVO_API_KEY` / `BREVO_SENDER_EMAIL` |
 | `VITE_DEBUG_ENABLED`, `VITE_DEV_MODE` | optional | Surface in `envValidation.ts`; usage thin |
 | `CAPACITOR_DEV_SERVER_URL` | optional | Live-reload dev server URL (e.g. `http://192.168.1.10:3000`). Unset in production. Set in shell or `.env.local` — **never commit**. |
 | `CLERK_SECRET_KEY` | Edge Function only | Clerk Backend secret for `native-bridge`. Never `VITE_*`. |

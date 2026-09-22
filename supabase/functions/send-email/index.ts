@@ -1,15 +1,11 @@
 /**
  * Supabase Edge Function: Send Email
  *
- * MailerSend API key lives only in function secrets (MAILERSEND_API_KEY).
+ * Brevo API key lives only in function secrets (BREVO_API_KEY).
  * Never expose that key to the browser or mobile app.
  *
  * Deploy:
- *   supabase secrets set MAILERSEND_API_KEY=mlsn.... MAILERSEND_FROM_EMAIL=noreply@...
- *   # production:
- *   supabase secrets set ALLOWED_ORIGINS=https://your-domain.com
- *   # optional HS256 fallback for Clerk JWT:
- *   supabase secrets set SUPABASE_JWT_SECRET=your-jwt-secret
+ *   supabase secrets set BREVO_API_KEY=xkeysib-... BREVO_SENDER_EMAIL=noreply@...
  *   supabase functions deploy send-email
  */
 
@@ -62,19 +58,18 @@ serve(async (req) => {
     return jsonResponse({ error: 'Unauthorized' }, 401, cors);
   }
 
-  // Per-user abuse cap (per isolate; still blocks naive spam loops)
-  if (!rateLimit(`email:${sub}`, 20, 60_000)) {
+  if (!(await rateLimit('email', sub, 20, 60_000))) {
     return jsonResponse({ error: 'Rate limit exceeded' }, 429, cors);
   }
 
   try {
     const { type, data }: EmailRequest = await req.json();
 
-    const mailersendApiKey = Deno.env.get('MAILERSEND_API_KEY');
-    const fromEmail = Deno.env.get('MAILERSEND_FROM_EMAIL');
+    const brevoApiKey = Deno.env.get('BREVO_API_KEY') || '';
+    const fromEmail = Deno.env.get('BREVO_SENDER_EMAIL') || '';
 
-    if (!mailersendApiKey || !fromEmail) {
-      return jsonResponse({ error: 'MailerSend not configured on server' }, 503, cors);
+    if (!brevoApiKey.startsWith('xkeysib-') || !isValidEmail(fromEmail)) {
+      return jsonResponse({ error: 'Email is not configured on server' }, 503, cors);
     }
 
     if (!type || !data || typeof data !== 'object') {
@@ -98,15 +93,11 @@ serve(async (req) => {
           return jsonResponse({ error: 'invite fields required' }, 400, cors);
         }
         emailPayload = {
-          from: { email: fromEmail, name: 'Kharch Baant' },
+          sender: { email: fromEmail, name: 'Kharch Baant' },
           to: [{ email: inviteeEmail }],
           subject: `${clip(data.inviterName, 80)} invited you to join "${clip(data.groupName, 80)}" on Kharch Baant`,
-          html: `
-            <p><strong>${inviterName}</strong> invited you to <strong>"${groupName}"</strong>.</p>
-            <p><a href="${inviteUrl}">Join group</a></p>
-            <p style="color:#666;font-size:14px">Invite expires in ${expiresInDays} days.</p>
-          `,
-          text: `${clip(data.inviterName)} invited you to "${clip(data.groupName)}". Join: ${clip(data.inviteUrl)}`,
+          htmlContent: `<p><strong>${inviterName}</strong> invited you to <strong>"${groupName}"</strong>.</p><p><a href="${inviteUrl}">Join group</a></p><p style="color:#666;font-size:14px">Invite expires in ${expiresInDays} days.</p>`,
+          textContent: `${clip(data.inviterName)} invited you to "${clip(data.groupName)}". Join: ${clip(data.inviteUrl)}`,
         };
         break;
       }
@@ -119,23 +110,23 @@ serve(async (req) => {
       return jsonResponse({ error: 'No payload' }, 400, cors);
     }
 
-    const response = await fetch('https://api.mailersend.com/v1/email', {
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${mailersendApiKey}`,
+        'api-key': brevoApiKey,
         'Content-Type': 'application/json',
+        accept: 'application/json',
       },
       body: JSON.stringify(emailPayload),
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('MailerSend API error:', errorText);
+      console.error('Brevo API error status:', response.status);
       return jsonResponse({ error: 'Failed to send email' }, 502, cors);
     }
 
     const result = await response.json().catch(() => ({}));
-    return jsonResponse({ success: true, messageId: result.id }, 200, cors);
+    return jsonResponse({ success: true, messageId: result.messageId }, 200, cors);
   } catch (error) {
     console.error('Email function error:', error);
     return jsonResponse({ error: 'Internal server error' }, 500, cors);

@@ -41,21 +41,40 @@ export function jsonResponse(
   });
 }
 
-// ── In-isolate rate limit (best-effort; resets per cold start) ──────────────
-
-const rateBuckets = new Map<string, { count: number; resetAt: number }>();
+// ── Shared rate limit (Postgres). Fails closed if the counter cannot be reached.
 
 /** Returns true if the request is allowed. */
-export function rateLimit(key: string, max: number, windowMs: number): boolean {
-  const now = Date.now();
-  const entry = rateBuckets.get(key);
-  if (!entry || now >= entry.resetAt) {
-    rateBuckets.set(key, { count: 1, resetAt: now + windowMs });
-    return true;
+export async function rateLimit(
+  bucket: string,
+  subject: string,
+  max: number,
+  windowMs: number
+): Promise<boolean> {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+  if (!supabaseUrl || !serviceKey || !subject) return false;
+
+  try {
+    const client = createClient(supabaseUrl, serviceKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const { data, error } = await client
+      .schema('app_private')
+      .rpc('consume_budget', {
+        p_bucket: bucket,
+        p_subject: subject,
+        p_max: max,
+        p_window_seconds: Math.max(1, Math.ceil(windowMs / 1000)),
+      });
+    if (error) {
+      console.error('rate limit failed');
+      return false;
+    }
+    return data === true;
+  } catch {
+    console.error('rate limit failed');
+    return false;
   }
-  if (entry.count >= max) return false;
-  entry.count += 1;
-  return true;
 }
 
 // ── JWT / identity ──────────────────────────────────────────────────────────

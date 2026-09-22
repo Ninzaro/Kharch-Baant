@@ -16,7 +16,7 @@ VITE_API_MODE=supabase
 # App URL (for invite links and email redirects)
 VITE_APP_URL=http://localhost:3000
 
-# MailerSend / Gemini: Edge secrets only (MAILERSEND_API_KEY, GEMINI_API_KEY).
+# Brevo / Gemini: Edge secrets only (BREVO_API_KEY, BREVO_SENDER_EMAIL, GEMINI_API_KEY).
 # Never VITE_* — Vite inlines those into the browser bundle. See .env.example.
 ```
 
@@ -30,7 +30,7 @@ Canonical list: `.env.example`. MailerSend/Gemini go in **Supabase → Edge Func
 3. Verify your domain or use their sandbox
 4. Go to **Settings** → **API Tokens**
 5. Create a new token with "Full Access"
-6. Set `MAILERSEND_API_KEY` as an Edge secret (not `VITE_MAILERSEND_API_KEY`)
+6. Set `BREVO_API_KEY` and `BREVO_SENDER_EMAIL` as Edge secrets (not `VITE_*`)
 
 ### From Email Address
 1. In MailerSend dashboard, go to **Domains**

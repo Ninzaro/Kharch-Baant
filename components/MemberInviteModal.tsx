@@ -1,17 +1,19 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import BaseModal from './BaseModal';
 import { Person } from '../types';
-import { addPersonToGroup, addPerson, findPersonByEmail } from '../services/apiService';
+import { addPersonToGroup, addPerson, findPersonByEmail, inviteClaimedMember } from '../services/apiService';
+import toast from 'react-hot-toast';
 
 export interface MemberInviteModalProps {
   open: boolean;
   groupId?: string;
+  currentUserId?: string;
   existingPeople: Person[];
   onClose(): void;
   onAdded(person: Person): void;
 }
 
-const MemberInviteModal: React.FC<MemberInviteModalProps> = ({ open, groupId, existingPeople, onClose, onAdded }) => {
+const MemberInviteModal: React.FC<MemberInviteModalProps> = ({ open, groupId, currentUserId, existingPeople, onClose, onAdded }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [matchedPerson, setMatchedPerson] = useState<Person | null>(null);
@@ -68,6 +70,24 @@ const MemberInviteModal: React.FC<MemberInviteModalProps> = ({ open, groupId, ex
 
     try {
       let person: Person;
+      if (matchedPerson?.isClaimed) {
+        if (!groupId) {
+          setError('Save the group first, then send the invite.');
+          return;
+        }
+        if (!currentUserId) {
+          setError('Sign in again before inviting this person.');
+          return;
+        }
+        if (!email.trim()) {
+          setError('An email is required to invite a registered user.');
+          return;
+        }
+        await inviteClaimedMember(groupId, currentUserId, email.trim());
+        toast.success(`${matchedPerson.name} must accept the email invite before joining.`);
+        onClose();
+        return;
+      }
       if (groupId) {
         person = await addPersonToGroup(groupId, {
           name: matchedPerson ? matchedPerson.name : name.trim(),
@@ -107,7 +127,7 @@ const MemberInviteModal: React.FC<MemberInviteModalProps> = ({ open, groupId, ex
         disabled={submitting || (!matchedPerson && !name.trim())}
       >
         {submitting && <span className="animate-spin h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full" />}
-        Add Member
+        {matchedPerson?.isClaimed ? 'Send invite' : 'Add Member'}
       </button>
     </>
   );
@@ -137,15 +157,15 @@ const MemberInviteModal: React.FC<MemberInviteModalProps> = ({ open, groupId, ex
             <p className="mt-1 text-xs text-muted-foreground">Checking...</p>
           )}
           {matchedPerson?.isClaimed && (
-            <div className="mt-2 flex items-center gap-2 bg-success/15 border border-success/40 rounded-md px-3 py-2">
-              <span className="text-success text-xs font-medium">✓ Already on Kharch Baant</span>
-              <span className="text-muted-foreground text-xs">{matchedPerson.name} will be added directly.</span>
+            <div className="mt-2 flex items-center gap-2 bg-muted border border-border rounded-md px-3 py-2">
+              <span className="text-foreground text-xs font-medium">Already on Kharch Baant</span>
+              <span className="text-muted-foreground text-xs">{matchedPerson.name} joins only after accepting an email invite.</span>
             </div>
           )}
           {matchedPerson && !matchedPerson.isClaimed && (
-            <div className="mt-2 flex items-center gap-2 bg-amber-900/30 border border-amber-700/40 rounded-md px-3 py-2">
-              <span className="text-amber-400 text-xs font-medium">Already a contact</span>
-              <span className="text-muted-foreground text-xs">{matchedPerson.name} — they'll be invited to this group.</span>
+            <div className="mt-2 flex items-center gap-2 bg-muted border border-border rounded-md px-3 py-2">
+              <span className="text-foreground text-xs font-medium">Already a contact</span>
+              <span className="text-muted-foreground text-xs">{matchedPerson.name} will be added to this group.</span>
             </div>
           )}
           {!matchedPerson && email && !lookingUp && email.includes('@') && (

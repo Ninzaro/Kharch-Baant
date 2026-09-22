@@ -46,8 +46,7 @@ serve(async (req) => {
     return jsonResponse({ error: 'Unauthorized' }, 401, cors);
   }
 
-  // Gemini cost / abuse guard
-  if (!rateLimit(`tag:${sub}`, 30, 60_000)) {
+  if (!(await rateLimit('tag', sub, 30, 60_000))) {
     return jsonResponse({ error: 'Rate limit exceeded' }, 429, cors);
   }
 
