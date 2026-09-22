@@ -9,21 +9,34 @@ const DATA_TOPIC_FRAGMENTS = [
   'public:group_members',
 ];
 
-function dataChannelsStatus(): 'connecting' | 'connected' | 'disconnected' {
-  const channels = supabase.getChannels();
+export function dataChannelsStatus(
+  channels: { topic?: string; state?: string }[],
+  seenDataChannel: boolean,
+): { status: 'connecting' | 'connected' | 'disconnected'; sawDataChannel: boolean } {
   const data = DATA_TOPIC_FRAGMENTS.map((frag) =>
     channels.find((c) => (c.topic || '').includes(frag))
   );
-  if (data.some((c) => !c)) return 'connecting';
-  if (data.every((c) => c && c.state === 'joined')) return 'connected';
-  return 'disconnected';
+  const sawDataChannel = seenDataChannel || data.some((c) => !!c);
+  if (data.every((c) => c?.state === 'joined')) {
+    return { status: 'connected', sawDataChannel };
+  }
+  if (data.some((c) => c?.state === 'joining' || c?.state === 'leaving')) {
+    return { status: 'connecting', sawDataChannel };
+  }
+  if (!sawDataChannel) return { status: 'connecting', sawDataChannel };
+  return { status: 'disconnected', sawDataChannel };
 }
 
 export const RealtimeStatus: React.FC = () => {
   const [status, setStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
 
   useEffect(() => {
-    const tick = () => setStatus(dataChannelsStatus());
+    let seen = false;
+    const tick = () => {
+      const next = dataChannelsStatus(supabase.getChannels(), seen);
+      seen = next.sawDataChannel;
+      setStatus(next.status);
+    };
     tick();
     const id = window.setInterval(tick, 1000);
     return () => window.clearInterval(id);
