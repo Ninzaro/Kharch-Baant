@@ -191,12 +191,25 @@ ALTER TABLE payment_sources ENABLE ROW LEVEL SECURITY;
 --   20260922000000_revoke_anon_people_insert.sql
 --   20260922000001_revoke_anon_rpc_execute.sql
 --   20260922000002_drop_get_current_user_person_id.sql
+--   20260922000003_revoke_anon_table_dml.sql
 -- Fresh installs: run those migrations after this schema file.
 
 -- R-20 containment: clients create people only through RPCs.
 REVOKE INSERT ON TABLE public.people FROM authenticated;
 REVOKE INSERT ON TABLE public.people FROM anon;
 REVOKE INSERT ON TABLE public.people FROM PUBLIC;
+
+REVOKE ALL ON TABLE
+  public.ai_item_cache,
+  public.email_invites,
+  public.group_deletion_requests,
+  public.group_invites,
+  public.group_members,
+  public.groups,
+  public.payment_sources,
+  public.people,
+  public.transactions
+FROM anon;
 
 REVOKE EXECUTE ON FUNCTION public.i_am_person(uuid) FROM PUBLIC;
 REVOKE EXECUTE ON FUNCTION public.i_am_person(uuid) FROM anon;
