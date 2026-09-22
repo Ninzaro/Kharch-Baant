@@ -66,6 +66,7 @@ import type { DbGroup, DbTransaction, DbPaymentSource, DbPerson } from '../lib/s
 import type { Json } from '../lib/database.types';
 import * as emailService from './emailService';
 import { assertExactMoneyFields, isCentExact, toMinorUnits } from '../utils/money';
+import { postgrestTimestamptz } from '../utils/timestamptz';
 
 const stableJsonStringify = (value: unknown): string => {
   if (Array.isArray(value)) {
@@ -654,11 +655,14 @@ export const updateTransaction = async (
     .update(updateData)
     .eq('id', transactionId);
   if (transactionData.updatedAt) {
-    query = query.eq('updated_at', transactionData.updatedAt);
+    query = query.eq('updated_at', postgrestTimestamptz(transactionData.updatedAt));
   }
   const { data, error } = await query.select().single();
 
   if (error || !data) {
+    if (error && error.code !== 'PGRST116') {
+      throw new Error(error.message || 'Could not save this expense.');
+    }
     const { data: still } = await supabase
       .from('transactions')
       .select('id')
