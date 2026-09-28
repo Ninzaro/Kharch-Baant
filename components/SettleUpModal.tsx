@@ -113,7 +113,7 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
     return pair?.amount ?? 0;
   }, [baseBalances, payerId, receiverId]);
   const isOverpay = amountNumber > outstanding + 0.01;
-  const isValid = payerId && receiverId && !isSelfSelect && amountNumber > 0 && !isOverpay && !submitting;
+  const isValid = payerId && receiverId && !isSelfSelect && amountNumber > 0 && !submitting;
 
   // Live balances still include the existing settlement (edit mode) — used as the "from" side
   const liveBalances = useMemo(
@@ -154,7 +154,7 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
   };
 
   const handleSubmit = async () => {
-    if (!isValid || isOverpay) return;
+    if (!isValid) return;
     setSubmitting(true);
     try {
       // Build settlement transaction
@@ -249,6 +249,8 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
               <span className="w-5 h-5 border-2 border-success-foreground/30 border-t-success-foreground rounded-full animate-spin" />
             ) : isEditing ? (
               <>Save changes <ArrowRightIcon width="16" height="16" /></>
+            ) : isOverpay ? (
+              <>Record anyway <ArrowRightIcon width="16" height="16" /></>
             ) : (
               <>Record settlement <ArrowRightIcon width="16" height="16" /></>
             )}
@@ -278,9 +280,14 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
           </div>
         </div>
         {isOverpay && payerId && receiverId && (
-          <p className="text-center text-sm text-destructive">
-            Amount is more than the {format(outstanding)} outstanding between these two people.
-          </p>
+          <div className="text-center text-sm space-y-1">
+            <p className="text-destructive">
+              Amount is more than the {format(outstanding)} outstanding between these two people.
+            </p>
+            <p className="text-muted-foreground">
+              Record it anyway if this is how the money actually moved.
+            </p>
+          </div>
         )}
 
         {/* 2. PAYER -> RECEIVER FLOW */}
