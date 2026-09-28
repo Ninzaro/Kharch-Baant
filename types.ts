@@ -228,7 +228,7 @@ export const TAGS = [
 
 export type Tag = typeof TAGS[number];
 
-export type PaymentSourceType = 'Credit Card' | 'UPI' | 'Cash' | 'Other';
+export type PaymentSourceType = 'Credit Card' | 'Debit Card' | 'UPI' | 'Cash' | 'Other';
 
 export interface CreditCardDetails {
     issuer: string; // e.g., 'Visa', 'Mastercard'

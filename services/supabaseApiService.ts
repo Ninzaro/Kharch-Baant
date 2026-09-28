@@ -745,7 +745,13 @@ export const getPaymentSources = async (personId?: string): Promise<PaymentSourc
   const { data, error } = await query;
   if (error) throw error;
 
-  return (data || []).map(transformDbPaymentSourceToAppPaymentSource);
+  const sources = (data || []).map(transformDbPaymentSourceToAppPaymentSource);
+  if (!personId || sources.some((source) => source.type === 'Cash' && source.isActive !== false)) {
+    return sources;
+  }
+
+  const cash = await addPaymentSource({ name: 'Cash', type: 'Cash', isActive: true }, personId);
+  return [cash, ...sources];
 };
 
 export const addPaymentSource = async (

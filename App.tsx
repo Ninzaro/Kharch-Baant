@@ -524,8 +524,11 @@ const App: React.FC = () => {
 
     const handleSavePaymentSource = async (sourceData: Omit<PaymentSource, 'id'>) => {
         try {
-            await api.addPaymentSource(sourceData, person?.id);
-            // Let realtime bridge add to cache for consistency
+            const created = await api.addPaymentSource(sourceData, person?.id);
+            qc.setQueryData<PaymentSource[]>(qk.paymentSources(currentUserId), (prev = []) => [
+                created,
+                ...prev.filter((source) => source.id !== created.id),
+            ]);
             setIsPaymentSourceModalOpen(false);
         } catch (error) {
             console.error("Failed to save payment source", error);

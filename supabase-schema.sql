@@ -43,7 +43,7 @@ CREATE TABLE group_members (
 CREATE TABLE payment_sources (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
-    type TEXT NOT NULL CHECK (type IN ('Credit Card', 'UPI', 'Cash', 'Other')),
+    type TEXT NOT NULL CHECK (type IN ('Credit Card', 'Debit Card', 'UPI', 'Cash', 'Other')),
     details JSONB,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -200,6 +200,7 @@ ALTER TABLE payment_sources ENABLE ROW LEVEL SECURITY;
 --   20260923000004_public_consume_budget.sql
 --   20260923000005_realtime_topic_names.sql
 --   20260923190000_allow_direct_settlement.sql
+--   20260923200000_payment_source_debit_card.sql
 -- Fresh installs: run those migrations after this schema file.
 
 -- R-20 containment: clients create people only through RPCs.

@@ -99,6 +99,9 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [tag, setTag] = useState<Tag>(TAGS[0]);
     const [paymentSourceId, setPaymentSourceId] = useState<string | undefined>(undefined);
+    const [paymentMenuOpen, setPaymentMenuOpen] = useState(false);
+    const [upiMenuOpen, setUpiMenuOpen] = useState(false);
+    const [upiMode, setUpiMode] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [comment, setComment] = useState('');
     const submissionRef = useRef<{ fingerprint: string; transactionId: string } | null>(null);
@@ -135,6 +138,9 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
         setTagManuallySet(false);
         const defaultCash = paymentSources.find(p => p.type === 'Cash' && p.isActive !== false);
         setPaymentSourceId(defaultCash?.id);
+        setUpiMode(false);
+        setPaymentMenuOpen(false);
+        setUpiMenuOpen(false);
         setComment('');
         setSplitMode('equal');
         setSplitParticipants(people.map(p => p.id));
@@ -157,6 +163,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                 setTag(transaction.tag);
                 setTagManuallySet(true); // preserve existing category; do not auto-overwrite on edit
                 setPaymentSourceId(transaction.paymentSourceId);
+                setUpiMode(paymentSources.find((source) => source.id === transaction.paymentSourceId)?.type === 'UPI');
                 setComment(transaction.comment || '');
                 setSplitMode(transaction.split.mode);
                 setSplitParticipants(transaction.split.participants.map(p => p.personId));
@@ -733,18 +740,28 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                                             placeholder="Details..."
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-xs text-muted-foreground mb-1">Payment Method</label>
-                                        <select
-                                            value={paymentSourceId || ''}
-                                            onChange={e => e.target.value === 'add_new' ? onAddNewPaymentSource() : setPaymentSourceId(e.target.value || undefined)}
-                                            className="w-full bg-overlay/20 text-sm rounded-xl p-3 border border-border focus:border-ring outline-none"
-                                        >
-                                            <option value="">None</option>
-                                            {paymentSources.map(ps => <option key={ps.id} value={ps.id}>{ps.name}</option>)}
-                                            <option value="add_new" className="text-primary font-semibold">+ Add New</option>
-                                        </select>
-                                    </div>
+                                    <PaymentMethodPicker
+                                        paymentSources={paymentSources}
+                                        paymentSourceId={paymentSourceId}
+                                        menuOpen={paymentMenuOpen}
+                                        upiMenuOpen={upiMenuOpen}
+                                        upiMode={upiMode}
+                                        onToggleMenu={() => { setPaymentMenuOpen((open) => !open); setUpiMenuOpen(false); }}
+                                        onToggleUpiMenu={() => setUpiMenuOpen((open) => !open)}
+                                        onSelect={(id) => {
+                                            setPaymentSourceId(id);
+                                            setUpiMode(paymentSources.find((source) => source.id === id)?.type === 'UPI');
+                                            setPaymentMenuOpen(false);
+                                            setUpiMenuOpen(false);
+                                        }}
+                                        onChooseUpi={() => {
+                                            setUpiMode(true);
+                                            setPaymentSourceId(undefined);
+                                            setPaymentMenuOpen(false);
+                                            setUpiMenuOpen(true);
+                                        }}
+                                        onAdd={onAddNewPaymentSource}
+                                    />
                                 </div>
                             )}
                         </div>
@@ -778,5 +795,79 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
         </div>
     );
 };
+
+function PaymentMethodPicker({
+    paymentSources,
+    paymentSourceId,
+    menuOpen,
+    upiMenuOpen,
+    upiMode,
+    onToggleMenu,
+    onToggleUpiMenu,
+    onSelect,
+    onChooseUpi,
+    onAdd,
+}: {
+    paymentSources: PaymentSource[];
+    paymentSourceId?: string;
+    menuOpen: boolean;
+    upiMenuOpen: boolean;
+    upiMode: boolean;
+    onToggleMenu: () => void;
+    onToggleUpiMenu: () => void;
+    onSelect: (id: string | undefined) => void;
+    onChooseUpi: () => void;
+    onAdd: () => void;
+}) {
+    const active = paymentSources.filter((source) => source.isActive !== false);
+    const cash = active.find((source) => source.type === 'Cash');
+    const cards = active.filter((source) => source.type === 'Credit Card' || source.type === 'Debit Card' || source.type === 'Other');
+    const upiAccounts = active.filter((source) => source.type === 'UPI');
+    const selected = active.find((source) => source.id === paymentSourceId);
+    const label = selected?.name || (upiMode ? 'UPI' : 'None');
+
+    const row = (text: string, onClick: () => void, activeRow = false) => (
+        <button type="button" onClick={onClick} className={`w-full text-left px-3 py-2.5 text-sm ${activeRow ? 'bg-primary/15 text-foreground' : 'text-foreground hover:bg-muted'}`}>
+            {text}
+        </button>
+    );
+
+    return (
+        <div className="space-y-3">
+            <div className="relative">
+                <label className="block text-xs text-muted-foreground mb-1">Payment Method</label>
+                <button type="button" onClick={onToggleMenu} className="w-full bg-overlay/20 text-sm rounded-xl p-3 border border-border text-left flex justify-between items-center">
+                    <span>{label}</span>
+                    <ChevronRightIcon className={`w-4 h-4 text-muted-foreground transition-transform ${menuOpen ? 'rotate-90' : ''}`} />
+                </button>
+                {menuOpen && (
+                    <div className="absolute z-30 mt-1 w-full rounded-xl border border-border bg-card shadow-xl overflow-hidden">
+                        {row('None', () => onSelect(undefined), !paymentSourceId && !upiMode)}
+                        {cash && row('Cash', () => onSelect(cash.id), paymentSourceId === cash.id)}
+                        {row('UPI', onChooseUpi, upiMode)}
+                        {cards.map((source) => row(source.name, () => onSelect(source.id), paymentSourceId === source.id))}
+                        <button type="button" onClick={() => { onToggleMenu(); onAdd(); }} className="w-full text-left px-3 py-2.5 text-sm text-primary font-semibold hover:bg-muted">+ Add new</button>
+                    </div>
+                )}
+            </div>
+            {upiMode && (
+                <div className="relative">
+                    <label className="block text-xs text-muted-foreground mb-1">UPI account</label>
+                    <button type="button" onClick={onToggleUpiMenu} className="w-full bg-overlay/20 text-sm rounded-xl p-3 border border-border text-left flex justify-between items-center">
+                        <span>{selected?.type === 'UPI' ? selected.name : 'Choose account'}</span>
+                        <ChevronRightIcon className={`w-4 h-4 text-muted-foreground transition-transform ${upiMenuOpen ? 'rotate-90' : ''}`} />
+                    </button>
+                    {upiMenuOpen && (
+                        <div className="absolute z-30 mt-1 w-full rounded-xl border border-border bg-card shadow-xl overflow-hidden">
+                            {upiAccounts.length === 0 && <p className="px-3 py-2.5 text-sm text-muted-foreground">No UPI account yet.</p>}
+                            {upiAccounts.map((source) => row(source.name, () => onSelect(source.id), paymentSourceId === source.id))}
+                            <button type="button" onClick={() => { onToggleUpiMenu(); onAdd(); }} className="w-full text-left px-3 py-2.5 text-sm text-primary font-semibold hover:bg-muted">+ Add UPI account</button>
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+}
 
 export default TransactionFormModal;

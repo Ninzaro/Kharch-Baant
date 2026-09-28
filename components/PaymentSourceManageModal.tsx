@@ -87,9 +87,6 @@ const PaymentSourceManageModal: React.FC<PaymentSourceManageModalProps> = ({
           )}
           {active.map(ps => {
             const isCash = ps.type === 'Cash';
-            const detailsLabel = ps.details && 'issuer' in ps.details
-              ? `•••• ${ps.details.last4}`
-              : (ps.details && 'upiId' in ps.details && ps.details.upiId) ? ps.details.upiId : '';
             const count = usageCounts[ps.id] || 0;
             const lastUsed = lastUsedMap[ps.id];
             return (
@@ -97,7 +94,7 @@ const PaymentSourceManageModal: React.FC<PaymentSourceManageModalProps> = ({
                 <div className="min-w-0 pr-3">
                   <p className="text-foreground text-sm font-medium truncate">{ps.name}</p>
                   <div className="flex items-center gap-2 text-[11px] text-muted-foreground flex-wrap">
-                    <span>{ps.type}{detailsLabel ? ` • ${detailsLabel}` : ''}</span>
+                    <span>{ps.type}</span>
                     <span className={`px-1.5 py-0.5 rounded bg-muted/60 ${count > 0 ? 'text-primary' : 'text-muted-foreground'}`}>{count} tx</span>
                     {lastUsed && (
                       <span className="px-1.5 py-0.5 rounded bg-muted/40 text-muted-foreground">Last {lastUsed}</span>
