@@ -8,3 +8,8 @@ verify_jwt = false
 # rejects that token and returns 401 before the function runs.
 [functions.send-email]
 verify_jwt = false
+
+# suggest-tag checks the Clerk session JWT itself. The platform check
+# rejects that token and returns 401 before the function runs.
+[functions.suggest-tag]
+verify_jwt = false
