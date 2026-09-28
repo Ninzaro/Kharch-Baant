@@ -1,6 +1,7 @@
 import React from 'react';
 import { Transaction, Person, Currency } from '../types';
 import { EditIcon, DeleteIcon } from './icons/Icons';
+import { ButtonGroup, ButtonGroupItem } from './ui/button-group';
 
 // Simple eye icon for view details
 const EyeIcon = () => (
@@ -121,31 +122,31 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, peopleMa
                         {formatCurrency(transaction.amount)}
                     </span>
 
-                    <div className="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ButtonGroup className="opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                         {onViewDetails && (
-                            <button
-                                type="button"
+                            <ButtonGroupItem
+                                ariaLabel="View expense"
+                                className="h-7 w-7 px-0 text-muted-foreground"
                                 onClick={(e) => { e.stopPropagation(); onViewDetails(transaction); }}
-                                className="p-1 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded transition-colors"
                             >
                                 <EyeIcon />
-                            </button>
+                            </ButtonGroupItem>
                         )}
-                        <button
-                            type="button"
+                        <ButtonGroupItem
+                            ariaLabel="Edit expense"
+                            className="h-7 w-7 px-0 text-muted-foreground"
                             onClick={(e) => { e.stopPropagation(); onEdit(transaction); }}
-                            className="p-1 text-muted-foreground hover:text-foreground hover:bg-foreground/10 rounded transition-colors"
                         >
                             <EditIcon width="16" height="16" />
-                        </button>
-                        <button
-                            type="button"
+                        </ButtonGroupItem>
+                        <ButtonGroupItem
+                            ariaLabel="Delete expense"
+                            className="h-7 w-7 px-0 text-muted-foreground"
                             onClick={(e) => { e.stopPropagation(); onDelete(transaction.id); }}
-                            className="p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors"
                         >
                             <DeleteIcon width="16" height="16" />
-                        </button>
-                    </div>
+                        </ButtonGroupItem>
+                    </ButtonGroup>
                 </div>
 
             </div>

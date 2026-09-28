@@ -789,16 +789,18 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                             <span className="text-muted-foreground italic">Draft Expense</span>
                         )}
                     </div>
-                    <div className="flex gap-3">
-                        <button onClick={onClose} disabled={submitting} className="px-5 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50">Cancel</button>
-                        <button
+                    <ButtonGroup>
+                        <ButtonGroupItem onClick={onClose} disabled={submitting} className="h-10 px-4">
+                            Cancel
+                        </ButtonGroupItem>
+                        <ButtonGroupItem
                             onClick={() => handleSubmit()}
                             disabled={!isSplitValid || !isPayerValid || !description || !amount || submitting}
-                            className="px-6 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-bold rounded-xl shadow-lg shadow-primary/20 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 disabled:shadow-none"
+                            className="h-10 px-5"
                         >
                             {submitting ? <Spinner /> : 'Save'}
-                        </button>
-                    </div>
+                        </ButtonGroupItem>
+                    </ButtonGroup>
                 </div>
 
             </div>
