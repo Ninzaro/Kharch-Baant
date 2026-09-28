@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Group, Transaction, Person } from '../types';
 import GroupSummaryCard from './GroupSummaryCard';
 import { PlusIcon } from './icons/Icons';
-import { getUserFacingDebts } from '../utils/calculations';
+import { calculateGroupBalances, getUserFacingDebts } from '../utils/calculations';
 import { formatMoney } from '../utils/money';
 import BalanceBreakdownModal from './BalanceBreakdownModal';
 
@@ -23,10 +23,20 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ groups, transactions, people, c
     // "Owed" and "owe" can both be non-zero (unlike a single global net).
     const { netBalance, byCurrency } = useMemo(() => {
         const debts = getUserFacingDebts(currentUserId, groups, transactions);
-        return {
-            netBalance: debts.netBalance,
-            byCurrency: debts.byCurrency,
-        };
+        const nets = new Map<string, number>();
+        for (const group of groups) {
+            if (group.isArchived) continue;
+            const groupTxs = transactions.filter((t) => t.groupId === group.id);
+            const net = calculateGroupBalances(groupTxs).get(currentUserId) ?? 0;
+            const code = group.currency || 'INR';
+            nets.set(code, (nets.get(code) ?? 0) + net);
+        }
+        const byCurrency = debts.byCurrency.map((bucket) => ({
+            ...bucket,
+            net: Math.round((nets.get(bucket.code) ?? 0) * 100) / 100,
+        }));
+        const netBalance = byCurrency.length === 1 ? byCurrency[0].net : byCurrency.reduce((sum, bucket) => sum + bucket.net, 0);
+        return { netBalance, byCurrency };
     }, [transactions, currentUserId, groups]);
 
     const renderAmounts = (pick: (b: { code: string; owedToUser: number; userOwes: number; net: number }) => number) => {

@@ -126,7 +126,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, peopleMa
                         {onViewDetails && (
                             <ButtonGroupItem
                                 ariaLabel="View expense"
-                                className="h-7 w-7 px-0 text-muted-foreground"
+                                className="h-10 w-10 px-0 text-muted-foreground"
                                 onClick={(e) => { e.stopPropagation(); onViewDetails(transaction); }}
                             >
                                 <EyeIcon />
@@ -134,17 +134,17 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, peopleMa
                         )}
                         <ButtonGroupItem
                             ariaLabel="Edit expense"
-                            className="h-7 w-7 px-0 text-muted-foreground"
+                            className="h-10 w-10 px-0 text-muted-foreground"
                             onClick={(e) => { e.stopPropagation(); onEdit(transaction); }}
                         >
-                            <EditIcon width="16" height="16" />
+                            <EditIcon width="20" height="20" />
                         </ButtonGroupItem>
                         <ButtonGroupItem
                             ariaLabel="Delete expense"
-                            className="h-7 w-7 px-0 text-muted-foreground"
+                            className="h-10 w-10 px-0 text-muted-foreground"
                             onClick={(e) => { e.stopPropagation(); onDelete(transaction.id); }}
                         >
-                            <DeleteIcon width="16" height="16" />
+                            <DeleteIcon width="20" height="20" />
                         </ButtonGroupItem>
                     </ButtonGroup>
                 </div>

@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Transaction, Person, Currency } from '../types';
 import { calculateGroupBalances, simplifyGroupDebts } from '../utils/calculations';
+import { formatMoney } from '../utils/money';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface DashboardProps {
@@ -27,19 +28,17 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, currentUserId, peop
         return {
             totalOwedToUser: Math.round(owed * 100) / 100,
             totalUserOwes: Math.round(owe * 100) / 100,
-            netBalance: Math.round((owed - owe) * 100) / 100,
+            netBalance: Math.round((balances.get(currentUserId) ?? 0) * 100) / 100,
         };
     }, [transactions, currentUserId]);
 
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency }).format(amount);
-    };
+    const formatCurrency = (amount: number) => formatMoney(amount, currency);
 
     return (
         <div className="flex flex-col gap-4">
             {/* Hero Card: Total Balance */}
             <div className="bg-card backdrop-blur-md p-6 rounded-2xl shadow-sm border border-border text-center">
-                <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Balance</h3>
+                <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Your balance</h3>
                 <p className={`text-4xl sm:text-5xl font-extrabold mt-2 break-words truncate ${netBalance >= 0 ? 'text-success' : 'text-destructive'}`} title={formatCurrency(netBalance)}>
                     {formatCurrency(netBalance)}
                 </p>
