@@ -5,15 +5,20 @@ interface PaymentSourceFormModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSave: (source: Omit<PaymentSource, 'id'>) => void;
+    initialType?: PaymentSourceType;
 }
 
-const PaymentSourceFormModal: React.FC<PaymentSourceFormModalProps> = ({ isOpen, onClose, onSave }) => {
-    const [type, setType] = useState<PaymentSourceType>('Credit Card');
+const SOURCE_TYPES: PaymentSourceType[] = ['Credit Card', 'Debit Card', 'UPI', 'Other'];
+
+const PaymentSourceFormModal: React.FC<PaymentSourceFormModalProps> = ({ isOpen, onClose, onSave, initialType }) => {
+    const [type, setType] = useState<PaymentSourceType>(initialType || 'Credit Card');
     const [name, setName] = useState('');
+    const [typeOpen, setTypeOpen] = useState(false);
 
     const resetForm = () => {
-        setType('Credit Card');
+        setType(initialType || 'Credit Card');
         setName('');
+        setTypeOpen(false);
     };
 
     const handleSave = (e: React.FormEvent) => {
@@ -41,7 +46,7 @@ const PaymentSourceFormModal: React.FC<PaymentSourceFormModalProps> = ({ isOpen,
                 </p>
                 <form onSubmit={handleSave} className="space-y-4">
                     <div>
-                        <label htmlFor="source-name" className="block text-sm font-medium text-muted-foreground mb-1">Source Name</label>
+                        <label htmlFor="source-name" className="block text-sm font-medium text-muted-foreground mb-1">{type === 'UPI' ? 'Account name' : 'Name'}</label>
                         <input
                             type="text"
                             id="source-name"
@@ -53,20 +58,28 @@ const PaymentSourceFormModal: React.FC<PaymentSourceFormModalProps> = ({ isOpen,
                         />
                     </div>
                     
-                    <div>
-                        <label htmlFor="source-type" className="block text-sm font-medium text-muted-foreground mb-1">Type</label>
-                        <select
-                            id="source-type"
-                            value={type}
-                            onChange={e => setType(e.target.value as PaymentSourceType)}
-                            className="w-full bg-overlay/30 text-foreground rounded-md p-2 border-border focus:ring-ring focus:border-ring"
-                        >
-                            <option value="Credit Card">Credit Card</option>
-                            <option value="Debit Card">Debit Card</option>
-                            <option value="UPI">UPI</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
+                    {initialType !== 'UPI' && (
+                        <div className="relative">
+                            <label className="block text-sm font-medium text-muted-foreground mb-1">Type</label>
+                            <button type="button" onClick={() => setTypeOpen((open) => !open)} className="w-full bg-overlay/30 text-foreground rounded-xl p-3 border border-border text-left">
+                                {type}
+                            </button>
+                            {typeOpen && (
+                                <div className="absolute z-30 mt-1 w-full rounded-xl border border-border bg-card shadow-xl overflow-hidden">
+                                    {SOURCE_TYPES.map((option) => (
+                                        <button
+                                            key={option}
+                                            type="button"
+                                            onClick={() => { setType(option); setTypeOpen(false); }}
+                                            className={`w-full text-left px-3 py-2.5 text-sm hover:bg-muted ${option === type ? 'bg-primary/15' : ''}`}
+                                        >
+                                            {option}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     <div className="flex justify-end gap-4 pt-4">
                         <button type="button" onClick={handleClose} className="px-4 py-2 bg-foreground/10 text-foreground rounded-md hover:bg-foreground/20">Cancel</button>

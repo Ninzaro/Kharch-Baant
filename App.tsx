@@ -143,6 +143,8 @@ const App: React.FC = () => {
     const [isConfirmLeaveModalOpen, setIsConfirmLeaveModalOpen] = useState(false);
     const [isAddActionModalOpen, setIsAddActionModalOpen] = useState(false);
     const [isPaymentSourceModalOpen, setIsPaymentSourceModalOpen] = useState(false);
+    const [paymentSourceDraftType, setPaymentSourceDraftType] = useState<PaymentSource['type'] | undefined>(undefined);
+    const [lastAddedPaymentSourceId, setLastAddedPaymentSourceId] = useState<string | undefined>(undefined);
     const [isPaymentSourceManageOpen, setIsPaymentSourceManageOpen] = useState(false);
     const [isSettleUpOpen, setIsSettleUpOpen] = useState(false);
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -529,6 +531,8 @@ const App: React.FC = () => {
                 created,
                 ...prev.filter((source) => source.id !== created.id),
             ]);
+            setLastAddedPaymentSourceId(created.id);
+            setPaymentSourceDraftType(undefined);
             setIsPaymentSourceModalOpen(false);
         } catch (error) {
             console.error("Failed to save payment source", error);
@@ -745,7 +749,11 @@ const App: React.FC = () => {
                         people={groupMembers}
                         currentUserId={currentUserId}
                         paymentSources={paymentSources}
-                        onAddNewPaymentSource={() => setIsPaymentSourceModalOpen(true)}
+                        onAddNewPaymentSource={(type) => {
+                            setPaymentSourceDraftType(type);
+                            setIsPaymentSourceModalOpen(true);
+                        }}
+                        lastAddedPaymentSourceId={lastAddedPaymentSourceId}
                         enableCuteIcons={selectedGroup.enableCuteIcons ?? true}
                         currency={selectedGroup.currency}
                     />
@@ -787,7 +795,8 @@ const App: React.FC = () => {
                 <Suspense fallback={<ModalShell />}>
                     <PaymentSourceFormModal
                         isOpen={isPaymentSourceModalOpen}
-                        onClose={() => setIsPaymentSourceModalOpen(false)}
+                        onClose={() => { setPaymentSourceDraftType(undefined); setIsPaymentSourceModalOpen(false); }}
+                        initialType={paymentSourceDraftType}
                         onSave={handleSavePaymentSource}
                     />
                 </Suspense>
