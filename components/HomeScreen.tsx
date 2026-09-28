@@ -54,75 +54,74 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ groups, transactions, people, c
 
     return (
         <div className="flex-1 w-full h-full overflow-y-auto bg-background text-foreground">
-            <header className="bg-card/80 backdrop-blur-lg border-b border-border sticky top-0 z-10 p-page md:px-section md:py-card flex justify-between items-center safe-area-top">
-                <h1 className="text-3xl font-bold text-foreground tracking-tight">Dashboard</h1>
+            <header className="bg-background/80 backdrop-blur-sm border-b border-border sticky top-0 z-10 px-4 py-4 md:px-8 flex justify-between items-center gap-3 safe-area-top">
+                <div className="min-w-0">
+                    <h1 className="text-2xl font-semibold tracking-tight text-foreground">Home</h1>
+                    <p className="text-sm text-muted-foreground">Your groups and what you owe.</p>
+                </div>
                 <button
                     type="button"
                     onClick={onAddGroup}
-                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-primary to-accent text-primary-foreground rounded-lg hover:from-primary/90 hover:to-accent/90 transition-colors text-sm font-medium shadow-sm"
+                    className="inline-flex shrink-0 items-center gap-2 h-9 px-3 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                    <PlusIcon className="h-5 w-5" />
-                    <span>Add Group</span>
+                    <PlusIcon className="h-4 w-4" />
+                    <span>New group</span>
                 </button>
             </header>
 
-            <main className="p-page md:p-section space-y-section">
-                <section>
-                    <h2 className="text-xl font-semibold mb-4 text-muted-foreground">Overall Summary</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            <main className="px-4 py-6 md:px-8 md:py-8 space-y-8">
+                <section className="space-y-3">
+                    <h2 className="text-sm font-medium text-muted-foreground">Summary</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <button
                             type="button"
                             onClick={() => setBreakdownType('owed')}
-                            className="bg-card backdrop-blur-md p-card rounded-2xl shadow-sm border border-border text-left hover:bg-muted/60 hover:border-success/40 transition-colors group"
+                            className="bg-card p-5 rounded-xl border border-border text-left shadow-sm hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
-                            <h3 className="text-sm font-medium text-muted-foreground group-hover:text-foreground">
-                                Total you are owed
-                            </h3>
-                            <p className="text-3xl font-bold text-success mt-2">{renderAmounts((b) => b.owedToUser)}</p>
-                            <p className="text-xs text-muted-foreground mt-1">(tap to see breakdown)</p>
+                            <h3 className="text-sm font-medium text-muted-foreground">You are owed</h3>
+                            <p className="text-2xl font-semibold tracking-tight text-success mt-2">{renderAmounts((b) => b.owedToUser)}</p>
+                            <p className="text-xs text-muted-foreground mt-2">See breakdown</p>
                         </button>
                         <button
                             type="button"
                             onClick={() => setBreakdownType('owing')}
-                            className="bg-card backdrop-blur-md p-card rounded-2xl shadow-sm border border-border text-left hover:bg-muted/60 hover:border-destructive/40 transition-colors group"
+                            className="bg-card p-5 rounded-xl border border-border text-left shadow-sm hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
-                            <h3 className="text-sm font-medium text-muted-foreground group-hover:text-foreground">
-                                Total you owe
-                            </h3>
-                            <p className="text-3xl font-bold text-destructive mt-2">{renderAmounts((b) => b.userOwes)}</p>
-                            <p className="text-xs text-muted-foreground mt-1">(tap to see breakdown)</p>
+                            <h3 className="text-sm font-medium text-muted-foreground">You owe</h3>
+                            <p className="text-2xl font-semibold tracking-tight text-destructive mt-2">{renderAmounts((b) => b.userOwes)}</p>
+                            <p className="text-xs text-muted-foreground mt-2">See breakdown</p>
                         </button>
-                        <div className="bg-card backdrop-blur-md p-card rounded-2xl shadow-sm border border-border">
-                            <h3 className="text-sm font-medium text-muted-foreground">Total Net Balance</h3>
-                            <p className={`text-3xl font-bold mt-2 ${byCurrency.length > 1 ? 'text-foreground' : netBalance >= 0 ? 'text-success' : 'text-destructive'}`}>
+                        <div className="bg-card p-5 rounded-xl border border-border shadow-sm">
+                            <h3 className="text-sm font-medium text-muted-foreground">Net</h3>
+                            <p className={`text-2xl font-semibold tracking-tight mt-2 ${byCurrency.length > 1 ? 'text-foreground' : netBalance >= 0 ? 'text-success' : 'text-destructive'}`}>
                                 {renderAmounts((b) => b.net)}
                             </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                                {byCurrency.length > 1 ? '(per currency)' : '(tap a group for details)'}
+                            <p className="text-xs text-muted-foreground mt-2">
+                                {byCurrency.length > 1 ? 'Per currency' : 'Open a group for details'}
                             </p>
                         </div>
                     </div>
                 </section>
 
-                <section>
-                    <h2 className="text-xl font-semibold mb-4 text-muted-foreground">Your Groups</h2>
+                <section className="space-y-3">
+                    <h2 className="text-sm font-medium text-muted-foreground">Groups</h2>
                     {groups.length === 0 ? (
-                        <div className="bg-card border border-border rounded-2xl p-8 md:p-10 text-center max-w-lg">
-                            <p className="text-lg font-semibold text-foreground">No groups yet</p>
+                        <div className="bg-card border border-dashed border-border rounded-xl p-8 text-center max-w-lg">
+                            <p className="text-base font-semibold text-foreground">No groups yet</p>
                             <p className="text-sm text-muted-foreground mt-2">
                                 Create a trip, household, or shared wallet. Invite friends with a link and split expenses in seconds.
                             </p>
                             <button
                                 type="button"
                                 onClick={onAddGroup}
-                                className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-primary to-accent text-primary-foreground rounded-lg text-sm font-medium shadow-sm"
+                                className="mt-6 inline-flex items-center gap-2 h-9 px-3 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
                             >
-                                <PlusIcon className="h-5 w-5" />
+                                <PlusIcon className="h-4 w-4" />
                                 Create your first group
                             </button>
                         </div>
                     ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         {groups.map(group => (
                             <GroupSummaryCard
                                 key={group.id}

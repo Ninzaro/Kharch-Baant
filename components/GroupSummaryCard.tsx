@@ -50,12 +50,12 @@ const GroupSummaryCard: React.FC<GroupSummaryCardProps> = ({ group, transactions
     return (
         <button 
             onClick={() => onSelectGroup(group.id)}
-            className="bg-card backdrop-blur-md p-6 rounded-2xl shadow-sm text-left w-full h-full flex flex-col justify-between hover:bg-muted/50 border border-border hover:border-primary/30 transition-all focus:outline-none focus:ring-2 focus:ring-ring"
+            className="bg-card p-5 rounded-xl shadow-sm text-left w-full h-full flex flex-col justify-between hover:bg-muted/40 border border-border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
             <div>
                 <div className="flex flex-col gap-1">
                     <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-lg font-bold text-foreground truncate">{group.name}</h3>
+                        <h3 className="text-base font-semibold text-foreground truncate">{group.name}</h3>
                         {tripRange && (
                             <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-full border border-border">
                                 {tripRange}
