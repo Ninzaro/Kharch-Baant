@@ -71,17 +71,14 @@ const GroupView: React.FC<GroupViewProps> = ({
 
   const tripRange = useMemo(() => {
     if (!group.tripStartDate || !group.tripEndDate) return '';
-    const start = new Date(group.tripStartDate + 'T00:00:00').toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-    const end = new Date(group.tripEndDate + 'T00:00:00').toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-    return `${start} - ${end}`;
+    const start = new Date(group.tripStartDate + 'T00:00:00');
+    const end = new Date(group.tripEndDate + 'T00:00:00');
+    const sameYear = start.getFullYear() === end.getFullYear();
+    const sameMonth = sameYear && start.getMonth() === end.getMonth();
+    const monthDay = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    if (sameMonth) return `${monthDay(start)}–${end.getDate()}, ${end.getFullYear()}`;
+    if (sameYear) return `${monthDay(start)} – ${monthDay(end)}, ${end.getFullYear()}`;
+    return `${monthDay(start)}, ${start.getFullYear()} – ${monthDay(end)}, ${end.getFullYear()}`;
   }, [group.tripStartDate, group.tripEndDate]);
 
   const filteredTransactions = useMemo(() => {
@@ -166,10 +163,10 @@ const GroupView: React.FC<GroupViewProps> = ({
           </button>
           <div className="min-w-0">
             <h1 className="text-xl md:text-2xl font-bold text-foreground truncate">{group.name}</h1>
-            <div className="flex flex-wrap items-center gap-2 mt-1 text-xs uppercase tracking-wide text-muted-foreground">
+            <div className="mt-1 text-xs uppercase tracking-wide text-muted-foreground">
               <span>{groupTypeLabel}</span>
               {tripRange && (
-                <span className="px-2 py-0.5 rounded-full bg-muted border border-border text-muted-foreground">{tripRange}</span>
+                <span className="mt-1 block normal-case tracking-normal whitespace-nowrap">{tripRange}</span>
               )}
             </div>
             <div className="flex items-center -space-x-2 mt-1">

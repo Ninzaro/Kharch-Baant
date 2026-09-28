@@ -70,7 +70,7 @@ const MemberBalances: React.FC<MemberBalancesProps> = ({ transactions, people, c
                                     )}
                                 </div>
                                 {open && (
-                                    <ul className="mt-2 ml-11 space-y-2">
+                                    <ul className="mt-2 space-y-2">
                                         {lines.map((transfer) => (
                                             <PaymentArrow
                                                 key={`${transfer.from}-${transfer.to}`}
@@ -105,19 +105,19 @@ function PaymentArrow({
     onSettle?: () => void;
 }) {
     return (
-        <li className="flex items-center gap-2 min-w-0">
-            <span className="truncate max-w-[5.5rem] font-medium text-foreground">{fromName}</span>
-            <span className="flex flex-1 items-center min-w-0 text-muted-foreground" aria-hidden="true">
-                <span className="h-px flex-1 bg-border" />
-                <span className="px-1.5 text-xs font-semibold text-foreground whitespace-nowrap">{amountLabel}</span>
-                <span className="h-px w-3 bg-border" />
-                <svg width="14" height="14" viewBox="0 0 14 14" className="shrink-0 text-primary">
-                    <path d="M2 7h8M8 3l4 4-4 4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-            </span>
-            <span className="truncate max-w-[5.5rem] font-medium text-foreground">{toName}</span>
+        <li className="flex items-center gap-2 rounded-xl border border-border bg-muted/50 px-2.5 py-2 min-w-0">
+            <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="truncate font-medium text-foreground">{fromName}</span>
+                    <svg width="16" height="16" viewBox="0 0 16 16" className="shrink-0 text-primary" aria-hidden="true">
+                        <path d="M2 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <span className="truncate font-medium text-foreground">{toName}</span>
+                </div>
+                <div className="mt-0.5 text-xs font-semibold text-foreground">{amountLabel}</div>
+            </div>
             {onSettle && (
-                <button type="button" className="shrink-0 px-2 py-1 rounded-lg bg-primary text-primary-foreground text-xs font-semibold" onClick={onSettle}>
+                <button type="button" className="shrink-0 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold" onClick={onSettle}>
                     Settle
                 </button>
             )}
