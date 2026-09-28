@@ -151,7 +151,7 @@ const GroupView: React.FC<GroupViewProps> = ({
   };
 
   return (
-    <div className="flex-1 w-full h-full flex flex-col circuit-grid text-foreground">
+    <div className="flex-1 w-full h-full flex flex-col bg-background text-foreground">
       <header className="bg-card/80 backdrop-blur-lg border-b border-border sticky top-0 z-10 p-page flex justify-between items-center flex-shrink-0 safe-area-top">
         <div className="flex items-center gap-4 min-w-0">
           <button

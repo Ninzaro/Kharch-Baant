@@ -650,7 +650,7 @@ const App: React.FC = () => {
     const groupMembers = selectedGroup ? people.filter(p => selectedGroup.members.includes(p.id)) : [];
 
     return (
-        <div className="h-screen w-screen circuit-grid text-foreground flex font-sans">
+        <div className="h-screen w-screen bg-background text-foreground flex font-sans">
             {selectedGroup ? (
                 <>
                     <GroupList
