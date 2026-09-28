@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import * as Sentry from '@sentry/react';
 import toast, { Toaster } from 'react-hot-toast';
 import { Group, Transaction, Person, PaymentSource } from './types';
@@ -266,8 +266,8 @@ const App: React.FC = () => {
                 toast.success(`Successfully joined group "${result.group?.name}"!`);
             } else {
                 toast.error(`Failed to join group: ${result.error}`);
-                // Clear the invite URL
                 window.history.replaceState({}, '', '/');
+                window.dispatchEvent(new Event('kb-invite-cleared'));
             }
         } catch (error) {
             console.error('❌ Error handling invite:', error);
@@ -989,6 +989,26 @@ const AppWithAuth: React.FC = () => {
 
     // Check if there's an invite token in the URL or SSO callback
     const [inviteInfo, setInviteInfo] = useState<{ token: string; groupName?: string } | null>(null);
+    const hadSignedInUser = useRef(false);
+
+    useEffect(() => {
+        const clearInvite = () => setInviteInfo(null);
+        window.addEventListener('kb-invite-cleared', clearInvite);
+        return () => window.removeEventListener('kb-invite-cleared', clearInvite);
+    }, []);
+
+    useEffect(() => {
+        if (user) {
+            hadSignedInUser.current = true;
+            return;
+        }
+        if (!hadSignedInUser.current) return;
+        hadSignedInUser.current = false;
+        setInviteInfo(null);
+        if (window.location.pathname.startsWith('/invite/')) {
+            window.history.replaceState({}, '', '/');
+        }
+    }, [user]);
 
     useEffect(() => {
         if (!isNative) return;

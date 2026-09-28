@@ -5,18 +5,18 @@ This file is a status board only. Do not treat it as a prompt to write code.
 
 Updated: 2026-09-23
 Closed testing: 14 days complete. Production backend is live.
-Public launch: not yet. The store build and the latest web build do not yet contain every fix below.
+Public launch: not yet. The current web build is on the live site. Remaining blockers below are still open.
 
 ## Blockers before a public launch
 
 | ID | Item | Status | Note |
 |---|---|---|---|
-| L-1 | Deploy the current web build and a new Play bundle | open | Live site is behind this session: invite-to-app, single-payer save, email token, Not-live badge. |
-| L-2 | Two phones show a new expense without refresh | open | Topic policy `20260923000005` is on the server. Both devices must reopen the group once, then retest. |
-| L-3 | Invite link opens the Android app | open | Web invite page must be deployed. Email still uses `https://www.motamaati.in/invite/…`. |
+| L-1 | Deploy the current web build and a new Play bundle | complete | User pushed the commit and checked the live site on 2026-09-23. Current web build is deployed. |
+| L-2 | Two phones show a new expense without refresh | complete | User confirmed on 2026-09-23: expenses appear on the other device without a refresh, and registration is flawless. |
+| L-3 | Invite link opens the Android app | open | Email links open the Play Store app. WhatsApp opens Chrome and offered to install the site as a second app. A signed-out creator could still see the invited group; that clear-on-logout fix is in source and needs the next web deploy. |
 | L-4 | Brevo domain not landing in spam | open | SPF and DKIM for the sender domain. Not an app code change. |
 | L-5 | Clerk session claims `email` and `email_verified` | open | Required for verified-email claim. Dashboard → Sessions → Customize session token. Keep `"role": "authenticated"`. |
-| L-6 | Realtime “Allow public access” off | open | Do this only after L-2 passes. Otherwise live updates stop. |
+| L-6 | Realtime “Allow public access” off | open | L-2 has passed, so this can be done next. Leave it open until it is actually turned off. |
 | L-7 | Play production release, not only internal testing | open | Store listing, privacy policy, Data safety, content rating, production track. |
 
 ## Soon after launch

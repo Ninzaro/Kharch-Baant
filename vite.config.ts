@@ -43,6 +43,14 @@ export default defineConfig(({ mode }) => {
             theme_color: '#3b82f6',
             background_color: '#ffffff',
             display: 'standalone',
+            prefer_related_applications: true,
+            related_applications: [
+              {
+                platform: 'play',
+                id: 'com.kharchbaant.app',
+                url: 'https://play.google.com/store/apps/details?id=com.kharchbaant.app',
+              },
+            ],
             scope: '/',
             start_url: '/',
             orientation: 'portrait',

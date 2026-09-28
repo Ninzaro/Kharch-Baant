@@ -5,9 +5,7 @@ import { useNativeGoogleSignIn } from '../../hooks/useNativeGoogleSignIn';
 import { isAndroidNativeApp } from '../../services/nativeAuthBridge';
 import { androidInviteIntentUrl } from '../../utils/nativeDeepLinks';
 import { validateInvite } from '../../services/supabaseApiService';
-import { supabase } from '../../lib/supabase';
-import type { InvitePreviewGroup, Person } from '../../types';
-import Avatar from '../Avatar';
+import type { InvitePreviewGroup } from '../../types';
 
 type InviteStatus = 'loading' | 'invalid' | 'valid' | 'accepted' | 'error';
 
@@ -23,7 +21,6 @@ const InvitePage: React.FC = () => {
   const [token, setToken] = useState<string>('');
   const [group, setGroup] = useState<InvitePreviewGroup | null>(null);
   const [inviter, setInviter] = useState<{ name: string } | null>(null);
-  const [members, setMembers] = useState<Person[]>([]);
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
   const [usage, setUsage] = useState<{ current: number; max: number | null } | null>(null);
 
@@ -33,6 +30,12 @@ const InvitePage: React.FC = () => {
     const m = window.location.pathname.match(/^\/invite\/(.+)$/);
     const t = m ? decodeURIComponent(m[1]) : '';
     setToken(t);
+  }, []);
+
+  useEffect(() => {
+    const blockInstall = (event: Event) => event.preventDefault();
+    window.addEventListener('beforeinstallprompt', blockInstall);
+    return () => window.removeEventListener('beforeinstallprompt', blockInstall);
   }, []);
 
   useEffect(() => {
@@ -72,23 +75,6 @@ const InvitePage: React.FC = () => {
           setInviter({
             name: result.inviter.name,
           });
-        }
-        // Members preview (may be empty pre-auth under RLS — invite still valid)
-        try {
-          const { data: membersRows } = await supabase
-            .from('group_members')
-            .select('person_id, people:person_id ( id, name, avatar_url )')
-            .eq('group_id', result.group.id);
-          const people: Person[] = (membersRows || [])
-            .filter((r: any) => r?.people?.id)
-            .map((r: any) => ({
-              id: r.people.id,
-              name: r.people.name,
-              avatarUrl: r.people.avatar_url,
-            }));
-          setMembers(people);
-        } catch {
-          setMembers([]);
         }
         setStatus('valid');
       } catch (e: any) {
@@ -155,19 +141,6 @@ const InvitePage: React.FC = () => {
                   <span className="text-muted-foreground text-sm">Type</span>
                   <span className="text-foreground">{group?.groupType || '—'}</span>
                 </div>
-                <div className="mb-3">
-                  <div className="text-muted-foreground text-sm mb-2">Members</div>
-                  <div className="flex -space-x-2">
-                    {members.slice(0, 8).map(m => (
-                      <Avatar key={m.id} id={m.id} name={m.name} avatarUrl={m.avatarUrl} size="sm" />
-                    ))}
-                    {members.length > 8 && (
-                      <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground ring-2 ring-border">
-                        +{members.length - 8}
-                      </div>
-                    )}
-                  </div>
-                </div>
                 <div className="flex items-center gap-3 text-xs">
                   {expiresText && (
                     <span className="px-2 py-1 rounded-full bg-foreground/5 border border-border text-muted-foreground">{expiresText}</span>
@@ -189,6 +162,14 @@ const InvitePage: React.FC = () => {
             {/* Guest sign-in only. Signed-in accept is App.tsx (localStorage token). */}
             <div>
               <div className="bg-overlay/20 border border-border rounded-xl p-4 flex flex-col items-center">
+                {!isAndroidNativeApp() && /Android/i.test(navigator.userAgent) && token && (
+                  <a
+                    href={androidInviteIntentUrl(token)}
+                    className="w-full max-w-sm mb-3 py-2.5 px-4 rounded-xl bg-primary text-primary-foreground font-medium text-center"
+                  >
+                    Open in the Kharch Baant app
+                  </a>
+                )}
                 {isAndroidNativeApp() && (
                   <button
                     type="button"
