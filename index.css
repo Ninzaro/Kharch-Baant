@@ -164,6 +164,31 @@
     color-scheme: dark;
   }
 
+  .circuit-grid {
+    background-color: hsl(var(--background));
+    background-image:
+      linear-gradient(hsl(var(--primary) / 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--primary) / 0.08) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  html.dark .circuit-grid {
+    background-image:
+      radial-gradient(ellipse at 15% 0%, hsl(var(--primary) / 0.18), transparent 46%),
+      linear-gradient(hsl(var(--primary) / 0.14) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--primary) / 0.14) 1px, transparent 1px);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .circuit-grid {
+      animation: circuit-drift 28s linear infinite;
+    }
+  }
+
+  @keyframes circuit-drift {
+    to { background-position: 32px 32px; }
+  }
+
   /*
    * Light mode is :root tokens only. Dark mode swaps variables under .dark.
    * Do NOT reintroduce html:not(.dark) .bg-slate-* / .text-white rewrites —

@@ -63,7 +63,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ groups, transactions, people, c
     }, [transactions]);
 
     return (
-        <div className="flex-1 w-full h-full overflow-y-auto bg-background text-foreground">
+        <div className="flex-1 w-full h-full overflow-y-auto circuit-grid text-foreground">
             <header className="bg-background/80 backdrop-blur-sm border-b border-border sticky top-0 z-10 px-4 py-4 md:px-8 flex justify-between items-center gap-3 safe-area-top">
                 <div className="min-w-0">
                     <h1 className="text-2xl font-semibold tracking-tight text-foreground">Home</h1>
