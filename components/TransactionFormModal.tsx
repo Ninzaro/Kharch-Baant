@@ -7,6 +7,8 @@ import CalendarModal from './CalendarModal';
 import Avatar from './Avatar';
 import { CalendarIcon, ChevronRightIcon, DeleteIcon, CheckIcon } from './icons/Icons'; // Assuming CheckIcon exists or I'll implement it
 import { isCentExact, toMinorUnits } from '../utils/money';
+import { ButtonGroup, ButtonGroupItem } from './ui/button-group';
+import { Spinner } from './ui/spinner';
 
 // --- Types & Constants ---
 
@@ -497,7 +499,10 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                             <div className="flex justify-between items-center mb-1">
                                 <label className={`block text-xs font-bold uppercase tracking-wider transition-colors ${activeStep === 'description' ? 'text-primary' : 'text-muted-foreground'}`}>What's this for?</label>
                                 {isSuggestingTag && (
-                                    <span className="text-[10px] text-primary animate-pulse font-medium">Suggesting category…</span>
+                                    <span className="inline-flex items-center gap-1 text-[10px] text-primary font-medium">
+                                        <Spinner className="h-3 w-3" />
+                                        Suggesting
+                                    </span>
                                 )}
                             </div>
                             <input
@@ -522,13 +527,22 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                         <div className="flex-1 pb-8">
                             <div className="flex justify-between items-center mb-2">
                                 <label className={`block text-xs font-bold uppercase tracking-wider transition-colors ${activeStep === 'paidBy' ? 'text-primary' : 'text-muted-foreground'}`}>Who Paid?</label>
-                                <button
-                                    type="button"
-                                    onClick={(e) => { e.stopPropagation(); setPayerMode(m => m === 'single' ? 'multiple' : 'single'); handleStepFocus('paidBy'); }}
-                                    className="text-[10px] px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded-full hover:bg-primary/20 transition-colors"
-                                >
-                                    {payerMode === 'single' ? 'Multiple Payers?' : 'Single Payer'}
-                                </button>
+                                <ButtonGroup>
+                                    <ButtonGroupItem
+                                        active={payerMode === 'single'}
+                                        className="h-7 px-2 text-[10px] uppercase tracking-wide"
+                                        onClick={(e) => { e.stopPropagation(); setPayerMode('single'); handleStepFocus('paidBy'); }}
+                                    >
+                                        Single
+                                    </ButtonGroupItem>
+                                    <ButtonGroupItem
+                                        active={payerMode === 'multiple'}
+                                        className="h-7 px-2 text-[10px] uppercase tracking-wide"
+                                        onClick={(e) => { e.stopPropagation(); setPayerMode('multiple'); handleStepFocus('paidBy'); }}
+                                    >
+                                        Multiple
+                                    </ButtonGroupItem>
+                                </ButtonGroup>
                             </div>
 
                             <div className={`bg-overlay/20 rounded-xl p-3 border transition-all overflow-hidden ${activeStep === 'paidBy' ? 'border-primary/50' : 'border-border'}`}>
@@ -602,26 +616,25 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
 
                             <div className={`bg-overlay/20 rounded-xl p-3 border transition-all overflow-hidden ${activeStep === 'split' ? 'border-primary/50' : 'border-border'}`}>
                                 {/* Mode Selector */}
-                                <div className="flex flex-wrap gap-2 mb-4">
+                                <ButtonGroup className="mb-4 flex-wrap">
                                     {splitModes.map(mode => (
-                                        <button
+                                        <ButtonGroupItem
                                             key={mode.id}
+                                            active={splitMode === mode.id}
+                                            className="h-8 px-2.5 text-[10px] uppercase tracking-wide"
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                // Values are mode-specific (₹ vs % vs shares) — never carry them across modes
                                                 if (mode.id !== splitMode) {
                                                     setSplitMode(mode.id);
                                                     setCustomSplitValues(new Map());
                                                 }
                                                 handleStepFocus('split');
                                             }}
-                                            type="button"
-                                            className={`px-3 py-1.5 text-[10px] uppercase font-bold tracking-wider rounded-lg transition-all ${splitMode === mode.id ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25' : 'bg-card text-muted-foreground hover:bg-muted'}`}
                                         >
                                             {mode.label}
-                                        </button>
+                                        </ButtonGroupItem>
                                     ))}
-                                </div>
+                                </ButtonGroup>
 
                                 {/* Participants & Inputs */}
                                 <div className="space-y-1.5">
@@ -783,7 +796,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                             disabled={!isSplitValid || !isPayerValid || !description || !amount || submitting}
                             className="px-6 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-bold rounded-xl shadow-lg shadow-primary/20 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 disabled:shadow-none"
                         >
-                            {submitting ? 'Saving…' : 'Save'}
+                            {submitting ? <Spinner /> : 'Save'}
                         </button>
                     </div>
                 </div>

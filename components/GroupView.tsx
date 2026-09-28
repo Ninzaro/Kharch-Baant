@@ -12,6 +12,7 @@ import DateFilterModal from './DateFilterModal';
 import GroupBalancesModal from './GroupBalancesModal';
 import GroupSummaryModal from './GroupSummaryModal';
 import { SettingsIcon, HomeIcon, ShareIcon, ChartIcon } from './icons/Icons';
+import { ButtonGroup, ButtonGroupItem } from './ui/button-group';
 
 interface GroupViewProps {
   group: Group;
@@ -181,60 +182,26 @@ const GroupView: React.FC<GroupViewProps> = ({
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-1 shrink-0">
-          <button
-            type="button"
-            onClick={() => setIsSummaryModalOpen(true)}
-            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors"
-            title="Group Summary"
-            aria-label="Group summary"
-          >
+        <ButtonGroup className="shrink-0">
+          <ButtonGroupItem onClick={() => setIsSummaryModalOpen(true)} ariaLabel="Group summary" className="w-9 px-0 text-muted-foreground">
             <ChartIcon />
-          </button>
-          <button
-            type="button"
-            onClick={() => { onEditGroup(); }}
-            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors"
-            aria-label="Group settings"
-          >
+          </ButtonGroupItem>
+          <ButtonGroupItem onClick={() => { onEditGroup(); }} ariaLabel="Group settings" className="w-9 px-0 text-muted-foreground">
             <SettingsIcon />
-          </button>
-          <button
-            type="button"
-            onClick={handleShare}
-            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors"
-            aria-label="Share group summary"
-          >
+          </ButtonGroupItem>
+          <ButtonGroupItem onClick={handleShare} ariaLabel="Share group summary" className="w-9 px-0 text-muted-foreground">
             <ShareIcon />
-          </button>
-        </div>
+          </ButtonGroupItem>
+        </ButtonGroup>
       </header>
 
       <main className="flex-1 overflow-y-auto p-page md:p-section">
         {/* Actions container just below group information */}
-        <div className="mb-4 flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={onAddExpense}
-            className="px-4 py-2 rounded-lg bg-gradient-to-br from-primary to-accent text-primary-foreground hover:from-primary/90 hover:to-accent/90 text-sm font-medium shadow-sm"
-          >
-            Add Expense
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsBalancesModalOpen(true)}
-            className="px-4 py-2 rounded-lg bg-success text-success-foreground hover:bg-success/90 text-sm font-medium shadow-sm"
-          >
-            Balances
-          </button>
-          <button
-            type="button"
-            onClick={onSettleUp}
-            className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border text-sm font-medium shadow-sm"
-          >
-            Settle Up
-          </button>
-        </div>
+        <ButtonGroup className="mb-4">
+          <ButtonGroupItem onClick={onAddExpense}>Add Expense</ButtonGroupItem>
+          <ButtonGroupItem onClick={() => setIsBalancesModalOpen(true)}>Balances</ButtonGroupItem>
+          <ButtonGroupItem onClick={onSettleUp}>Settle Up</ButtonGroupItem>
+        </ButtonGroup>
         <div ref={summaryRef}>
           <Dashboard
             transactions={transactions}

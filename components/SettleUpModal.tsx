@@ -5,6 +5,8 @@ import { settleUp } from '../services/apiService';
 import { calculateGroupBalances, simplifyGroupDebts } from '../utils/calculations';
 import { toMinorUnits } from '../utils/money';
 import { ArrowRightIcon, ChevronDownIcon, CalendarIcon } from './icons/Icons';
+import { ButtonGroup, ButtonGroupItem } from './ui/button-group';
+import { Spinner } from './ui/spinner';
 import toast from 'react-hot-toast';
 
 interface SettleUpModalProps {
@@ -230,23 +232,13 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
         </span>
       }
       footer={
-        <div className="flex w-full gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={submitting}
-            className="flex-1 px-4 py-3 bg-muted text-muted-foreground rounded-xl hover:bg-muted/80 transition-colors font-medium"
-          >
+        <ButtonGroup className="w-full">
+          <ButtonGroupItem onClick={onClose} disabled={submitting} className="flex-1 h-11">
             Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={!isValid}
-            className="flex-[2] px-4 py-3 bg-success text-success-foreground rounded-xl hover:bg-success/90 transition-colors font-bold shadow-lg shadow-success/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
+          </ButtonGroupItem>
+          <ButtonGroupItem onClick={handleSubmit} disabled={!isValid} className="flex-[2] h-11">
             {submitting ? (
-              <span className="w-5 h-5 border-2 border-success-foreground/30 border-t-success-foreground rounded-full animate-spin" />
+              <Spinner />
             ) : isEditing ? (
               <>Save changes <ArrowRightIcon width="16" height="16" /></>
             ) : isOverpay ? (
@@ -254,8 +246,8 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
             ) : (
               <>Record settlement <ArrowRightIcon width="16" height="16" /></>
             )}
-          </button>
-        </div>
+          </ButtonGroupItem>
+        </ButtonGroup>
       }
     >
       <div className="space-y-6">
