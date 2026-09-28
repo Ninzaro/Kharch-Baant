@@ -26,30 +26,16 @@ Use this after Phase A/B security work. Code cannot finish Play Console or Clerk
 - Invite deep link: `kharchbaant://invite/<token>`.
 - Native Google sign-in uses Chrome Custom Tabs and returns to `kharchbaant://sso-callback` (not the WebView).
 
-## Native Google login (closed testing)
+## Native Google login
 
-Google returns **HTTP 400 malformed** if OAuth runs inside the Capacitor WebView. Opening `clerk.motamaati.in` (Frontend API) in Chrome Custom Tabs returns JSON `authorization_invalid` — that host is not a web page. Native Google must use Clerk **Account Portal** (`https://accounts.motamaati.in/sign-in`) in Custom Tabs, then `kharchbaant://sso-callback`.
-
-Closed-testing builds must:
-
-1. Ship a build that **does not** list `accounts.google.com` in `capacitor.config.ts` `server.allowNavigation`.
-2. In **Clerk Dashboard (Production)**:
-   - **Paths → Allowed redirect URLs** (web list, not only mobile SSO): `https://www.motamaati.in/native-sso.html`
-   - **Account Portal → Redirects** tab: after sign-in / after sign-up = `https://www.motamaati.in/native-sso.html`
-   - Mobile SSO allowlist: `https://www.motamaati.in/native-sso.html` and `kharchbaant://sso-callback`
-3. In **Clerk → SSO connections**, enable **Google**, **Apple**, and **Microsoft** with your own provider credentials (native buttons are already in the app).
-4. In **Google Cloud → OAuth client (Web)**, Authorized JavaScript origins should include:
-   - `https://www.motamaati.in`
-   - `https://accounts.motamaati.in`
-   - `https://localhost` (Capacitor Android origin)
-5. Rebuild and upload a new AAB (`versionCode` +1) after these code + dashboard changes.
+The live Android **Continue with Google** button uses the native Clerk plugin (`signInWithOAuth`), then the `native-bridge` function. It does not use Account Portal or Chrome Custom Tabs. Do not switch it back to `accounts.motamaati.in` or `native-sso.html` for the production release.
 
 ## Play Console — Data safety (honest defaults)
 
 | Category | Answer |
 |----------|--------|
 | Collected | Name, email, user IDs, photos (optional), financial info (expense amounts you enter), app activity / diagnostics |
-| Shared | With service providers (Clerk, Supabase, MailerSend, Gemini if enabled, Sentry) — not sold |
+| Shared | With service providers (Clerk, Supabase, Brevo, Gemini if enabled, Sentry) — not sold |
 | Encrypted in transit | Yes (HTTPS) |
 | Users can request deletion | Yes |
 | Children | Not targeted at under-13 |

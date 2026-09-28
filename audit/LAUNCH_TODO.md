@@ -13,11 +13,11 @@ Public launch: not yet. The current web build is on the live site. Remaining blo
 |---|---|---|---|
 | L-1 | Deploy the current web build and a new Play bundle | complete | User pushed the commit and checked the live site on 2026-09-23. Current web build is deployed. |
 | L-2 | Two phones show a new expense without refresh | complete | User confirmed on 2026-09-23: expenses appear on the other device without a refresh, and registration is flawless. |
-| L-3 | Invite link opens the Android app | open | Email links open the Play Store app. WhatsApp opens Chrome and offered to install the site as a second app. A signed-out creator could still see the invited group; that clear-on-logout fix is in source and needs the next web deploy. |
-| L-4 | Brevo domain not landing in spam | open | SPF and DKIM for the sender domain. Not an app code change. |
-| L-5 | Clerk session claims `email` and `email_verified` | open | Required for verified-email claim. Dashboard → Sessions → Customize session token. Keep `"role": "authenticated"`. |
-| L-6 | Realtime “Allow public access” off | open | L-2 has passed, so this can be done next. Leave it open until it is actually turned off. |
-| L-7 | Play production release, not only internal testing | open | Store listing, privacy policy, Data safety, content rating, production track. |
+| L-3 | Invite link opens the Android app | complete | User confirmed on 2026-09-23: email invite links open the Play Store app. WhatsApp opening Chrome is accepted for now. |
+| L-4 | Brevo domain not landing in spam | complete | User confirmed on 2026-09-23 via public DNS at 1.1.1.1 for motamaati.in: one DMARC record `v=DMARC1; p=none; rua=mailto:rua@dmarc.brevo.com`; SPF includes both Hostinger and `spf.brevo.com`; DKIM CNAMEs `brevo1` and `brevo2` point at Brevo. |
+| L-5 | Clerk session claims `email` and `email_verified` | complete | User confirmed on 2026-09-23: session token claims are `role` authenticated, `email` `{{user.primary_email_address}}`, and `email_verified` `{{user.email_verified}}`. |
+| L-6 | Realtime “Allow public access” off | open | L-2 has passed. Cannot be done from git; it is a Supabase dashboard toggle. Leave it open until it is actually turned off. |
+| L-7 | Play production release, not only internal testing | open | Store listing, privacy policy, Data safety, content rating, production track. Cannot be done from git; it is Play Console. |
 
 ## Soon after launch
 
@@ -39,6 +39,7 @@ Public launch: not yet. The current web build is on the live site. Remaining blo
 | N-4 | Per-group Realtime topics | parked |
 | N-5 | Drop leftover `group_deletion_requests` table | parked |
 | N-6 | CSP, privacy-page accuracy, `android:allowBackup` | parked |
+| N-7 | Google account chooser on the invite screen (logs into the last Google account with no picker). Do this after launch; do not change the working Android Google sign-in to add it. | parked |
 
 ## Already closed
 
