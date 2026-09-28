@@ -1,4 +1,4 @@
-import { render, screen, cleanup } from '@testing-library/react';
+import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import MemberBalances from './MemberBalances';
 import { Person, Transaction } from '../types';
@@ -41,13 +41,12 @@ describe('MemberBalances suggested payments', () => {
       />,
     );
 
-    const suggested = screen.getByText('Suggested payments').parentElement?.textContent ?? '';
-    expect(suggested).toContain('Chitra');
-    expect(suggested).toContain('pays');
-    expect(suggested).toContain('Asha');
-    expect(suggested).toContain('Dev');
-    expect(suggested).toContain('Bala');
-    expect(suggested).toContain('₹50.00');
+    fireEvent.click(screen.getByRole('button', { name: 'Show payments for Asha' }));
+    const detail = screen.getByRole('button', { name: 'Hide payments for Asha' }).closest('li')?.textContent ?? '';
+    expect(detail).toContain('Chitra');
+    expect(detail).toContain('Asha');
+    expect(detail).toContain('₹50.00');
+    expect(screen.queryByText('Suggested payments')).toBeNull();
   });
 
   it('says nothing to settle when balances are zero', () => {
@@ -59,6 +58,6 @@ describe('MemberBalances suggested payments', () => {
         currentUserId="A"
       />,
     );
-    expect(screen.getByText('Nothing to settle.')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /payments for/ })).toBeNull();
   });
 });
