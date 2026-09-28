@@ -93,9 +93,9 @@ serve(async (req) => {
           return jsonResponse({ error: 'invite fields required' }, 400, cors);
         }
         emailPayload = {
-          sender: { email: fromEmail, name: 'Kharch Baant' },
+          sender: { email: fromEmail, name: 'SplitFool' },
           to: [{ email: inviteeEmail }],
-          subject: `${clip(data.inviterName, 80)} invited you to join "${clip(data.groupName, 80)}" on Kharch Baant`,
+          subject: `${clip(data.inviterName, 80)} invited you to join "${clip(data.groupName, 80)}" on SplitFool`,
           htmlContent: `<p><strong>${inviterName}</strong> invited you to <strong>"${groupName}"</strong>.</p><p><a href="${inviteUrl}">Join group</a></p><p style="color:#666;font-size:14px">Invite expires in ${expiresInDays} days.</p>`,
           textContent: `${clip(data.inviterName)} invited you to "${clip(data.groupName)}". Join: ${clip(data.inviteUrl)}`,
         };

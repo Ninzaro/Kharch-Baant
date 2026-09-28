@@ -37,8 +37,8 @@ export default defineConfig(({ mode }) => {
           injectRegister: false,
           includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
           manifest: {
-            name: 'Kharch Baant - Expense Tracker',
-            short_name: 'KharchBaant',
+            name: 'SplitFool - Expense Tracker',
+            short_name: 'SplitFool',
             description: 'Track and split expenses with friends and family',
             theme_color: '#3b82f6',
             background_color: '#ffffff',

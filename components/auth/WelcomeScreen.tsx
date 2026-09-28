@@ -11,7 +11,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onContinue }) => {
         <p className="text-5xl mb-4" aria-hidden>
           💰
         </p>
-        <h1 className="text-3xl font-bold tracking-tight">Kharch Baant</h1>
+        <h1 className="text-3xl font-bold tracking-tight">SplitFool</h1>
         <p className="text-muted-foreground mt-2 text-base">
           Split trips, rent, and dinners with friends — without the spreadsheet headache.
         </p>

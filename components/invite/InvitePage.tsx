@@ -167,7 +167,7 @@ const InvitePage: React.FC = () => {
                     href={androidInviteIntentUrl(token)}
                     className="w-full max-w-sm mb-3 py-2.5 px-4 rounded-xl bg-primary text-primary-foreground font-medium text-center"
                   >
-                    Open in the Kharch Baant app
+                    Open in the SplitFool app
                   </a>
                 )}
                 {isAndroidNativeApp() && (

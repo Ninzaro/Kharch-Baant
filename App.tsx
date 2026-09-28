@@ -684,7 +684,7 @@ const App: React.FC = () => {
             ) : (
                 <div className="flex-1 flex flex-col">
                     <header className="flex items-center justify-between px-page py-2 border-b border-border bg-card/80 backdrop-blur-lg safe-area-top">
-                        <h1 className="text-lg font-bold text-foreground tracking-tight">Kharch Baant</h1>
+                        <h1 className="text-lg font-bold text-foreground tracking-tight">SplitFool</h1>
                         <div className="flex items-center gap-2">
                             <UserMenu />
                             <button

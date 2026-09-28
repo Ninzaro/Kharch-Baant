@@ -169,7 +169,7 @@ const MemberInviteModal: React.FC<MemberInviteModalProps> = ({ open, groupId, cu
           )}
           {matchedPerson?.isClaimed && (
             <div className="mt-2 flex items-center gap-2 bg-muted border border-border rounded-md px-3 py-2">
-              <span className="text-foreground text-xs font-medium">Already on Kharch Baant</span>
+              <span className="text-foreground text-xs font-medium">Already on SplitFool</span>
               <span className="text-muted-foreground text-xs">{matchedPerson.name} joins only after accepting an email invite.</span>
             </div>
           )}

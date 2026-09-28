@@ -59,7 +59,7 @@ const GroupListItem: React.FC<{
 const GroupList: React.FC<GroupListProps> = ({ groups, people, selectedGroupId, onSelectGroup, onGoHome, onAddGroup }) => {
     return (
         <div className="bg-card/80 backdrop-blur-xl border-r border-border text-foreground w-64 p-4 flex-col hidden md:flex">
-            <h1 className="text-2xl font-bold mb-6 cursor-pointer text-transparent bg-clip-text bg-gradient-to-br from-primary to-accent" onClick={onGoHome}>Kharch Baant</h1>
+            <h1 className="text-2xl font-bold mb-6 cursor-pointer text-transparent bg-clip-text bg-gradient-to-br from-primary to-accent" onClick={onGoHome}>SplitFool</h1>
             <nav className="flex-grow">
                  <button
                     type="button"

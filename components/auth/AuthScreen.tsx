@@ -65,7 +65,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onBack }) => {
           <h1 className="text-4xl font-bold text-foreground mb-2" aria-hidden>
             💰
           </h1>
-          <h2 className="text-2xl font-bold text-foreground">Kharch Baant</h2>
+          <h2 className="text-2xl font-bold text-foreground">SplitFool</h2>
           <p className="text-muted-foreground text-sm">Shared Expense Tracker</p>
         </div>
 
@@ -113,7 +113,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onBack }) => {
 
         {isAndroid && (
           <p className="mt-4 text-sm text-muted-foreground">
-            {authMode === 'signIn' ? 'New to Kharch Baant?' : 'Already have an account?'}{' '}
+            {authMode === 'signIn' ? 'New to SplitFool?' : 'Already have an account?'}{' '}
             <button
               type="button"
               onClick={() => setAuthMode(authMode === 'signIn' ? 'signUp' : 'signIn')}

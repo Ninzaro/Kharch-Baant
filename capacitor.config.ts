@@ -8,7 +8,7 @@ const devServerUrl = process.env.CAPACITOR_DEV_SERVER_URL;
 
 const config: CapacitorConfig = {
   appId: 'com.kharchbaant.app',
-  appName: 'Kharch Baant',
+  appName: 'SplitFool',
   webDir: 'dist',
 
   server: {

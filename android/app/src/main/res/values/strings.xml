@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Kharch Baant</string>
-    <string name="title_activity_main">Kharch Baant</string>
+    <string name="app_name">SplitFool</string>
+    <string name="title_activity_main">SplitFool</string>
     <string name="package_name">com.kharchbaant.app</string>
     <string name="custom_url_scheme">com.kharchbaant.app</string>
 </resources>

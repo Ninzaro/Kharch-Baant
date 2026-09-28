@@ -177,7 +177,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
             });
 
             const inviteUrl = inviteResponse.inviteUrl;
-            const message = `🎉 You're invited to join "${group.name}" on Kharch Baant!\n\nTrack and split expenses together easily. Click the link below to join:\n\n${inviteUrl}\n\n✨ New users can sign up instantly!\n⏰ Link expires in 30 days`;
+            const message = `🎉 You're invited to join "${group.name}" on SplitFool!\n\nTrack and split expenses together easily. Click the link below to join:\n\n${inviteUrl}\n\n✨ New users can sign up instantly!\n⏰ Link expires in 30 days`;
 
             // Show share options modal
             setShareData({ url: inviteUrl, message, groupName: group.name });
@@ -212,8 +212,8 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
 
         try {
             await navigator.share({
-                title: 'Join my group on Kharch-Baant!',
-                text: `Join "${shareData.groupName}" on Kharch-Baant to split expenses together.`,
+                title: 'Join my group on SplitFool!',
+                text: `Join "${shareData.groupName}" on SplitFool to split expenses together.`,
                 url: shareData.url
             });
         } catch (error) {

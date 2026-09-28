@@ -129,7 +129,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       ]);
       const payload = {
         exportedAt: new Date().toISOString(),
-        app: 'Kharch Baant',
+        app: 'SplitFool',
         person: {
           id: currentUserPerson.id,
           name: currentUserPerson.name,

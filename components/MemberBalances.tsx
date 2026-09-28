@@ -68,6 +68,40 @@ const MemberBalances: React.FC<MemberBalancesProps> = ({ transactions, people, c
                         );
                 })}
             </ul>
+            <div className="mt-6 pt-4 border-t border-border">
+                <h4 className="text-sm font-semibold text-foreground mb-3">Suggested payments</h4>
+                {pairTransfers.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Nothing to settle.</p>
+                ) : (
+                    <ul className="space-y-2">
+                        {pairTransfers.map((transfer) => {
+                            const from = peopleMap.get(transfer.from);
+                            const to = peopleMap.get(transfer.to);
+                            const fromName = from?.name ?? 'Former member';
+                            const toName = to?.name ?? 'Former member';
+                            return (
+                                <li key={`${transfer.from}-${transfer.to}`} className="flex items-center justify-between gap-3 text-sm">
+                                    <span className="text-foreground min-w-0">
+                                        <span className="font-medium">{fromName}</span>
+                                        <span className="text-muted-foreground"> pays </span>
+                                        <span className="font-medium">{toName}</span>
+                                        <span className="text-muted-foreground"> {formatCurrency(transfer.amount)}</span>
+                                    </span>
+                                    {onSettlePair && (
+                                        <button
+                                            type="button"
+                                            className="flex-shrink-0 px-3 py-1 rounded-lg bg-primary text-primary-foreground text-xs font-semibold"
+                                            onClick={() => onSettlePair(transfer.from, transfer.to, transfer.amount)}
+                                        >
+                                            Settle
+                                        </button>
+                                    )}
+                                </li>
+                            );
+                        })}
+                    </ul>
+                )}
+            </div>
         </div>
     );
 };
