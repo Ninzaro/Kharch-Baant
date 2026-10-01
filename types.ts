@@ -287,6 +287,8 @@ export type Transaction = {
     comment?: string;
     type: TransactionType;
     updatedAt?: string;
+    /** On this device until the offline queue syncs. Never sent to the server. */
+    pendingSync?: boolean;
 };
 
 export type Filter = {
@@ -337,6 +339,8 @@ export interface CreateInviteRequest {
     emails?: string[]; // Optional: if provided, send email invites
     maxUses?: number | null; // Default: null (unlimited)
     expiresInDays?: number; // Default: 30
+    /** Unclaimed member whose expenses the accepter keeps. */
+    forPersonId?: string;
 }
 
 export interface CreateInviteResponse {
@@ -364,6 +368,8 @@ export interface ValidateInviteResponse {
     group?: InvitePreviewGroup;
     /** Public preview only — from get_invite_preview RPC. */
     inviter?: { name: string };
+    /** First name of the name-only member this invite replaces. */
+    seatName?: string;
     error?: string;
 }
 

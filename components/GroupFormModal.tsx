@@ -50,6 +50,10 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
     const [tripEndDate, setTripEndDate] = useState('');
     const [enableCuteIcons, setEnableCuteIcons] = useState(true);
     const [pendingInvites, setPendingInvites] = useState<{ name: string; email: string }[]>([]);
+    const [connectSeat, setConnectSeat] = useState<Person | null>(null);
+    const [connectEmail, setConnectEmail] = useState('');
+    const [connectUrl, setConnectUrl] = useState<string | null>(null);
+    const [connectBusy, setConnectBusy] = useState(false);
     const [showAddMemberModal, setShowAddMemberModal] = useState(false);
     // Local copy of people so we can optimistically add newly created person without parent refresh
     const [localPeople, setLocalPeople] = useState<Person[]>(allPeople);
@@ -185,6 +189,74 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
         } catch (error) {
             console.error('Failed to create invite link:', error);
             toast.error('Failed to create invite link. Please try again.');
+        }
+    };
+
+    const openConnect = (person: Person) => {
+        setConnectSeat(person);
+        setConnectEmail('');
+        setConnectUrl(null);
+    };
+
+    const ensureSeatInvite = async (email?: string) => {
+        if (!group?.id || !connectSeat) {
+            toast.error('Save the group first, then connect this member.');
+            return null;
+        }
+        if (!email && connectUrl) return connectUrl;
+        const inviteResponse = await createGroupInvite({
+            groupId: group.id,
+            invitedBy: currentUserId,
+            forPersonId: connectSeat.id,
+            maxUses: 1,
+            expiresInDays: 7,
+            emails: email ? [email] : undefined,
+        });
+        setConnectUrl(inviteResponse.inviteUrl);
+        return inviteResponse.inviteUrl;
+    };
+
+    const seatMessage = (url: string) => (
+        `You're invited to take ${connectSeat?.name ?? 'a member'}'s place in "${group?.name ?? 'a group'}" on SplitFool. Their existing expenses stay with you:\n\n${url}`
+    );
+
+    const handleConnectEmail = async () => {
+        const email = connectEmail.trim().toLowerCase();
+        if (!email.includes('@')) {
+            toast.error('Enter their email address.');
+            return;
+        }
+        setConnectBusy(true);
+        try {
+            const url = await ensureSeatInvite(email);
+            if (!url) return;
+            toast.success(`Invite sent. ${connectSeat?.name} keeps their expenses when they accept.`);
+            setConnectSeat(null);
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Could not send the invite.');
+        } finally {
+            setConnectBusy(false);
+        }
+    };
+
+    const handleConnectLink = async (channel: 'whatsapp' | 'sms' | 'copy') => {
+        setConnectBusy(true);
+        try {
+            const url = await ensureSeatInvite();
+            if (!url || !connectSeat) return;
+            const message = seatMessage(url);
+            if (channel === 'whatsapp') {
+                window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+            } else if (channel === 'sms') {
+                window.location.href = `sms:?body=${encodeURIComponent(message)}`;
+            } else {
+                await navigator.clipboard.writeText(message);
+                toast.success('Invite message copied.');
+            }
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Could not create the invite link.');
+        } finally {
+            setConnectBusy(false);
         }
     };
 
@@ -413,9 +485,20 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
                                         <span className="font-medium">{p.name}</span>
                                     </div>
                                     {canManageMembers && p.id !== currentUserId && (
-                                        <button type="button" onClick={() => removeMember(p.id)} className="p-1 text-muted-foreground hover:text-foreground hover:bg-destructive/50 rounded-full">
-                                            <CloseIcon />
-                                        </button>
+                                        <div className="flex items-center gap-1">
+                                            {group && p.isClaimed === false && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => openConnect(p)}
+                                                    className="px-2 py-1 text-xs rounded-md bg-success/20 text-success hover:bg-success/40"
+                                                >
+                                                    Connect
+                                                </button>
+                                            )}
+                                            <button type="button" onClick={() => removeMember(p.id)} className="p-1 text-muted-foreground hover:text-foreground hover:bg-destructive/50 rounded-full">
+                                                <CloseIcon />
+                                            </button>
+                                        </div>
                                     )}
                                 </div>
                             ))}
@@ -497,6 +580,59 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({
                     }
                 }}
             />
+
+            <BaseModal
+                open={!!connectSeat}
+                onClose={() => { if (!connectBusy) setConnectSeat(null); }}
+                title={connectSeat ? `Connect ${connectSeat.name}` : 'Connect'}
+                size="sm"
+                description={<span className="text-muted-foreground text-sm">Their expenses stay on the person who accepts. One use, 7 days.</span>}
+            >
+                <div className="space-y-3 p-4">
+                    <label className="block text-sm text-muted-foreground">
+                        Email
+                        <input
+                            type="email"
+                            value={connectEmail}
+                            onChange={(event) => setConnectEmail(event.target.value)}
+                            placeholder="priya@example.com"
+                            className="mt-1 w-full bg-overlay/30 border border-border rounded-md px-3 py-2 text-foreground placeholder:text-muted-foreground"
+                        />
+                    </label>
+                    <button
+                        type="button"
+                        disabled={connectBusy || !!connectUrl}
+                        onClick={() => { void handleConnectEmail(); }}
+                        className="w-full px-4 py-2 rounded-md bg-primary text-primary-foreground disabled:opacity-50"
+                    >
+                        Send email
+                    </button>
+                    <button
+                        type="button"
+                        disabled={connectBusy}
+                        onClick={() => { void handleConnectLink('whatsapp'); }}
+                        className="w-full px-4 py-2 rounded-md bg-success text-success-foreground disabled:opacity-50"
+                    >
+                        Share via WhatsApp
+                    </button>
+                    <button
+                        type="button"
+                        disabled={connectBusy}
+                        onClick={() => { void handleConnectLink('sms'); }}
+                        className="w-full px-4 py-2 rounded-md bg-primary/80 text-primary-foreground disabled:opacity-50"
+                    >
+                        Share via SMS
+                    </button>
+                    <button
+                        type="button"
+                        disabled={connectBusy}
+                        onClick={() => { void handleConnectLink('copy'); }}
+                        className="w-full px-4 py-2 rounded-md bg-muted text-foreground disabled:opacity-50"
+                    >
+                        Copy link
+                    </button>
+                </div>
+            </BaseModal>
 
             {/* Share Modal */}
             <BaseModal

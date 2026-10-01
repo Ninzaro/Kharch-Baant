@@ -201,6 +201,7 @@ ALTER TABLE payment_sources ENABLE ROW LEVEL SECURITY;
 --   20260923000005_realtime_topic_names.sql
 --   20260923190000_allow_direct_settlement.sql
 --   20260923200000_payment_source_debit_card.sql
+--   20261001120000_invite_seat_claim.sql
 -- Fresh installs: run those migrations after this schema file.
 
 -- R-20 containment: clients create people only through RPCs.

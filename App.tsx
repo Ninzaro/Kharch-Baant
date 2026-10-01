@@ -40,6 +40,13 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from './store/appStore';
 import { useBackButton } from './hooks/useBackButton';
 import { resumeAfterBackground } from './lib/resumeSync';
+import {
+    enqueueWrite,
+    isQueuedNetworkError,
+    offlineSavedMessage,
+    overlayPendingTransactions,
+    withSyncTimeout,
+} from './lib/outbox';
 import { isClerkTokenError } from './lib/supabase';
 import AuthFailureScreen from './components/auth/AuthFailureScreen';
 
@@ -371,10 +378,17 @@ const App: React.FC = () => {
         if (!pendingDeleteTransaction) return;
         setIsDeletingTransaction(true);
         try {
-            await api.deleteTransaction(pendingDeleteTransaction.id);
+            await withSyncTimeout(api.deleteTransaction(pendingDeleteTransaction.id));
             qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) => prev.filter(t => t.id !== pendingDeleteTransaction.id));
             setPendingDeleteTransaction(null);
         } catch (error) {
+            if (isQueuedNetworkError(error)) {
+                enqueueWrite({ kind: 'delete', transactionId: pendingDeleteTransaction.id });
+                qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) => overlayPendingTransactions(prev));
+                toast.success(offlineSavedMessage());
+                setPendingDeleteTransaction(null);
+                return;
+            }
             console.error('Failed to delete transaction', error);
             Sentry.captureException(error);
             toast.error(error instanceof Error ? error.message : 'Could not delete expense. Try again.');
@@ -390,13 +404,13 @@ const App: React.FC = () => {
         if (!selectedGroupId && !editingTransaction) return;
         try {
             if (editingTransaction) {
-                const updatedTransaction = await api.updateTransaction(editingTransaction.id, {
+                const updatedTransaction = await withSyncTimeout(api.updateTransaction(editingTransaction.id, {
                     ...transactionData,
                     updatedAt: editingTransaction.updatedAt,
-                });
+                }));
                 qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) => prev.map(t => t.id === editingTransaction.id ? updatedTransaction : t));
             } else if (selectedGroupId) {
-                const created = await api.addTransaction(selectedGroupId, transactionData, clientTransactionId);
+                const created = await withSyncTimeout(api.addTransaction(selectedGroupId, transactionData, clientTransactionId));
                 qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) =>
                     prev.some(t => t.id === created.id) ? prev : [created, ...prev]
                 );
@@ -404,6 +418,30 @@ const App: React.FC = () => {
             setIsTransactionModalOpen(false);
             setEditingTransaction(null);
         } catch (error) {
+            if (isQueuedNetworkError(error)) {
+                if (editingTransaction) {
+                    enqueueWrite({
+                        kind: 'update',
+                        transactionId: editingTransaction.id,
+                        patch: { ...transactionData, updatedAt: editingTransaction.updatedAt },
+                    });
+                } else if (selectedGroupId && clientTransactionId) {
+                    enqueueWrite({
+                        kind: 'add',
+                        groupId: selectedGroupId,
+                        transactionId: clientTransactionId,
+                        transaction: transactionData,
+                    });
+                } else {
+                    toast.error('Could not save expense. Try again.');
+                    return;
+                }
+                qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) => overlayPendingTransactions(prev));
+                toast.success(offlineSavedMessage());
+                setIsTransactionModalOpen(false);
+                setEditingTransaction(null);
+                return;
+            }
             console.error('Failed to save transaction', error);
             Sentry.captureException(error);
             toast.error(error instanceof Error ? error.message : 'Could not save expense. Try again.');
@@ -869,21 +907,41 @@ const App: React.FC = () => {
                     defaultAmount={defaultSettleAmount}
                     initialTransaction={editingTransaction?.type === 'settlement' ? editingTransaction : undefined}
                     onSubmit={async (tx, context) => {
-                        if (editingTransaction && editingTransaction.type === 'settlement') {
-                            const updated = await api.updateTransaction(editingTransaction.id, {
-                                ...tx,
-                                updatedAt: editingTransaction.updatedAt,
-                            });
-                            qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) => prev.map(t => t.id === editingTransaction.id ? updated : t));
-                            return updated;
-                        } else {
+                        try {
+                            if (editingTransaction && editingTransaction.type === 'settlement') {
+                                const updated = await withSyncTimeout(api.updateTransaction(editingTransaction.id, {
+                                    ...tx,
+                                    updatedAt: editingTransaction.updatedAt,
+                                }));
+                                qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) => prev.map(t => t.id === editingTransaction.id ? updated : t));
+                                return updated;
+                            }
                             if (!context) throw new Error('Settlement write context is required.');
-                            const created = await api.settleUp(selectedGroup.id, tx, context);
-                            // Immediately add to cache so the screen updates without waiting for realtime
+                            const created = await withSyncTimeout(api.settleUp(selectedGroup.id, tx, context));
                             qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) =>
                                 prev.some(t => t.id === created.id) ? prev : [created, ...prev]
                             );
                             return created;
+                        } catch (error) {
+                            if (!isQueuedNetworkError(error)) throw error;
+                            if (editingTransaction && editingTransaction.type === 'settlement') {
+                                enqueueWrite({
+                                    kind: 'update',
+                                    transactionId: editingTransaction.id,
+                                    patch: { ...tx, updatedAt: editingTransaction.updatedAt },
+                                });
+                                qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) => overlayPendingTransactions(prev));
+                                return { ...editingTransaction, ...tx, pendingSync: true };
+                            }
+                            if (!context) throw error;
+                            enqueueWrite({
+                                kind: 'settle',
+                                groupId: selectedGroup.id,
+                                transaction: tx,
+                                context,
+                            });
+                            qc.setQueryData<Transaction[]>(qk.transactions(currentUserId), (prev = []) => overlayPendingTransactions(prev));
+                            return { ...tx, id: context.transactionId, groupId: selectedGroup.id, pendingSync: true };
                         }
                     }}
                     onCreated={(_tx: Transaction) => {

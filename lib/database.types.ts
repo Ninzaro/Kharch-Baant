@@ -173,6 +173,7 @@ export type Database = {
           is_active: boolean | null
           max_uses: number | null
           updated_at: string | null
+          for_person_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -185,6 +186,7 @@ export type Database = {
           is_active?: boolean | null
           max_uses?: number | null
           updated_at?: string | null
+          for_person_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -197,6 +199,7 @@ export type Database = {
           is_active?: boolean | null
           max_uses?: number | null
           updated_at?: string | null
+          for_person_id?: string | null
         }
         Relationships: [
           {

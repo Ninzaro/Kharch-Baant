@@ -8,6 +8,7 @@ import { ArrowRightIcon, ChevronDownIcon, CalendarIcon } from './icons/Icons';
 import { ButtonGroup, ButtonGroupItem } from './ui/button-group';
 import { Spinner } from './ui/spinner';
 import toast from 'react-hot-toast';
+import { offlineSavedMessage } from '../lib/outbox';
 
 interface SettleUpModalProps {
   open: boolean;
@@ -206,7 +207,11 @@ const SettleUpModal: React.FC<SettleUpModalProps> = ({ open, onClose, groupId, m
         created = await settleUp(groupId, txBase, context);
       }
 
-      toast.success(initialTransaction ? 'Settlement updated ✓' : 'Settlement recorded ✓');
+      toast.success(
+        created.pendingSync
+          ? offlineSavedMessage()
+          : initialTransaction ? 'Settlement updated ✓' : 'Settlement recorded ✓',
+      );
       if (onCreated) onCreated(created);
       onClose();
     } catch (e) {

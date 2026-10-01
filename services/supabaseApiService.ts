@@ -67,6 +67,7 @@ import type { Json } from '../lib/database.types';
 import * as emailService from './emailService';
 import { assertExactMoneyFields, isCentExact, toMinorUnits } from '../utils/money';
 import { postgrestTimestamptz } from '../utils/timestamptz';
+import { storedTransactionMatchesUpdate } from '../lib/expenseMatch';
 
 const stableJsonStringify = (value: unknown): string => {
   if (Array.isArray(value)) {
@@ -668,9 +669,12 @@ export const updateTransaction = async (
     }
     const { data: still } = await supabase
       .from('transactions')
-      .select('id')
+      .select('*')
       .eq('id', transactionId)
       .maybeSingle();
+    if (still && storedTransactionMatchesUpdate(still as Record<string, unknown>, updateData)) {
+      return transformDbTransactionToAppTransaction(still);
+    }
     if (still) {
       throw new Error('This expense was changed by someone else. Reload and try again.');
     }
@@ -977,7 +981,7 @@ const transformDbEmailInviteToAppEmailInvite = (dbEmailInvite: any): EmailInvite
  * Create a new invite link for a group
  */
 export const createGroupInvite = async (request: CreateInviteRequest & { invitedBy: string }): Promise<CreateInviteResponse> => {
-  const { groupId, emails, maxUses, expiresInDays = 30, invitedBy } = request;
+  const { groupId, emails, maxUses, expiresInDays = 30, invitedBy, forPersonId } = request;
 
   // Check if user has permission to create invite (must be group member)
   const { data: membership } = await supabase
@@ -1027,6 +1031,7 @@ export const createGroupInvite = async (request: CreateInviteRequest & { invited
       max_uses: maxUses,
       current_uses: 0,
       is_active: true,
+      for_person_id: forPersonId ?? null,
     })
     .select()
     .single();
@@ -1115,6 +1120,7 @@ export const validateInvite = async (inviteToken: string): Promise<ValidateInvit
     invite?: { expires_at?: string | null; max_uses?: number | null; current_uses?: number };
     group?: { id?: string; name?: string; currency?: string; group_type?: string };
     inviter?: { name?: string } | null;
+    seat_name?: string | null;
   } | null;
 
   if (!payload?.is_valid || !payload.invite || !payload.group) {
@@ -1147,6 +1153,7 @@ export const validateInvite = async (inviteToken: string): Promise<ValidateInvit
     invite,
     group,
     inviter,
+    seatName: payload.seat_name ? String(payload.seat_name) : undefined,
   };
 };
 

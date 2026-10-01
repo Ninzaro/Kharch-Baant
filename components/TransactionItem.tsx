@@ -121,6 +121,9 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, peopleMa
                     <span className={`text-base font-bold tabular-nums whitespace-nowrap ${isSettlement ? 'text-success drop-shadow-[0_0_8px_hsl(var(--success)/0.4)]' : 'text-foreground'}`}>
                         {formatCurrency(transaction.amount)}
                     </span>
+                    {transaction.pendingSync && (
+                        <span className="text-[10px] text-muted-foreground">Waiting to sync</span>
+                    )}
 
                     <ButtonGroup className="opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                         {onViewDetails && (

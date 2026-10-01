@@ -21,6 +21,7 @@ const InvitePage: React.FC = () => {
   const [token, setToken] = useState<string>('');
   const [group, setGroup] = useState<InvitePreviewGroup | null>(null);
   const [inviter, setInviter] = useState<{ name: string } | null>(null);
+  const [seatName, setSeatName] = useState<string | null>(null);
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
   const [usage, setUsage] = useState<{ current: number; max: number | null } | null>(null);
 
@@ -76,6 +77,7 @@ const InvitePage: React.FC = () => {
             name: result.inviter.name,
           });
         }
+        setSeatName(result.seatName ?? null);
         setStatus('valid');
       } catch (e: any) {
         setStatus('error');
@@ -151,6 +153,9 @@ const InvitePage: React.FC = () => {
                 </div>
                 {inviter && (
                   <div className="mt-3 text-muted-foreground text-sm">Invited by <span className="text-foreground font-medium">{inviter.name}</span></div>
+                )}
+                {seatName && (
+                  <div className="mt-3 text-sm text-foreground">You'll take {seatName}'s existing expenses in this group.</div>
                 )}
               </div>
 
